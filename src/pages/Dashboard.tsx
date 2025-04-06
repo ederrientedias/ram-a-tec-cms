@@ -1,7 +1,6 @@
-
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { CircleUser, FileText, TrendingUp, Calendar, BarChart3, Activity } from "lucide-react";
+import { CircleUser, FileText, TrendingUp, Calendar, BarChart3, Activity, Newspaper } from "lucide-react";
 import { ResponsiveContainer, LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from "recharts";
 
 // Sample data for charts

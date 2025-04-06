@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
@@ -10,7 +9,6 @@ import {
   Newspaper, 
   LogOut,
   ChevronLeft,
-  ChevronRight,
   Menu,
   User
 } from "lucide-react";
@@ -18,7 +16,6 @@ import { Button } from "@/components/ui/button";
 import { 
   Tooltip,
   TooltipContent,
-  TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -46,24 +43,22 @@ const NavItem = ({ icon: Icon, label, href, isCollapsed }: NavItemProps) => {
 
   if (isCollapsed) {
     return (
-      <TooltipProvider>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Link
-              to={href}
-              className={cn(
-                "flex items-center justify-center w-12 h-12 rounded-lg transition-colors",
-                isActive
-                  ? "bg-primary text-primary-foreground"
-                  : "hover:bg-slate-100 text-slate-600 hover:text-slate-900"
-              )}
-            >
-              <Icon size={22} />
-            </Link>
-          </TooltipTrigger>
-          <TooltipContent side="right">{label}</TooltipContent>
-        </Tooltip>
-      </TooltipProvider>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <Link
+            to={href}
+            className={cn(
+              "flex items-center justify-center w-12 h-12 rounded-lg transition-colors",
+              isActive
+                ? "bg-primary text-primary-foreground"
+                : "hover:bg-slate-100 text-slate-600 hover:text-slate-900"
+            )}
+          >
+            <Icon size={22} />
+          </Link>
+        </TooltipTrigger>
+        <TooltipContent side="right">{label}</TooltipContent>
+      </Tooltip>
     );
   }
 
@@ -190,19 +185,17 @@ export const Sidebar = () => {
           isCollapsed ? "flex justify-center py-4" : "p-4"
         )}>
           {isCollapsed ? (
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Avatar className="cursor-pointer">
-                    <AvatarImage src="/placeholder.svg" />
-                    <AvatarFallback>
-                      <User size={18} />
-                    </AvatarFallback>
-                  </Avatar>
-                </TooltipTrigger>
-                <TooltipContent side="right">Perfil do Usuário</TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Avatar className="cursor-pointer">
+                  <AvatarImage src="/placeholder.svg" />
+                  <AvatarFallback>
+                    <User size={18} />
+                  </AvatarFallback>
+                </Avatar>
+              </TooltipTrigger>
+              <TooltipContent side="right">Perfil do Usuário</TooltipContent>
+            </Tooltip>
           ) : (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
