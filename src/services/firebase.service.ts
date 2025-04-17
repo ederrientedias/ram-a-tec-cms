@@ -20,7 +20,7 @@ class FirebaseService {
   }
 
   public async getDocument(documentName: string): Promise<DocumentData> {
-    const docRef = doc(this.production, documentName);
+    const docRef = doc(this.development, documentName);
     const field = await getDoc(docRef);
     return field.data();
   }
@@ -71,8 +71,42 @@ class FirebaseService {
     fileData: any
   ) {
     const file = await this.getCollection(documentName, collectionName, field);
-    const dataUpdeted = [...file.data, ...{ ...fileData, id: file.data.length + 1 }];
-    await this.setDocumentCollection(documentName, collectionName, field, dataUpdeted);
+    if (!file.data) return;
+    const currentData = file.data;
+    const currentId = currentData[currentData.length - 1].id;
+    const dataUpdeted = [{ ...fileData, id: currentId + 1 }, ...currentData];
+    return await this.setDocumentCollection(
+      documentName,
+      collectionName,
+      field,
+      dataUpdeted
+    )
+      .then(() => {
+        return true;
+      })
+      .catch((error) => {
+        console.error(error);
+        return error;
+      });
+  }
+
+  async updateUploadsRef(
+    documentName: string,
+    field: string,
+    uploadRef: any
+  ): Promise<any> {
+    const { _, last_uploads } = await this.getDocument(documentName);
+    // console.log(file);
+    // if (!last_uploads) return false;
+    const updatedData = [uploadRef, ...last_uploads];
+    console.log(updatedData);
+
+    // return await this.setDocument(documentName, field, updatedData)
+    //   .then(() => true)
+    //   .catch((error) => {
+    //     console.error(error);
+    //     return error;
+    //   });
   }
 }
 export default new FirebaseService();
