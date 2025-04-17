@@ -1,7 +1,14 @@
-
-import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import {
+  Plus,
+  Pencil,
+  Trash2,
+  FileUp,
+  Search,
+  Download,
+  ExternalLink,
+  FileText,
+  CircleCheckBig,
+} from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -25,8 +32,18 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { complianceSchema, ComplianceSchema } from "@/schemas/compliance.schema";
+import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
+import { storageSite } from "@/config/firebase/firebase-site.config";
+import { FirestoreDocument, Field } from "@/enums/firestore";
+import FirebaseService from "@/services/firebase.service";
+import { ChangeEvent, useEffect, useState } from "react";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Controller, useForm } from "react-hook-form";
+import apiService from "@/services/api.service";
+import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { Plus, Pencil, Trash2, FileUp, Search, Download, ExternalLink, FileText } from "lucide-react";
+import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 
 // Tipos
@@ -40,18 +57,19 @@ interface DocumentoCompliance {
   link: string;
 }
 
-// Mock data
-const empresasOptions = [
-  "Empresa A Investimentos LTDA",
-  "Empresa B Capital S.A.",
-  "Empresa C Gestora de Recursos LTDA",
-  "Empresa D Asset Management",
-  "Empresa E Investimentos S.A.",
-];
+interface UploadRef {
+  id: number;
+  company: string;
+  docName: string;
+  fileName: string;
+  createAt: number;
+  docType: string;
+  docSize: number;
+}
 
 // Função para gerar ID aleatório
 const generateId = () => Math.random().toString(36).substr(2, 9);
-
+const generateUid = () => Math.floor(1000 + Math.random() * 9000);
 // Mock data
 const mockDocumentos: DocumentoCompliance[] = [
   {
@@ -84,161 +102,166 @@ const mockDocumentos: DocumentoCompliance[] = [
 ];
 
 const Compliance = () => {
-  const [documentos, setDocumentos] = useState<DocumentoCompliance[]>(mockDocumentos);
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [editingDocumento, setEditingDocumento] = useState<DocumentoCompliance | null>(null);
-  const [searchTerm, setSearchTerm] = useState("");
+  const [companies, setCompanies] = useState([]);
+  const [uploads, setUploads] = useState([]);
+  const [selectedFileName, setSelectedFileName] = useState<string>("");
+  const [fileUpload, setFileUpload] = useState<File | null>(null);
   const [uploadingFile, setUploadingFile] = useState(false);
-  
-  // Estado do formulário
-  const [formData, setFormData] = useState<Partial<DocumentoCompliance>>({
-    nomeEmpresa: "",
-    nomeArquivo: "",
-    link: "",
+
+  // Refactor
+  const {
+    handleSubmit,
+    reset,
+    formState: { errors, isValid },
+    control,
+  } = useForm<ComplianceSchema>({
+    resolver: zodResolver(complianceSchema),
+    defaultValues: {
+      company: "",
+      docName: "",
+      file: null,
+    },
   });
 
-  // Nome do arquivo selecionado
-  const [selectedFileName, setSelectedFileName] = useState<string>("");
-  const [selectedFileType, setSelectedFileType] = useState<string>("");
+  const onSubmit = async (data: ComplianceSchema) => {
+    setUploadingFile(true);
+    await handleComplianceFileUpload(data);
 
-  // Filtrar documentos pelo termo de busca
-  const filteredDocumentos = documentos.filter(
-    (documento) =>
-      documento.nomeEmpresa.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      documento.nomeArquivo.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+    // const updaloadRef: UploadRef = {
+    //   id: generateUid(),
+    //   company: data.company,
+    //   docName: data.docName,
+    //   fileName: selectedFileName,
+    //   createAt: Date.now(),
+    //   docType: fileUpload.name.split(".").pop()?.toUpperCase(),
+    //   docSize: fileUpload.size,
+    // };
+
+    // console.log("Formulário enviado:", updaloadRef);
+  };
+
+  const handleComplianceFileUpload = async (data: ComplianceSchema) => {
+    const path = `test/${data.company}/${selectedFileName}`;
+    await apiService
+      .uploadFile(fileUpload, path)
+      .then(async ({ data: response }: { data: { status: string; url: string } }) => {
+        updateUploadRef(data);
+        updateComplianceFile({
+          company: data.company,
+          docName: data.docName,
+          url: response.url,
+        });
+      })
+      .catch((error) => {
+        console.error("Erro ao enviar o formulário:", error);
+      })
+      .finally(() => {
+        setUploadingFile(false);
+        closeDialog();
+        reset();
+      });
+  };
+
+  const updateComplianceFile = async (data: {
+    url: string;
+    company: string;
+    docName: string;
+  }) => {
+    const item = {
+      id: 0,
+      downloadName: selectedFileName,
+      fileName: data.docName,
+      url: data.url,
+    };
+
+    const response = await FirebaseService.updateDocumentCollection(
+      FirestoreDocument.COMPLIANCE,
+      data.company,
+      Field.FILES,
+      item
+    );
+
+    if (response) {
+      toast(
+        <div className="flex items-center gap-3">
+          <CircleCheckBig className="h-5 w-5 text-green-600" />
+          <span className="text-base font-medium text-green-600">
+            Documento cadastrado com sucesso!
+          </span>
+        </div>
+      );
+    }
+  };
+
+  const updateUploadRef = async (data: ComplianceSchema) => {
+    const updaloadRef: UploadRef = {
+      id: generateUid(),
+      company: data.company,
+      docName: data.docName,
+      fileName: selectedFileName,
+      createAt: Date.now(),
+      docType: fileUpload.name.split(".").pop()?.toUpperCase(),
+      docSize: fileUpload.size,
+    };
+
+    await FirebaseService.updateUploadsRef(
+      FirestoreDocument.COMPLIANCE,
+      Field.LAST_UPLOADS,
+      updaloadRef
+    );
+  };
+
+  const fetchCompanies = async () => {
+    try {
+      const response = await FirebaseService.getDocument(FirestoreDocument.COMPLIANCE);
+      if (response.tabs) setCompanies(response.tabs);
+      if (response.last_uploads) setUploads(response.last_uploads);
+    } catch (error) {
+      console.error("Erro ao buscar documentos do Firebase:", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchCompanies();
+  }, []);
 
   // Abrir dialog para adicionar/editar
   const openDialog = (documento?: DocumentoCompliance) => {
-    if (documento) {
-      setEditingDocumento(documento);
-      setFormData({
-        nomeEmpresa: documento.nomeEmpresa,
-        nomeArquivo: documento.nomeArquivo,
-        link: documento.link,
-      });
-      setSelectedFileName(documento.nomeArquivo);
-      setSelectedFileType(documento.tipoArquivo);
-    } else {
-      setEditingDocumento(null);
-      setFormData({
-        nomeEmpresa: "",
-        nomeArquivo: "",
-        link: "",
-      });
-      setSelectedFileName("");
-      setSelectedFileType("");
-    }
+    // if (documento) {
+    //   setEditingDocumento(documento);
+    //   setFormData({
+    //     nomeEmpresa: documento.nomeEmpresa,
+    //     nomeArquivo: documento.nomeArquivo,
+    //     link: documento.link,
+    //   });
+    //   setSelectedFileName(documento.nomeArquivo);
+    //   setSelectedFileType(documento.tipoArquivo);
+    // } else {
+    //   setEditingDocumento(null);
+    //   setFormData({
+    //     nomeEmpresa: "",
+    //     nomeArquivo: "",
+    //     link: "",
+    //   });
+    //   setSelectedFileName("");
+    //   setSelectedFileType("");
+    // }
+
     setDialogOpen(true);
   };
 
-  // Fechar dialog
-  const closeDialog = () => {
-    setDialogOpen(false);
-    setEditingDocumento(null);
-    setSelectedFileName("");
-    setSelectedFileType("");
-  };
-
-  // Atualizar selects
-  const handleSelectChange = (name: string, value: string) => {
-    setFormData({
-      ...formData,
-      [name]: value,
-    });
-  };
-
-  // Atualizar inputs
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData({
-      ...formData,
-      [name]: value,
-    });
-  };
-
   // Manipular upload de arquivo
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = (
+    e: React.ChangeEvent<HTMLInputElement>,
+    onChange: (...event: any[]) => void
+  ) => {
     const file = e.target.files?.[0];
+    onChange(e);
+
     if (file) {
       setSelectedFileName(file.name);
-      
-      // Obter o tipo de arquivo da extensão
-      const extension = file.name.split('.').pop()?.toUpperCase() || '';
-      setSelectedFileType(extension);
-      
-      // Se não houver nome de exibição, usar o nome do arquivo
-      if (!formData.nomeArquivo) {
-        // Remover a extensão para o nome de exibição
-        const displayName = file.name.replace(/\.[^/.]+$/, "");
-        setFormData({
-          ...formData,
-          nomeArquivo: displayName,
-        });
-      }
-    }
-  };
-
-  // Simular upload de arquivo
-  const simulateFileUpload = async (): Promise<string> => {
-    setUploadingFile(true);
-    await new Promise((resolve) => setTimeout(resolve, 1500));
-    setUploadingFile(false);
-    return `https://storage.googleapis.com/example-bucket/${selectedFileName.replace(/\s+/g, '_').toLowerCase()}`;
-  };
-
-  // Salvar documento
-  const handleSaveDocumento = async () => {
-    // Validação básica
-    if (!formData.nomeEmpresa || !formData.nomeArquivo) {
-      toast.error("Por favor, preencha todos os campos obrigatórios");
-      return;
-    }
-
-    try {
-      // Simular upload se for um novo documento ou se o arquivo foi alterado
-      let fileLink = formData.link || "";
-      if (!editingDocumento || (editingDocumento && editingDocumento.nomeArquivo !== formData.nomeArquivo)) {
-        fileLink = await simulateFileUpload();
-      }
-
-      // Criar ou atualizar documento
-      if (editingDocumento) {
-        // Atualizar documento existente
-        setDocumentos(
-          documentos.map((documento) =>
-            documento.id === editingDocumento.id
-              ? {
-                  ...documento,
-                  nomeEmpresa: formData.nomeEmpresa || "",
-                  nomeArquivo: formData.nomeArquivo || "",
-                  dataUpload: new Date().toISOString().split("T")[0],
-                  link: fileLink,
-                  tipoArquivo: selectedFileType || documento.tipoArquivo,
-                }
-              : documento
-          )
-        );
-        toast.success("Documento atualizado com sucesso!");
-      } else {
-        // Criar novo documento
-        const newDocumento: DocumentoCompliance = {
-          id: generateId(),
-          nomeEmpresa: formData.nomeEmpresa || "",
-          nomeArquivo: formData.nomeArquivo || "",
-          dataUpload: new Date().toISOString().split("T")[0],
-          tipoArquivo: selectedFileType || "PDF",
-          tamanhoArquivo: `${(Math.random() * 5).toFixed(1)} MB`,
-          link: fileLink,
-        };
-        setDocumentos([...documentos, newDocumento]);
-        toast.success("Documento cadastrado com sucesso!");
-      }
-
-      closeDialog();
-    } catch (error) {
-      toast.error("Erro ao processar o arquivo");
-      console.error(error);
+      setFileUpload(file);
     }
   };
 
@@ -249,6 +272,29 @@ const Compliance = () => {
       toast.success("Documento excluído com sucesso!");
     }
   };
+
+  // Fechar dialog
+  const closeDialog = () => {
+    setDialogOpen(false);
+    setEditingDocumento(null);
+    setSelectedFileName("");
+    // setSelectedFileType("");
+  };
+
+  // Remover
+  const [documentos, setDocumentos] = useState<DocumentoCompliance[]>(mockDocumentos);
+  const [editingDocumento, setEditingDocumento] = useState<DocumentoCompliance | null>(
+    null
+  );
+  const [searchTerm, setSearchTerm] = useState("");
+
+  // Nome do arquivo selecionado
+  // Filtrar documentos pelo termo de busca
+  const filteredDocumentos = documentos.filter(
+    (documento) =>
+      documento.nomeEmpresa.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      documento.nomeArquivo.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   return (
     <div className="space-y-6">
@@ -274,6 +320,7 @@ const Compliance = () => {
           </div>
         </div>
 
+        {/* Table Component  */}
         <div className="rounded-md border overflow-hidden">
           <Table>
             <TableHeader>
@@ -301,7 +348,9 @@ const Compliance = () => {
                       )}
                       {documento.nomeArquivo}
                     </TableCell>
-                    <TableCell>{new Date(documento.dataUpload).toLocaleDateString('pt-BR')}</TableCell>
+                    <TableCell>
+                      {new Date(documento.dataUpload).toLocaleDateString("pt-BR")}
+                    </TableCell>
                     <TableCell>{documento.tipoArquivo}</TableCell>
                     <TableCell>{documento.tamanhoArquivo}</TableCell>
                     <TableCell>
@@ -337,7 +386,10 @@ const Compliance = () => {
                 ))
               ) : (
                 <TableRow>
-                  <TableCell colSpan={6} className="text-center py-10 text-muted-foreground">
+                  <TableCell
+                    colSpan={6}
+                    className="text-center py-10 text-muted-foreground"
+                  >
                     Nenhum documento encontrado
                   </TableCell>
                 </TableRow>
@@ -350,113 +402,138 @@ const Compliance = () => {
       {/* Dialog para adicionar/editar documento */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent>
-          <DialogHeader>
-            <DialogTitle>
-              {editingDocumento ? "Editar Documento" : "Cadastrar Novo Documento"}
-            </DialogTitle>
-            <DialogDescription>
-              Upload de documento de compliance.
-            </DialogDescription>
-          </DialogHeader>
+          <form onSubmit={handleSubmit(onSubmit)}>
+            <DialogHeader>
+              <DialogTitle>
+                {editingDocumento ? "Editar Documento" : "Cadastrar Novo Documento"}
+              </DialogTitle>
+              <DialogDescription>Upload de documento de compliance.</DialogDescription>
+            </DialogHeader>
 
-          <div className="space-y-6 py-4">
-            <div className="space-y-2">
-              <Label htmlFor="nomeEmpresa">Nome da Empresa</Label>
-              <Select
-                value={formData.nomeEmpresa || ""}
-                onValueChange={(value) => handleSelectChange("nomeEmpresa", value)}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Selecione uma empresa" />
-                </SelectTrigger>
-                <SelectContent>
-                  {empresasOptions.map((empresa) => (
-                    <SelectItem key={empresa} value={empresa}>
-                      {empresa}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="nomeArquivo">Nome do Documento</Label>
-              <Input
-                id="nomeArquivo"
-                name="nomeArquivo"
-                value={formData.nomeArquivo || ""}
-                onChange={handleInputChange}
-                placeholder="Nome que será exibido para o documento"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label>Arquivo</Label>
-              <div className="border rounded-md p-4 bg-gray-50">
-                <div className="flex flex-col items-center justify-center gap-2">
-                  <FileUp className="h-8 w-8 text-gray-400" />
-                  <div className="text-sm text-center text-gray-600">
-                    <p>Arraste e solte o arquivo aqui ou</p>
-                    <label htmlFor="file-upload" className="text-primary cursor-pointer hover:underline">
-                      selecione do seu computador
-                    </label>
-                  </div>
-                  <Input
-                    id="file-upload"
-                    type="file"
-                    accept=".pdf,.doc,.docx,.xls,.xlsx"
-                    className="hidden"
-                    onChange={handleFileChange}
-                  />
-                  {selectedFileName && (
-                    <div className="mt-2 text-sm text-gray-800 bg-white px-3 py-1 rounded-md border w-full">
-                      <span className="flex items-center gap-2">
-                        <FileText className="h-4 w-4 text-gray-500" />
-                        {selectedFileName}
-                      </span>
-                    </div>
-                  )}
-                  <p className="text-xs text-gray-500 mt-2">
-                    Formatos aceitos: PDF, DOC, DOCX, XLS, XLSX. Tamanho máximo: 10MB
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            {editingDocumento && (
+            <div className="space-y-6 py-4">
+              {/* Nome da Empresa */}
               <div className="space-y-2">
-                <Label htmlFor="link">Link Atual</Label>
-                <div className="flex items-center gap-2 text-sm text-blue-600">
-                  <ExternalLink className="h-4 w-4" />
-                  <a href={editingDocumento.link} target="_blank" rel="noopener noreferrer" className="hover:underline">
-                    {editingDocumento.link}
-                  </a>
+                <Label htmlFor="complany">Nome da Empresa</Label>
+                <Controller
+                  name="company"
+                  control={control}
+                  render={({ field }) => (
+                    <Select onValueChange={field.onChange} value={field.value || ""}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Selecione uma empresa" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {companies.map((item) => (
+                          <SelectItem key={item.id} value={item.collection}>
+                            {item.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  )}
+                />
+              </div>
+
+              {/* Nome do Documento */}
+              <div className="space-y-2">
+                <Label htmlFor="docName">Nome do Documento</Label>
+                <Controller
+                  name="docName"
+                  control={control}
+                  render={({ field }) => (
+                    <Input
+                      type="text"
+                      placeholder="Nome que será exibido para o documento"
+                      {...field}
+                    />
+                  )}
+                />
+                {errors.docName && (
+                  <small className="text-red-400">{errors.docName.message}</small>
+                )}
+              </div>
+
+              {/* Arquivo */}
+              <div className="space-y-2">
+                <Label>Arquivo</Label>
+                <div className="border rounded-md p-4 bg-gray-50">
+                  <div className="flex flex-col items-center justify-center gap-2">
+                    <FileUp className="h-8 w-8 text-gray-400" />
+                    <div className="text-sm text-center text-gray-600">
+                      <p>Arraste e solte o arquivo aqui ou</p>
+                      <label
+                        htmlFor="file-upload"
+                        className="text-primary cursor-pointer hover:underline"
+                      >
+                        selecione do seu computador
+                      </label>
+                    </div>
+                    <Controller
+                      name="file"
+                      control={control}
+                      render={({ field: { onChange, ref } }) => (
+                        <Input
+                          id="file-upload"
+                          type="file"
+                          accept=".pdf,.doc,.docx,.xls,.xlsx"
+                          className="hidden"
+                          ref={ref}
+                          onChange={(e) => handleFileChange(e, onChange)}
+                        />
+                      )}
+                    />
+
+                    {selectedFileName && (
+                      <div className="mt-2 text-sm text-gray-800 bg-white px-3 py-1 rounded-md border w-full">
+                        <span className="flex items-center gap-2">
+                          <FileText className="h-4 w-4 text-gray-500" />
+                          {selectedFileName}
+                        </span>
+                      </div>
+                    )}
+                    <p className="text-xs text-gray-500 mt-2">
+                      Formatos aceitos: PDF, DOC, DOCX, XLS, XLSX. Tamanho máximo: 10MB
+                    </p>
+                  </div>
                 </div>
               </div>
-            )}
-          </div>
+            </div>
 
-          <DialogFooter>
-            <Button variant="outline" onClick={closeDialog}>
-              Cancelar
-            </Button>
-            <Button 
-              onClick={handleSaveDocumento} 
-              disabled={uploadingFile || !formData.nomeEmpresa || !formData.nomeArquivo}
-            >
-              {uploadingFile ? (
-                <span className="flex items-center gap-2">
-                  <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                  </svg>
-                  Enviando...
-                </span>
-              ) : (
-                "Salvar"
-              )}
-            </Button>
-          </DialogFooter>
+            <DialogFooter>
+              <Button variant="outline" onClick={closeDialog}>
+                Cancelar
+              </Button>
+              <Button type="submit" disabled={!isValid}>
+                {uploadingFile ? (
+                  <span className="flex items-center gap-2">
+                    <svg
+                      className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                    >
+                      <circle
+                        className="opacity-25"
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="currentColor"
+                        strokeWidth="4"
+                      ></circle>
+                      <path
+                        className="opacity-75"
+                        fill="currentColor"
+                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                      ></path>
+                    </svg>
+                    Enviando...
+                  </span>
+                ) : (
+                  "Salvar"
+                )}
+              </Button>
+            </DialogFooter>
+          </form>
         </DialogContent>
       </Dialog>
     </div>
