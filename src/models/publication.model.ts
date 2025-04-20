@@ -9,7 +9,7 @@ export interface IPublication {
   product: string;
   type: string;
   category: string;
-  publicationDate: number;
+  publicationDate: string;
   mediaOutlet: string;
   mediaLogo: string;
   description: string;
