@@ -1,18 +1,17 @@
-
-import { Toaster } from "@/components/ui/toaster";
-import { Toaster as Sonner } from "@/components/ui/sonner";
-import { TooltipProvider } from "@/components/ui/tooltip";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import Login from "./pages/Login";
-import Dashboard from "./pages/Dashboard";
-import Fundos from "./pages/Fundos";
-import Portfolios from "./pages/Portfolios";
-import Compliance from "./pages/Compliance";
-import LandingPage from "./pages/LandingPage";
-import Publicacoes from "./pages/Publicacoes";
-import NotFound from "./pages/NotFound";
-import DashboardLayout from "./components/layout/DashboardLayout";
+import { Toaster } from '@/components/ui/toaster';
+import { Toaster as Sonner } from '@/components/ui/sonner';
+import { TooltipProvider } from '@/components/ui/tooltip';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import Login from './pages/Login';
+import Dashboard from './pages/Dashboard';
+import Fundos from './pages/Fundos';
+import Portfolios from './pages/Portfolios';
+import Compliance from './pages/Compliance';
+import LandingPage from './pages/LandingPage';
+import Publicacoes from './pages/Publications';
+import NotFound from './pages/NotFound';
+import DashboardLayout from './components/layout/DashboardLayout';
 
 const queryClient = new QueryClient();
 
