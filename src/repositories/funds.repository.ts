@@ -1,15 +1,15 @@
 import Firestore from '@/services/firestore';
-import { FirestoreDocuments } from '@/enums/firestore.enum';
+import { FirestoreDocument } from '@/enums/firestore.enum';
 import { IInvestmentFund } from '@/models/firestore';
 
 export const fetchFunds = async (): Promise<IInvestmentFund[]> => {
-  const { data } = await Firestore.getDocumentField(FirestoreDocuments.INVESTMENT_FUNDS);
+  const { data } = await Firestore.getDocumentField(FirestoreDocument.INVESTMENT_FUNDS);
   return Array.isArray(data) ? data : [data];
 };
 
 export const fetchDocuments = async (collectionName: string, document: string) => {
   const response = await Firestore.getCollectionDocument(
-    FirestoreDocuments.INVESTMENT_FUNDS,
+    FirestoreDocument.INVESTMENT_FUNDS,
     collectionName,
     document
   );
