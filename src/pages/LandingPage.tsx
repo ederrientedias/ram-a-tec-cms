@@ -32,7 +32,7 @@ import { storage } from '../config/firebase.config';
 import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
 import Firestore from '../services/firestore';
 import { IInvestmentFund } from '@/models/firestore';
-import { FirestoreDocuments } from '@/enums/firestore.enum';
+import { FirestoreDocument } from '@/enums/firestore.enum';
 import { useQuery } from '@tanstack/react-query';
 import { useFunds } from '@/hooks/firestore/use-funds';
 import { useDocument } from '@/hooks/firestore/use-document';
