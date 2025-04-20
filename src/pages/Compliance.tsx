@@ -8,7 +8,7 @@ import {
   ExternalLink,
   FileText,
   CircleCheckBig,
-} from "lucide-react";
+} from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -16,7 +16,7 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
+} from '@/components/ui/dialog';
 import {
   Table,
   TableBody,
@@ -24,27 +24,27 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
+} from '@/components/ui/table';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { complianceSchema, ComplianceSchema } from "@/schemas/compliance.schema";
-import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
-import { storageSite } from "@/config/firebase/firebase-site.config";
-import { FirestoreDocument, Field } from "@/enums/firestore";
-import FirebaseService from "@/services/firebase.service";
-import { ChangeEvent, useEffect, useState } from "react";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { Controller, useForm } from "react-hook-form";
-import apiService from "@/services/api.service";
-import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
-import { toast } from "sonner";
+} from '@/components/ui/select';
+import { complianceSchema, ComplianceSchema } from '@/schemas/compliance.schema';
+import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
+import { storageSite } from '@/config/firebase/firebase-site.config';
+import { FirestoreDocument, Field } from '@/enums/firestore';
+import FirebaseService from '@/services/firebase.service';
+import { ChangeEvent, useEffect, useState } from 'react';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { Controller, useForm } from 'react-hook-form';
+import apiService from '@/services/api.service';
+import { Button } from '@/components/ui/button';
+import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
+import { toast } from 'sonner';
 
 // Tipos
 interface DocumentoCompliance {
@@ -74,30 +74,30 @@ const generateUid = () => Math.floor(1000 + Math.random() * 9000);
 const mockDocumentos: DocumentoCompliance[] = [
   {
     id: generateId(),
-    nomeEmpresa: "Empresa A Investimentos LTDA",
-    nomeArquivo: "Política de Investimentos 2023",
-    dataUpload: "2023-03-15",
-    tipoArquivo: "PDF",
-    tamanhoArquivo: "1.2 MB",
-    link: "https://storage.googleapis.com/example-bucket/politica_investimentos_2023.pdf",
+    nomeEmpresa: 'Empresa A Investimentos LTDA',
+    nomeArquivo: 'Política de Investimentos 2023',
+    dataUpload: '2023-03-15',
+    tipoArquivo: 'PDF',
+    tamanhoArquivo: '1.2 MB',
+    link: 'https://storage.googleapis.com/example-bucket/politica_investimentos_2023.pdf',
   },
   {
     id: generateId(),
-    nomeEmpresa: "Empresa B Capital S.A.",
-    nomeArquivo: "Relatório de Compliance Q1 2023",
-    dataUpload: "2023-04-05",
-    tipoArquivo: "PDF",
-    tamanhoArquivo: "2.5 MB",
-    link: "https://storage.googleapis.com/example-bucket/relatorio_compliance_q1_2023.pdf",
+    nomeEmpresa: 'Empresa B Capital S.A.',
+    nomeArquivo: 'Relatório de Compliance Q1 2023',
+    dataUpload: '2023-04-05',
+    tipoArquivo: 'PDF',
+    tamanhoArquivo: '2.5 MB',
+    link: 'https://storage.googleapis.com/example-bucket/relatorio_compliance_q1_2023.pdf',
   },
   {
     id: generateId(),
-    nomeEmpresa: "Empresa C Gestora de Recursos LTDA",
-    nomeArquivo: "Manual de Normas e Procedimentos",
-    dataUpload: "2023-02-20",
-    tipoArquivo: "DOCX",
-    tamanhoArquivo: "3.1 MB",
-    link: "https://storage.googleapis.com/example-bucket/manual_normas_procedimentos.docx",
+    nomeEmpresa: 'Empresa C Gestora de Recursos LTDA',
+    nomeArquivo: 'Manual de Normas e Procedimentos',
+    dataUpload: '2023-02-20',
+    tipoArquivo: 'DOCX',
+    tamanhoArquivo: '3.1 MB',
+    link: 'https://storage.googleapis.com/example-bucket/manual_normas_procedimentos.docx',
   },
 ];
 
@@ -105,7 +105,7 @@ const Compliance = () => {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [companies, setCompanies] = useState([]);
   const [uploads, setUploads] = useState([]);
-  const [selectedFileName, setSelectedFileName] = useState<string>("");
+  const [selectedFileName, setSelectedFileName] = useState<string>('');
   const [fileUpload, setFileUpload] = useState<File | null>(null);
   const [uploadingFile, setUploadingFile] = useState(false);
 
@@ -118,8 +118,8 @@ const Compliance = () => {
   } = useForm<ComplianceSchema>({
     resolver: zodResolver(complianceSchema),
     defaultValues: {
-      company: "",
-      docName: "",
+      company: '',
+      docName: '',
       file: null,
     },
   });
@@ -154,7 +154,7 @@ const Compliance = () => {
         });
       })
       .catch((error) => {
-        console.error("Erro ao enviar o formulário:", error);
+        console.error('Erro ao enviar o formulário:', error);
       })
       .finally(() => {
         setUploadingFile(false);
@@ -163,11 +163,7 @@ const Compliance = () => {
       });
   };
 
-  const updateComplianceFile = async (data: {
-    url: string;
-    company: string;
-    docName: string;
-  }) => {
+  const updateComplianceFile = async (data: { url: string; company: string; docName: string }) => {
     const item = {
       id: 0,
       downloadName: selectedFileName,
@@ -201,7 +197,7 @@ const Compliance = () => {
       docName: data.docName,
       fileName: selectedFileName,
       createAt: Date.now(),
-      docType: fileUpload.name.split(".").pop()?.toUpperCase(),
+      docType: fileUpload.name.split('.').pop()?.toUpperCase(),
       docSize: fileUpload.size,
     };
 
@@ -218,7 +214,7 @@ const Compliance = () => {
       if (response.tabs) setCompanies(response.tabs);
       if (response.last_uploads) setUploads(response.last_uploads);
     } catch (error) {
-      console.error("Erro ao buscar documentos do Firebase:", error);
+      console.error('Erro ao buscar documentos do Firebase:', error);
     }
   };
 
@@ -267,9 +263,9 @@ const Compliance = () => {
 
   // Excluir documento
   const handleDeleteDocumento = (id: string) => {
-    if (confirm("Tem certeza que deseja excluir este documento?")) {
+    if (confirm('Tem certeza que deseja excluir este documento?')) {
       setDocumentos(documentos.filter((documento) => documento.id !== id));
-      toast.success("Documento excluído com sucesso!");
+      toast.success('Documento excluído com sucesso!');
     }
   };
 
@@ -277,16 +273,14 @@ const Compliance = () => {
   const closeDialog = () => {
     setDialogOpen(false);
     setEditingDocumento(null);
-    setSelectedFileName("");
+    setSelectedFileName('');
     // setSelectedFileType("");
   };
 
   // Remover
   const [documentos, setDocumentos] = useState<DocumentoCompliance[]>(mockDocumentos);
-  const [editingDocumento, setEditingDocumento] = useState<DocumentoCompliance | null>(
-    null
-  );
-  const [searchTerm, setSearchTerm] = useState("");
+  const [editingDocumento, setEditingDocumento] = useState<DocumentoCompliance | null>(null);
+  const [searchTerm, setSearchTerm] = useState('');
 
   // Nome do arquivo selecionado
   // Filtrar documentos pelo termo de busca
@@ -339,9 +333,9 @@ const Compliance = () => {
                   <TableRow key={documento.id}>
                     <TableCell className="font-medium">{documento.nomeEmpresa}</TableCell>
                     <TableCell className="flex items-center gap-2">
-                      {documento.tipoArquivo === "PDF" ? (
+                      {documento.tipoArquivo === 'PDF' ? (
                         <FileText className="h-4 w-4 text-red-500" />
-                      ) : documento.tipoArquivo === "DOCX" ? (
+                      ) : documento.tipoArquivo === 'DOCX' ? (
                         <FileText className="h-4 w-4 text-blue-500" />
                       ) : (
                         <FileText className="h-4 w-4 text-gray-500" />
@@ -349,25 +343,21 @@ const Compliance = () => {
                       {documento.nomeArquivo}
                     </TableCell>
                     <TableCell>
-                      {new Date(documento.dataUpload).toLocaleDateString("pt-BR")}
+                      {new Date(documento.dataUpload).toLocaleDateString('pt-BR')}
                     </TableCell>
                     <TableCell>{documento.tipoArquivo}</TableCell>
                     <TableCell>{documento.tamanhoArquivo}</TableCell>
                     <TableCell>
                       <div className="flex items-center gap-2">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => openDialog(documento)}
-                        >
+                        <Button variant="ghost" size="icon" onClick={() => openDialog(documento)}>
                           <Pencil className="h-4 w-4" />
                         </Button>
                         <Button
                           variant="ghost"
                           size="icon"
                           onClick={() => {
-                            toast.success("Download iniciado");
-                            window.open(documento.link, "_blank");
+                            toast.success('Download iniciado');
+                            window.open(documento.link, '_blank');
                           }}
                         >
                           <Download className="h-4 w-4" />
@@ -386,10 +376,7 @@ const Compliance = () => {
                 ))
               ) : (
                 <TableRow>
-                  <TableCell
-                    colSpan={6}
-                    className="text-center py-10 text-muted-foreground"
-                  >
+                  <TableCell colSpan={6} className="text-center py-10 text-muted-foreground">
                     Nenhum documento encontrado
                   </TableCell>
                 </TableRow>
@@ -405,7 +392,7 @@ const Compliance = () => {
           <form onSubmit={handleSubmit(onSubmit)}>
             <DialogHeader>
               <DialogTitle>
-                {editingDocumento ? "Editar Documento" : "Cadastrar Novo Documento"}
+                {editingDocumento ? 'Editar Documento' : 'Cadastrar Novo Documento'}
               </DialogTitle>
               <DialogDescription>Upload de documento de compliance.</DialogDescription>
             </DialogHeader>
@@ -418,7 +405,7 @@ const Compliance = () => {
                   name="company"
                   control={control}
                   render={({ field }) => (
-                    <Select onValueChange={field.onChange} value={field.value || ""}>
+                    <Select onValueChange={field.onChange} value={field.value || ''}>
                       <SelectTrigger>
                         <SelectValue placeholder="Selecione uma empresa" />
                       </SelectTrigger>
@@ -448,9 +435,7 @@ const Compliance = () => {
                     />
                   )}
                 />
-                {errors.docName && (
-                  <small className="text-red-400">{errors.docName.message}</small>
-                )}
+                {errors.docName && <small className="text-red-400">{errors.docName.message}</small>}
               </div>
 
               {/* Arquivo */}
@@ -529,7 +514,7 @@ const Compliance = () => {
                     Enviando...
                   </span>
                 ) : (
-                  "Salvar"
+                  'Salvar'
                 )}
               </Button>
             </DialogFooter>
