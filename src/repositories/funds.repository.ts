@@ -1,24 +1,42 @@
-import Firestore from '@/services/firestore';
+import { firestoreSite } from '@/config/firebase/firebase-site.config';
+import { FirestoreCollection } from '@/enums/firestore';
 import { FirestoreDocument } from '@/enums/firestore.enum';
-import { IInvestmentFund } from '@/models/firestore';
+import { IFund } from '@/models/funds.model';
+import { DocumentData, Firestore, collection, doc, getDoc, setDoc } from 'firebase/firestore';
 
-export const fetchFunds = async (): Promise<IInvestmentFund[]> => {
-  const { data } = await Firestore.getDocumentField(FirestoreDocument.INVESTMENT_FUNDS);
-  return Array.isArray(data) ? data : [data];
-};
+class FundRepository {
+  protected readonly firestore: Firestore;
+  protected readonly production: any;
+  protected readonly development: any;
 
-export const fetchDocuments = async (collectionName: string, document: string) => {
-  const response = await Firestore.getCollectionDocument(
-    FirestoreDocument.INVESTMENT_FUNDS,
-    collectionName,
-    document
-  );
-
-  if (typeof response.data === 'string') {
-    return JSON.parse(response.data);
+  constructor() {
+    this.firestore = firestoreSite;
+    this.production = collection(this.firestore, FirestoreCollection.PRODUCTION);
+    this.development = collection(this.firestore, FirestoreCollection.DEVELOPMENT);
   }
 
-  if (Array.isArray(response.data)) {
-    return response.data;
+  public async get(): Promise<IFund[] | []> {
+    const docRef = doc(this.development, FirestoreDocument.INVESTMENT_FUNDS);
+    const field = await getDoc(docRef);
+
+    if (!field.exists()) return [];
+
+    const { data } = field.data() as DocumentData;
+
+    return data;
   }
-};
+
+  public async set(data: IFund[]): Promise<boolean> {
+    try {
+      const docRef = doc(this.development, FirestoreDocument.INVESTMENT_FUNDS);
+      await setDoc(docRef, { data }, { merge: true });
+
+      return true;
+    } catch (error) {
+      console.error('Erro ao salvar documento:', error);
+      return false;
+    }
+  }
+}
+
+export default new FundRepository();
