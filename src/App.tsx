@@ -5,7 +5,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
-import Fundos from './pages/Fundos';
+import Fundos from './pages/Funds';
 import Portfolios from './pages/Portfolios';
 import Compliance from './pages/Compliance';
 import LandingPage from './pages/LandingPage';

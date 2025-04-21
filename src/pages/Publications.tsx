@@ -22,7 +22,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { usePublications } from '@/hooks/firestore/use-publication';
 import { IPublication } from '@/models/publication.model';
 import { publicationSchema, PublicationsSchema } from '@/schemas/publication.schema';
-import publicationService from '@/services/publication.service';
+import publicationService from '@/services/publications.service';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { ExternalLink, Newspaper, Pencil, Plus, Search, Trash2 } from 'lucide-react';
 import { useState } from 'react';
