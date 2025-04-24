@@ -1,12 +1,14 @@
-import { Navigate, Outlet } from 'react-router-dom';
-import { useAuth } from '../../contexts/AuthContexts';
+import { AuthenticatedTemplate, UnauthenticatedTemplate } from '@azure/msal-react';
+import { Navigate, Outlet, useLocation } from 'react-router-dom';
 
-export const ProtectedRoute = () => {
-    const { user, loading } = useAuth();
-
-    if (loading) {
-        return <div>Carregando...</div>; // Ou um spinner
-    }
-
-    return user ? <Outlet /> : <Navigate to="/" replace />;
+export const ProtectedRoute = ({ children }) => {
+  const location = useLocation();
+  return (
+    <>
+      <AuthenticatedTemplate>{children ? children : <Outlet />}</AuthenticatedTemplate>
+      <UnauthenticatedTemplate>
+        <Navigate to="/" replace state={{ from: location }} />
+      </UnauthenticatedTemplate>
+    </>
+  );
 };
