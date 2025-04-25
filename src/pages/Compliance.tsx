@@ -8,6 +8,7 @@ import {
   ExternalLink,
   FileText,
   CircleCheckBig,
+  CircleX,
 } from 'lucide-react';
 import {
   Dialog,
@@ -33,8 +34,11 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { complianceSchema, ComplianceSchema } from '@/schemas/compliance.schema';
+import { useLastUploads } from '@/hooks/firestore/compliance/use-last-uploads';
 import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
 import { storageSite } from '@/config/firebase/firebase-site.config';
+import { useTabs } from '@/hooks/firestore/compliance/use-tabs';
+import complianceService from '@/services/compliance.service';
 import { FirestoreDocument, Field } from '@/enums/firestore';
 import FirebaseService from '@/services/firebase.service';
 import { ChangeEvent, useEffect, useState } from 'react';
@@ -103,11 +107,17 @@ const mockDocumentos: DocumentoCompliance[] = [
 
 const Compliance = () => {
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [companies, setCompanies] = useState([]);
+  // const [companies, setCompanies] = useState([]);
   const [uploads, setUploads] = useState([]);
   const [selectedFileName, setSelectedFileName] = useState<string>('');
   const [fileUpload, setFileUpload] = useState<File | null>(null);
   const [uploadingFile, setUploadingFile] = useState(false);
+  const { data: companies, isLoading: isLoadingTabs, error: errorTabs } = useTabs();
+  const {
+    data: uploadsRef,
+    isLoading: isLoadingUploadsRef,
+    error: errorUploadsRef,
+  } = useLastUploads();
 
   // Refactor
   const {
@@ -127,26 +137,14 @@ const Compliance = () => {
   const onSubmit = async (data: ComplianceSchema) => {
     setUploadingFile(true);
     await handleComplianceFileUpload(data);
-
-    // const updaloadRef: UploadRef = {
-    //   id: generateUid(),
-    //   company: data.company,
-    //   docName: data.docName,
-    //   fileName: selectedFileName,
-    //   createAt: Date.now(),
-    //   docType: fileUpload.name.split(".").pop()?.toUpperCase(),
-    //   docSize: fileUpload.size,
-    // };
-
-    // console.log("Formulário enviado:", updaloadRef);
   };
 
   const handleComplianceFileUpload = async (data: ComplianceSchema) => {
     const path = `test/${data.company}/${selectedFileName}`;
+
     await apiService
       .uploadFile(fileUpload, path)
       .then(async ({ data: response }: { data: { status: string; url: string } }) => {
-        updateUploadRef(data);
         updateComplianceFile({
           company: data.company,
           docName: data.docName,
@@ -161,6 +159,54 @@ const Compliance = () => {
         closeDialog();
         reset();
       });
+  };
+
+  const handleSavedFirestore = async (dataRef: any) => {
+    const { name } = companies.find((item) => item.collection === dataRef.company);
+
+    const fileRef = {
+      id: 0,
+      downloadName: selectedFileName,
+      fileName: dataRef.docName,
+      url: dataRef.url,
+    };
+
+    const lastUploadRef = {
+      id: 0,
+      companyName: name,
+      collection: dataRef.company,
+      docName: dataRef.docName,
+      fileName: selectedFileName,
+      docType: fileUpload?.name.split('.').pop()?.toUpperCase(),
+      docSize: fileUpload?.size,
+      url: dataRef.url,
+      createAt: Date.now(),
+    };
+
+    try {
+      await Promise.all([
+        complianceService.updateFiles(dataRef.company, fileRef),
+        complianceService.updateUploadsRef(lastUploadRef),
+      ]).then(() => {
+        toast(
+          <div className="flex items-center gap-3">
+            <CircleCheckBig className="h-5 w-5 text-green-600" />
+            <span className="text-base font-medium text-green-600">
+              Documento cadastrado com sucesso!
+            </span>
+          </div>
+        );
+      });
+    } catch (error) {
+      toast(
+        <div className="flex items-center gap-3">
+          <CircleX className="h-5 w-5 text-red-600" />
+          <span className="text-base font-medium text-red-600">
+            Não foi possível cadastrar o documento.
+          </span>
+        </div>
+      );
+    }
   };
 
   const updateComplianceFile = async (data: { url: string; company: string; docName: string }) => {
@@ -207,20 +253,6 @@ const Compliance = () => {
       updaloadRef
     );
   };
-
-  const fetchCompanies = async () => {
-    try {
-      const response = await FirebaseService.getDocument(FirestoreDocument.COMPLIANCE);
-      if (response.tabs) setCompanies(response.tabs);
-      if (response.last_uploads) setUploads(response.last_uploads);
-    } catch (error) {
-      console.error('Erro ao buscar documentos do Firebase:', error);
-    }
-  };
-
-  useEffect(() => {
-    fetchCompanies();
-  }, []);
 
   // Abrir dialog para adicionar/editar
   const openDialog = (documento?: DocumentoCompliance) => {
