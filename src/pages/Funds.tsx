@@ -1,6 +1,3 @@
-import { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import {
   Dialog,
   DialogContent,
@@ -24,11 +21,17 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Label } from '@/components/ui/label';
+import { useProductTypes } from '@/hooks/firestore/funds/use-product-types';
+import { useCategories } from '@/hooks/firestore/funds/use-categories';
 import { Plus, Pencil, Trash2, Search, Filter } from 'lucide-react';
-import { toast } from 'sonner';
-import { useFunds } from '@/hooks/firestore/use-funds';
+import { useTypes } from '@/hooks/firestore/funds/use-types';
+import { useFunds } from '@/hooks/firestore/funds/use-funds';
+import { Button } from '@/components/ui/button';
+import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
 import { IFund } from '@/models/funds.model';
+import { useState } from 'react';
+import { toast } from 'sonner';
 
 // Tipos
 interface Fundo {
@@ -113,11 +116,22 @@ const mockFundos: Fundo[] = [
 
 const Funds = () => {
   const { data, isLoading, error } = useFunds();
+  const {
+    data: productTypes,
+    isLoading: isLoadingProductTypes,
+    error: productTypesErro,
+  } = useProductTypes();
+  const { data: types, isLoading: isLoadingTypes, error: typesErro } = useTypes();
+  const {
+    data: categories,
+    isLoading: isLoadingCategories,
+    error: categoriesErro,
+  } = useCategories();
+
   const [fundos, setFundos] = useState<Fundo[]>(mockFundos);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingFundo, setEditingFundo] = useState<Fundo | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
-  console.log('data', data);
 
   // Estado do formulário
   const [formData, setFormData] = useState<Partial<Fundo>>({
@@ -320,7 +334,7 @@ const Funds = () => {
 
       {/* Dialog para adicionar/editar fundo */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="max-w-3xl">
+        <DialogContent className="max-w-4xl">
           <DialogHeader>
             <DialogTitle>{editingFundo ? 'Editar Fundo' : 'Cadastrar Novo Fundo'}</DialogTitle>
             <DialogDescription>Preencha as informações do fundo abaixo.</DialogDescription>
@@ -359,9 +373,9 @@ const Funds = () => {
                     <SelectValue placeholder="Selecione um produto" />
                   </SelectTrigger>
                   <SelectContent>
-                    {produtosOptions.map((produto) => (
-                      <SelectItem key={produto} value={produto}>
-                        {produto}
+                    {productTypes.map((productType) => (
+                      <SelectItem key={productType.id} value={productType.name}>
+                        {productType.name}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -378,9 +392,9 @@ const Funds = () => {
                     <SelectValue placeholder="Selecione o tipo" />
                   </SelectTrigger>
                   <SelectContent>
-                    {tiposOptions.map((tipo) => (
-                      <SelectItem key={tipo} value={tipo}>
-                        {tipo}
+                    {types.map((type) => (
+                      <SelectItem key={type.id} value={type.name}>
+                        {type.name}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -397,9 +411,9 @@ const Funds = () => {
                     <SelectValue placeholder="Selecione a categoria" />
                   </SelectTrigger>
                   <SelectContent>
-                    {categoriasOptions.map((categoria) => (
-                      <SelectItem key={categoria} value={categoria}>
-                        {categoria}
+                    {categories.map((category) => (
+                      <SelectItem key={category.id} value={category.name}>
+                        {category.name}
                       </SelectItem>
                     ))}
                   </SelectContent>
