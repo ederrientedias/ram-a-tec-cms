@@ -1,3 +1,14 @@
+export interface IFundsRepository {
+  get: () => Promise<IFund[]>;
+  set: (funds: IFund[]) => Promise<boolean>;
+}
+
+export interface IFundsService {
+  getFunds: () => Promise<IFund[]>;
+  getUniqueValues: <T extends keyof IFund>(propertyName: T) => Promise<IGenericType[]>;
+  setFunds: (newFund: IFund) => Promise<boolean>;
+}
+
 export interface IFund {
   id: number;
   redirectUrl: string;
@@ -67,4 +78,9 @@ interface Platform {
   collection?: string;
   id: number;
   redirectUrl: string;
+}
+
+export interface IGenericType {
+  id: number;
+  name: string;
 }
