@@ -21,4 +21,5 @@ export enum Field {
   FILES = 'files',
   LAST_UPLOADS = 'last_uploads',
   DATA = 'data',
+  TABS = 'tabs',
 }
