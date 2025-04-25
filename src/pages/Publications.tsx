@@ -1,5 +1,3 @@
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   Dialog,
   DialogContent,
@@ -8,8 +6,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import {
   Table,
   TableBody,
@@ -18,20 +14,23 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { Textarea } from '@/components/ui/textarea';
-import { usePublications } from '@/hooks/firestore/use-publication';
-import { IPublication } from '@/models/publication.model';
 import { publicationSchema, PublicationsSchema } from '@/schemas/publication.schema';
-import publicationService from '@/services/publications.service';
-import { zodResolver } from '@hookform/resolvers/zod';
 import { ExternalLink, Newspaper, Pencil, Plus, Search, Trash2 } from 'lucide-react';
-import { useState } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { usePublications } from '@/hooks/firestore/use-publication';
+import publicationService from '@/services/publications.service';
+import { IPublication } from '@/models/publication.model';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { Textarea } from '@/components/ui/textarea';
+import { Button } from '@/components/ui/button';
+import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
 import { useForm } from 'react-hook-form';
+import { useState } from 'react';
 import { toast } from 'sonner';
 
 const Publications = () => {
   const { data, isLoading, error } = usePublications();
-  // const [publications, setPublications] = useState<IPublication[]>(data || []);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingPublicacao, setEditingPublicacao] = useState<IPublication | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
@@ -287,7 +286,7 @@ const Publications = () => {
 
       {/* Dialog para adicionar/editar publicação */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="max-w-2xl">
+        <DialogContent className="max-w-4xl">
           <form onSubmit={handleSubmit(onSubmit)}>
             <DialogHeader>
               <DialogTitle>
