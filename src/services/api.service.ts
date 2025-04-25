@@ -1,5 +1,5 @@
-import { AxiosResponse } from "axios";
-import api from "@/lib/api";
+import { AxiosResponse } from 'axios';
+import api from '@/lib/api';
 
 class ApiService {
   /**
@@ -8,14 +8,14 @@ class ApiService {
    * @param path Caminho para onde o arquivo será enviado
    * @returns {AxiosResponse}
    */
-  public async uploadFile(file: File, path: string) {
+  public async uploadFile(file: File, path: string): Promise<AxiosResponse> {
     const form = new FormData();
-    form.append("file", file);
-    form.append("path", path);
+    form.append('file', file);
+    form.append('path', path);
 
-    return await api.post("/api/upload", form, {
+    return await api.post('/api/upload', form, {
       headers: {
-        "Content-Type": "multipart/form-data",
+        'Content-Type': 'multipart/form-data',
       },
     });
   }
