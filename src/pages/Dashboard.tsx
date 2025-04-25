@@ -1,39 +1,58 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { CircleUser, FileText, TrendingUp, Calendar, BarChart3, Activity, Newspaper } from "lucide-react";
-import { ResponsiveContainer, LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from "recharts";
+import {
+  ResponsiveContainer,
+  LineChart,
+  Line,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+} from 'recharts';
+import {
+  CircleUser,
+  FileText,
+  TrendingUp,
+  Calendar,
+  BarChart3,
+  Activity,
+  Newspaper,
+} from 'lucide-react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 // Sample data for charts
 const monthlyData = [
-  { month: "Jan", rentabilidade: 4.2 },
-  { month: "Fev", rentabilidade: 3.5 },
-  { month: "Mar", rentabilidade: 5.1 },
-  { month: "Abr", rentabilidade: 4.8 },
-  { month: "Mai", rentabilidade: 3.9 },
-  { month: "Jun", rentabilidade: 4.5 },
-  { month: "Jul", rentabilidade: 5.3 },
-  { month: "Ago", rentabilidade: 4.7 },
-  { month: "Set", rentabilidade: 3.8 },
-  { month: "Out", rentabilidade: 4.9 },
-  { month: "Nov", rentabilidade: 5.2 },
-  { month: "Dez", rentabilidade: 4.6 },
+  { month: 'Jan', rentabilidade: 4.2 },
+  { month: 'Fev', rentabilidade: 3.5 },
+  { month: 'Mar', rentabilidade: 5.1 },
+  { month: 'Abr', rentabilidade: 4.8 },
+  { month: 'Mai', rentabilidade: 3.9 },
+  { month: 'Jun', rentabilidade: 4.5 },
+  { month: 'Jul', rentabilidade: 5.3 },
+  { month: 'Ago', rentabilidade: 4.7 },
+  { month: 'Set', rentabilidade: 3.8 },
+  { month: 'Out', rentabilidade: 4.9 },
+  { month: 'Nov', rentabilidade: 5.2 },
+  { month: 'Dez', rentabilidade: 4.6 },
 ];
 
 const fundsData = [
-  { nome: "Fundo A", rentabilidade: 4.2, benchmark: 3.8 },
-  { nome: "Fundo B", rentabilidade: 5.5, benchmark: 3.8 },
-  { nome: "Fundo C", rentabilidade: 3.2, benchmark: 3.8 },
-  { nome: "Fundo D", rentabilidade: 6.1, benchmark: 3.8 },
-  { nome: "Fundo E", rentabilidade: 4.7, benchmark: 3.8 },
-  { nome: "Fundo F", rentabilidade: 3.9, benchmark: 3.8 },
+  { nome: 'Fundo A', rentabilidade: 4.2, benchmark: 3.8 },
+  { nome: 'Fundo B', rentabilidade: 5.5, benchmark: 3.8 },
+  { nome: 'Fundo C', rentabilidade: 3.2, benchmark: 3.8 },
+  { nome: 'Fundo D', rentabilidade: 6.1, benchmark: 3.8 },
+  { nome: 'Fundo E', rentabilidade: 4.7, benchmark: 3.8 },
+  { nome: 'Fundo F', rentabilidade: 3.9, benchmark: 3.8 },
 ];
 
 const activityData = [
-  { data: "2023-04-05", usuario: "Marcos Silva", acao: "Cadastrou novo fundo" },
-  { data: "2023-04-04", usuario: "Ana Oliveira", acao: "Atualizou portfólio" },
-  { data: "2023-04-03", usuario: "Carlos Santos", acao: "Upload de documento" },
-  { data: "2023-04-02", usuario: "Juliana Costa", acao: "Editou fundo" },
-  { data: "2023-04-01", usuario: "Roberto Almeida", acao: "Nova publicação" },
+  { data: '2023-04-05', usuario: 'Marcos Silva', acao: 'Cadastrou novo fundo' },
+  { data: '2023-04-04', usuario: 'Ana Oliveira', acao: 'Atualizou portfólio' },
+  { data: '2023-04-03', usuario: 'Carlos Santos', acao: 'Upload de documento' },
+  { data: '2023-04-02', usuario: 'Juliana Costa', acao: 'Editou fundo' },
+  { data: '2023-04-01', usuario: 'Roberto Almeida', acao: 'Nova publicação' },
 ];
 
 const Dashboard = () => {
@@ -54,9 +73,7 @@ const Dashboard = () => {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">28</div>
-            <p className="text-xs text-muted-foreground">
-              +2 desde o último mês
-            </p>
+            <p className="text-xs text-muted-foreground">+2 desde o último mês</p>
           </CardContent>
         </Card>
         <Card>
@@ -66,9 +83,7 @@ const Dashboard = () => {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">145</div>
-            <p className="text-xs text-muted-foreground">
-              +12 desde o último mês
-            </p>
+            <p className="text-xs text-muted-foreground">+12 desde o último mês</p>
           </CardContent>
         </Card>
         <Card>
@@ -78,9 +93,7 @@ const Dashboard = () => {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">4.7%</div>
-            <p className="text-xs text-muted-foreground">
-              +0.2% desde o último mês
-            </p>
+            <p className="text-xs text-muted-foreground">+0.2% desde o último mês</p>
           </CardContent>
         </Card>
         <Card>
@@ -90,9 +103,7 @@ const Dashboard = () => {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">36</div>
-            <p className="text-xs text-muted-foreground">
-              +4 desde o último mês
-            </p>
+            <p className="text-xs text-muted-foreground">+4 desde o último mês</p>
           </CardContent>
         </Card>
       </div>
@@ -112,14 +123,12 @@ const Dashboard = () => {
             Atividade Recente
           </TabsTrigger>
         </TabsList>
-        
+
         <TabsContent value="performance" className="space-y-4">
           <Card>
             <CardHeader>
               <CardTitle>Rentabilidade Mensal</CardTitle>
-              <CardDescription>
-                Acompanhe a rentabilidade média mensal dos fundos
-              </CardDescription>
+              <CardDescription>Acompanhe a rentabilidade média mensal dos fundos</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="h-[300px]">
@@ -151,7 +160,7 @@ const Dashboard = () => {
             </CardContent>
           </Card>
         </TabsContent>
-        
+
         <TabsContent value="fundos" className="space-y-4">
           <Card>
             <CardHeader>
@@ -185,14 +194,12 @@ const Dashboard = () => {
             </CardContent>
           </Card>
         </TabsContent>
-        
+
         <TabsContent value="atividade" className="space-y-4">
           <Card>
             <CardHeader>
               <CardTitle>Atividade Recente</CardTitle>
-              <CardDescription>
-                Últimas ações realizadas no portal
-              </CardDescription>
+              <CardDescription>Últimas ações realizadas no portal</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-6">
