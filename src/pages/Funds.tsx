@@ -32,7 +32,7 @@ import { Input } from '@/components/ui/input';
 import { IFund } from '@/models/funds.model';
 import { useState } from 'react';
 import { toast } from 'sonner';
-
+import { Skeleton } from '@/components/ui/skeleton';
 // Tipos
 interface Fundo {
   id: string;
@@ -132,6 +132,11 @@ const Funds = () => {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingFundo, setEditingFundo] = useState<Fundo | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
+
+  console.log('Fundos:', data);
+  console.log('Tipos:', types);
+  console.log('Categorias:', categories);
+  console.log('Produtos:', productTypes);
 
   // Estado do formulário
   const [formData, setFormData] = useState<Partial<Fundo>>({
@@ -363,25 +368,31 @@ const Funds = () => {
                 />
               </div>
 
+              {/* Product Types */}
               <div className="space-y-2">
                 <Label htmlFor="produto">Produto</Label>
-                <Select
-                  value={formData.produto || ''}
-                  onValueChange={(value) => handleSelectChange('produto', value)}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Selecione um produto" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {productTypes.map((productType) => (
-                      <SelectItem key={productType.id} value={productType.name}>
-                        {productType.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                {isLoadingProductTypes ? (
+                  <Skeleton className="h-8 w-full" />
+                ) : (
+                  <Select
+                    value={formData.produto || ''}
+                    onValueChange={(value) => handleSelectChange('produto', value)}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecione um produto" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {productTypes?.map((productType) => (
+                        <SelectItem key={productType?.id} value={productType?.name}>
+                          {productType?.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
               </div>
 
+              {/* Types */}
               <div className="space-y-2">
                 <Label htmlFor="tipo">Tipo do Fundo</Label>
                 <Select
@@ -401,6 +412,7 @@ const Funds = () => {
                 </Select>
               </div>
 
+              {/* Categories */}
               <div className="space-y-2">
                 <Label htmlFor="categoria">Categoria do Fundo</Label>
                 <Select
