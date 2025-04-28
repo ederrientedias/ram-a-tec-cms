@@ -8,15 +8,17 @@ class FundsService implements IFundsService {
 
   public async getUniqueValues<T extends keyof IFund>(propertyName: T): Promise<IGenericType[]> {
     const funds = await fundsRepository.get();
-    const typesMap = new Map<string, IGenericType>(); // A chave do Map é sempre string
+    const typesMap = new Map<string, IGenericType>();
     let idCounter = 0;
 
     funds.forEach((fund: IFund) => {
       const propertyValue = fund[propertyName];
 
-      // Verificamos se o valor da propriedade é string ou number
-      if (typeof propertyValue === 'string' || typeof propertyValue === 'number') {
-        const key = String(propertyValue); // Convertemos para string para usar como chave
+      if (
+        (typeof propertyValue === 'string' && propertyValue.length > 0) ||
+        typeof propertyValue === 'number'
+      ) {
+        const key = String(propertyValue);
 
         if (!typesMap.has(key)) {
           typesMap.set(key, {
