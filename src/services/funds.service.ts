@@ -2,12 +2,13 @@ import { IFund, IFundsService, IGenericType } from '@/models/funds.model';
 import fundsRepository from '@/repositories/funds.repository';
 
 class FundsService implements IFundsService {
+
   public async getFunds(): Promise<IFund[]> {
-    return await fundsRepository.get();
+    return await fundsRepository.getAllFunds();
   }
 
   public async getUniqueValues<T extends keyof IFund>(propertyName: T): Promise<IGenericType[]> {
-    const funds = await fundsRepository.get();
+    const funds = await this.getFunds();
     const typesMap = new Map<string, IGenericType>();
     let idCounter = 0;
 
@@ -38,7 +39,7 @@ class FundsService implements IFundsService {
   }
 
   private async mergePublications(newFund: IFund): Promise<any[]> {
-    const funds = await fundsRepository.get();
+    const funds = await this.getFunds();
     const mergedFunds = [...funds, newFund];
 
     return mergedFunds;

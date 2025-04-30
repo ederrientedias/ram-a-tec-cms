@@ -1,8 +1,14 @@
-import { firestoreSite } from '@/config/firebase/firebase-site.config';
-import { FirestoreCollection } from '@/enums/firestore';
-import { FirestoreDocument } from '@/enums/firestore.enum';
-import { IFund } from '@/models/funds.model';
 import { DocumentData, Firestore, collection, doc, getDoc, setDoc } from 'firebase/firestore';
+import { firestoreSite } from '@/config/firebase/firebase-site.config';
+import { FirestoreDocument } from '@/enums/firestore.enum';
+import { FirestoreCollection } from '@/enums/firestore';
+import { IFund } from '@/models/funds.model';
+
+interface DocumentProps {
+  fundName: string;
+  documentName: string;
+  data: any;
+}
 
 class FundRepository {
   protected readonly firestore: Firestore;
@@ -15,7 +21,11 @@ class FundRepository {
     this.development = collection(this.firestore, FirestoreCollection.DEVELOPMENT);
   }
 
-  public async get(): Promise<IFund[] | []> {
+  /**
+   * @description Busca todos os fundos de investimento
+   * @returns {Promise<IFund[] | []>} Retorna todos os fundos de investimento ou um array vazio caso não existam
+   */
+  public async getAllFunds(): Promise<IFund[] | []> {
     const docRef = doc(this.development, FirestoreDocument.INVESTMENT_FUNDS);
     const field = await getDoc(docRef);
 
@@ -26,11 +36,52 @@ class FundRepository {
     return data;
   }
 
+  /**
+   * @description Busca um documento pelo nome do fundo e nome do documento
+   * @param fundName
+   * @param documentName
+   * @returns {Promise<DocumentData | []>}
+   */
+  public async getFundDocument(fundName: string, documentName: string): Promise<DocumentData> {
+    const docRef = doc(this.development, FirestoreDocument.INVESTMENT_FUNDS);
+    const collectionRef = collection(docRef, fundName);
+    const documentRef = doc(collectionRef, documentName);
+    const document = await getDoc(documentRef);
+
+    if (!document.exists()) return [];
+
+    return document.data() as DocumentData;
+  }
+
+  /**
+   * @description Salva todos os fundos de investimento
+   * @param {IFund[]} data - Array de fundos de investimento
+   * @returns {Promise<boolean>} Retorna true caso o documento seja salvo com sucesso, false caso contrário
+   */
   public async set(data: IFund[]): Promise<boolean> {
     try {
       const docRef = doc(this.development, FirestoreDocument.INVESTMENT_FUNDS);
       await setDoc(docRef, { data }, { merge: true });
 
+      return true;
+    } catch (error) {
+      console.error('Erro ao salvar documento:', error);
+      return false;
+    }
+  }
+
+  /**
+   * @description Salva um documento
+   * @param props: DocumentProps
+   * @returns {Promise<boolean>} Retorna true caso o documento seja salvo com sucesso, false caso contrário
+   */
+  public async setDocument(props: DocumentProps): Promise<boolean> {
+    try {
+      const docRef = doc(this.development, FirestoreDocument.INVESTMENT_FUNDS);
+      const collectionRef = collection(docRef, props.fundName);
+      const documentRef = doc(collectionRef, props.documentName);
+
+      await setDoc(documentRef, { data: props.data }, { merge: true });
       return true;
     } catch (error) {
       console.error('Erro ao salvar documento:', error);

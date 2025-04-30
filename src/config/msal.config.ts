@@ -4,7 +4,7 @@ export const msalConfig = {
   auth: {
     clientId: '89fd91ab-9c27-48cd-914d-c7c4f26ec693',
     authority: 'https://login.microsoftonline.com/rizaasset.onmicrosoft.com',
-    redirectUri: 'http://localhost:8080/',
+    redirectUri: 'http://localhost:8081/',
   },
   cache: {
     cacheLocation: 'sessionStorage',

@@ -52,10 +52,6 @@ interface Fundo {
   link: string;
 }
 
-// Mock data
-const produtosOptions = ['Renda Fixa', 'Renda Variável', 'Multimercado', 'FIIs', 'Offshore'];
-const tiposOptions = ['Aberto', 'Fechado', 'Exclusivo'];
-const categoriasOptions = ['Conservador', 'Moderado', 'Arrojado', 'Super Arrojado'];
 
 // Função para gerar ID aleatório
 const generateId = () => Math.random().toString(36).substr(2, 9);
@@ -133,10 +129,10 @@ const Funds = () => {
   const [editingFundo, setEditingFundo] = useState<Fundo | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
 
-  console.log('Fundos:', data);
-  console.log('Tipos:', types);
-  console.log('Categorias:', categories);
-  console.log('Produtos:', productTypes);
+  // console.log('Fundos:', data);
+  // console.log('Tipos:', types);
+  // console.log('Categorias:', categories);
+  // console.log('Produtos:', productTypes);
 
   // Estado do formulário
   const [formData, setFormData] = useState<Partial<Fundo>>({
@@ -302,7 +298,7 @@ const Funds = () => {
             <TableBody>
               {filteredFundos?.length > 0 ? (
                 filteredFundos?.map((fund: IFund) => (
-                  <TableRow key={fund.id}>
+                  <TableRow key={fund.id === 0 ? fund.eventName : fund.id}>
                     <TableCell className="font-medium">{fund.id}</TableCell>
                     <TableCell>{fund.name}</TableCell>
                     <TableCell>{fund.productType}</TableCell>
@@ -403,9 +399,9 @@ const Funds = () => {
                     <SelectValue placeholder="Selecione o tipo" />
                   </SelectTrigger>
                   <SelectContent>
-                    {types.map((type) => (
-                      <SelectItem key={type.id} value={type.name}>
-                        {type.name}
+                    {types?.map((type) => (
+                      <SelectItem key={type?.id} value={type?.name}>
+                        {type?.name}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -423,9 +419,9 @@ const Funds = () => {
                     <SelectValue placeholder="Selecione a categoria" />
                   </SelectTrigger>
                   <SelectContent>
-                    {categories.map((category) => (
-                      <SelectItem key={category.id} value={category.name}>
-                        {category.name}
+                    {categories?.map((category) => (
+                      <SelectItem key={category?.id} value={category?.name}>
+                        {category?.name}
                       </SelectItem>
                     ))}
                   </SelectContent>

@@ -17,6 +17,15 @@ export enum FirestoreDocument {
   PUBLICATIONS = 'publications',
 }
 
+export enum FundDocument {
+  OVERVIEW = 'overview',
+  DESCRIPTION = 'description',
+  TARGET_RETURN = 'target_return',
+  PROFITABILITY = 'profitability',
+  PORTFOLIO = 'portfolio',
+  DOCUMENTS = 'documents',
+}
+
 export enum Field {
   FILES = 'files',
   LAST_UPLOADS = 'last_uploads',

@@ -1,13 +1,14 @@
 export enum FirestoreCollection {
-  PRODUCTION = "production",
-  DEVELOPMENT = "development",
+  PRODUCTION = 'production',
+  DEVELOPMENT = 'development',
+  LOGS = 'logs',
 }
 
 export enum FirestoreDocument {
-  COMPLIANCE = "compliance",
+  COMPLIANCE = 'compliance',
 }
 
 export enum Field {
-  FILES = "files",
-  LAST_UPLOADS = "last_uploads",
+  FILES = 'files',
+  LAST_UPLOADS = 'last_uploads',
 }
