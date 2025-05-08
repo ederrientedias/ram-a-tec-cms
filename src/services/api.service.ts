@@ -3,24 +3,16 @@ import api from '@/lib/api';
 
 class ApiService {
   /**
-   * Upload de arquivo
+   * @description Upload de arquivo
    * @param file Arquivo a ser enviado
    * @param path Caminho para onde o arquivo será enviado
    * @returns {AxiosResponse}
    */
   public async uploadFile(file: File, path: string): Promise<AxiosResponse> {
-    console.log('uploadFile', file, path);
     const form = new FormData();
     form.append('file', file);
-    form.append(
-      'path',
-      path
-        .normalize('NFD')
-        .replace(/[\u0300-\u036f]/g, '')
-        .replace(/\s+/g, '-')
-        .toLowerCase()
-    );
-    console.log(form);
+    form.append('path', path);
+
     return await api.post('/api/upload', form, {
       headers: {
         'Content-Type': 'multipart/form-data',
