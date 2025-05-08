@@ -26,13 +26,14 @@ import { useCategories } from '@/hooks/firestore/funds/use-categories';
 import { Plus, Pencil, Trash2, Search, Filter } from 'lucide-react';
 import { useTypes } from '@/hooks/firestore/funds/use-types';
 import { useFunds } from '@/hooks/firestore/funds/use-funds';
+import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { IFund } from '@/models/funds.model';
 import { useState } from 'react';
 import { toast } from 'sonner';
-import { Skeleton } from '@/components/ui/skeleton';
+
 // Tipos
 interface Fundo {
   id: string;
@@ -51,7 +52,6 @@ interface Fundo {
   benchmark: string;
   link: string;
 }
-
 
 // Função para gerar ID aleatório
 const generateId = () => Math.random().toString(36).substr(2, 9);
@@ -154,9 +154,8 @@ const Funds = () => {
 
   // Filtrar fundos pelo termo de busca
   const filteredFundos = data?.filter(
-    (fund) =>
-      fund.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      fund.id.toLowerCase().includes(searchTerm.toLowerCase())
+    (fund) => fund.name.toLowerCase().includes(searchTerm.toLowerCase())
+    // ||      fund.id.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   // Abrir dialog para adicionar/editar
