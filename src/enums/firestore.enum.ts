@@ -1,6 +1,7 @@
 export enum FirestoreCollection {
   PRODUCTION = 'production',
   DEVELOPMENT = 'development',
+  LOGS = 'logs',
 }
 
 export enum FirestoreDocument {
@@ -15,6 +16,8 @@ export enum FirestoreDocument {
   SOLUTIONS = 'solutions',
   UTILS = 'utils',
   PUBLICATIONS = 'publications',
+  LANDING_PAGE_LOG = 'landing_page_log',
+  COMPLIANCE_LOG = 'compliance_log',
 }
 
 export enum FundDocument {
