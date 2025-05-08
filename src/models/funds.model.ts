@@ -39,6 +39,7 @@ export interface IFund {
   init: number | string;
   updateAt?: number | string;
   idName?: string;
+  collectionName?: string;
 }
 
 interface Feeder {
