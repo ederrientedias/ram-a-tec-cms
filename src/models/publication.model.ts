@@ -3,6 +3,11 @@ export interface IPublicationRepsitory {
   set: (data: IPublication[]) => Promise<boolean>;
 }
 
+export interface IPublicationService {
+  getPublications: () => Promise<IPublication[]>;
+  setPublications: (newPublication: IPublication) => Promise<boolean>;
+}
+
 export interface IPublication {
   id?: number;
   theme: string;
