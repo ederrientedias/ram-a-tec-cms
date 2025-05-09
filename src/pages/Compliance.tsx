@@ -1,16 +1,4 @@
 import {
-  Plus,
-  Pencil,
-  Trash2,
-  FileUp,
-  Search,
-  Download,
-  ExternalLink,
-  FileText,
-  CircleCheckBig,
-  CircleX,
-} from 'lucide-react';
-import {
   Dialog,
   DialogContent,
   DialogDescription,
@@ -33,294 +21,211 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { complianceSchema, ComplianceSchema } from '@/schemas/compliance.schema';
-import { useLastUploads } from '@/hooks/firestore/compliance/use-last-uploads';
-import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
-import { storageSite } from '@/config/firebase/firebase-site.config';
+import { complianceSchema, ComplianceSchema, defaultValues } from '@/schemas/compliance.schema';
+import { FileText, FileUp, Pencil, Plus, Search, Trash2 } from 'lucide-react';
+import LoadingPageAnimation from '@/components/animations/loadingPage';
+import Loading404Animation from '@/components/animations/loading404';
 import { useTabs } from '@/hooks/firestore/compliance/use-tabs';
+import { Controller, useForm, useWatch } from 'react-hook-form';
 import complianceService from '@/services/compliance.service';
-import { FirestoreDocument, Field } from '@/enums/firestore';
-import FirebaseService from '@/services/firebase.service';
-import { ChangeEvent, useEffect, useState } from 'react';
+import { FirestoreDocument } from '@/enums/firestore.enum';
+import { formatFileSize } from '@/utils/format-file-size';
+import { useLog } from '@/hooks/firestore/logs/use-log';
+import { useQueryClient } from '@tanstack/react-query';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Controller, useForm } from 'react-hook-form';
+import { useEffect, useMemo, useState } from 'react';
+import { IComplianceLog } from '@/models/log.model';
+import logsService from '@/services/logs.service';
+import { ITab } from '@/models/compliance.model';
 import apiService from '@/services/api.service';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
+import { globalId } from '@/utils/global-id';
 import { toast } from 'sonner';
 
-// Tipos
-interface DocumentoCompliance {
-  id: string;
-  nomeEmpresa: string;
-  nomeArquivo: string;
-  dataUpload: string;
-  tipoArquivo: string;
-  tamanhoArquivo: string;
-  link: string;
-}
-
-interface UploadRef {
-  id: number;
-  company: string;
-  docName: string;
-  fileName: string;
-  createAt: number;
-  docType: string;
-  docSize: number;
-}
-
-// Função para gerar ID aleatório
-const generateId = () => Math.random().toString(36).substr(2, 9);
-const generateUid = () => Math.floor(1000 + Math.random() * 9000);
-// Mock data
-const mockDocumentos: DocumentoCompliance[] = [
-  {
-    id: generateId(),
-    nomeEmpresa: 'Empresa A Investimentos LTDA',
-    nomeArquivo: 'Política de Investimentos 2023',
-    dataUpload: '2023-03-15',
-    tipoArquivo: 'PDF',
-    tamanhoArquivo: '1.2 MB',
-    link: 'https://storage.googleapis.com/example-bucket/politica_investimentos_2023.pdf',
-  },
-  {
-    id: generateId(),
-    nomeEmpresa: 'Empresa B Capital S.A.',
-    nomeArquivo: 'Relatório de Compliance Q1 2023',
-    dataUpload: '2023-04-05',
-    tipoArquivo: 'PDF',
-    tamanhoArquivo: '2.5 MB',
-    link: 'https://storage.googleapis.com/example-bucket/relatorio_compliance_q1_2023.pdf',
-  },
-  {
-    id: generateId(),
-    nomeEmpresa: 'Empresa C Gestora de Recursos LTDA',
-    nomeArquivo: 'Manual de Normas e Procedimentos',
-    dataUpload: '2023-02-20',
-    tipoArquivo: 'DOCX',
-    tamanhoArquivo: '3.1 MB',
-    link: 'https://storage.googleapis.com/example-bucket/manual_normas_procedimentos.docx',
-  },
-];
-
 const Compliance = () => {
+  const queryClient = useQueryClient();
   const [dialogOpen, setDialogOpen] = useState(false);
-  // const [companies, setCompanies] = useState([]);
-  // const [uploads, setUploads] = useState([]);
   const [selectedFileName, setSelectedFileName] = useState<string>('');
-  const [fileUpload, setFileUpload] = useState<File | null>(null);
+  const [fileRef, setFileRef] = useState<File | null>(null);
   const [uploadingFile, setUploadingFile] = useState(false);
+  const [companyRef, setCompanyRef] = useState<ITab | null>(null);
+  const [logRef, setLogRef] = useState<IComplianceLog | null>(null);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [editingDocument, setEditingDocument] = useState<boolean>(false);
   const { data: companies, isLoading: isLoadingTabs, error: errorTabs } = useTabs();
-  // const {
-  //   data: uploadsRef,
-  //   isLoading: isLoadingUploadsRef,
-  //   error: errorUploadsRef,
-  // } = useLastUploads();
+  const {
+    data: logs,
+    isLoading: isLoadingLogs,
+    error: logErro,
+  } = useLog<IComplianceLog>({ logName: FirestoreDocument.COMPLIANCE_LOG });
 
-  // Refactor
   const {
     handleSubmit,
     reset,
-    formState: { errors, isValid },
+    setValue,
+    formState: { errors, isValid, touchedFields },
     control,
   } = useForm<ComplianceSchema>({
     resolver: zodResolver(complianceSchema),
-    defaultValues: {
-      company: '',
-      docName: '',
-      file: null,
-    },
+    defaultValues: defaultValues,
   });
 
-  const onSubmit = async (data: ComplianceSchema) => {
-    setUploadingFile(true);
-    await handleComplianceFileUpload(data);
-  };
+  const selectedCompany = useWatch({
+    control,
+    name: 'company',
+    defaultValue: defaultValues.company,
+  });
 
-  const handleComplianceFileUpload = async (data: ComplianceSchema) => {
-    const path = `test/${data.company}/${selectedFileName}`;
+  const memoizedCompanies = useMemo(() => companies ?? [], [companies]);
 
-    await apiService
-      .uploadFile(fileUpload, path)
-      .then(async ({ data: response }: { data: { status: string; url: string } }) => {
-        updateComplianceFile({
-          company: data.company,
-          docName: data.docName,
-          url: response.url,
-        });
-      })
-      .catch((error) => {
-        console.error('Erro ao enviar o formulário:', error);
-      })
-      .finally(() => {
-        setUploadingFile(false);
-        closeDialog();
-        reset();
-      });
-  };
-
-  // const handleSavedFirestore = async (dataRef: any) => {
-  //   const { name } = companies.find((item) => item.collection === dataRef.company);
-
-  //   const fileRef = {
-  //     id: 0,
-  //     downloadName: selectedFileName,
-  //     fileName: dataRef.docName,
-  //     url: dataRef.url,
-  //   };
-
-  //   const lastUploadRef = {
-  //     id: 0,
-  //     companyName: name,
-  //     collection: dataRef.company,
-  //     docName: dataRef.docName,
-  //     fileName: selectedFileName,
-  //     docType: fileUpload?.name.split('.').pop()?.toUpperCase(),
-  //     docSize: fileUpload?.size,
-  //     url: dataRef.url,
-  //     createAt: Date.now(),
-  //   };
-
-  //   try {
-  //     await Promise.all([
-  //       complianceService.updateFiles(dataRef.company, fileRef),
-  //       complianceService.updateUploadsRef(lastUploadRef),
-  //     ]).then(() => {
-  //       toast(
-  //         <div className="flex items-center gap-3">
-  //           <CircleCheckBig className="h-5 w-5 text-green-600" />
-  //           <span className="text-base font-medium text-green-600">
-  //             Documento cadastrado com sucesso!
-  //           </span>
-  //         </div>
-  //       );
-  //     });
-  //   } catch (error) {
-  //     toast(
-  //       <div className="flex items-center gap-3">
-  //         <CircleX className="h-5 w-5 text-red-600" />
-  //         <span className="text-base font-medium text-red-600">
-  //           Não foi possível cadastrar o documento.
-  //         </span>
-  //       </div>
-  //     );
-  //   }
-  // };
-
-  const updateComplianceFile = async (data: { url: string; company: string; docName: string }) => {
-    const item = {
-      id: 0,
-      downloadName: selectedFileName,
-      fileName: data.docName,
-      url: data.url,
-    };
-
-    const response = await FirebaseService.updateDocumentCollection(
-      FirestoreDocument.COMPLIANCE,
-      data.company,
-      Field.FILES,
-      item
-    );
-
-    if (response) {
-      toast(
-        <div className="flex items-center gap-3">
-          <CircleCheckBig className="h-5 w-5 text-green-600" />
-          <span className="text-base font-medium text-green-600">
-            Documento cadastrado com sucesso!
-          </span>
-        </div>
+  useEffect(() => {
+    if (selectedCompany) {
+      const companyRef = memoizedCompanies?.find(
+        (company: ITab) => company.collection === selectedCompany
       );
+      setCompanyRef(companyRef);
+    }
+  }, [selectedCompany, memoizedCompanies]);
+
+  const onSubmit = async (data: ComplianceSchema): Promise<void> => {
+    setUploadingFile(true);
+    await handleFileUpload(data);
+  };
+
+  const handleFileUpload = async (data: ComplianceSchema): Promise<void> => {
+    const path = `test/${companyRef.bucketName}/${selectedFileName}`;
+
+    try {
+      const { data: response } = await apiService.uploadFile(fileRef, path);
+
+      if (!response.status) {
+        toast.error('Erro ao fazer upload do arquivo');
+        return;
+      }
+
+      await handleSaveFirestore(data, response.url);
+    } catch (error) {
+      toast.error('Erro ao fazer upload do arquivo');
+      console.error('Erro ao enviar o formulário:', error);
+    } finally {
+      setUploadingFile(false);
     }
   };
 
-  // const updateUploadRef = async (data: ComplianceSchema) => {
-  //   const updaloadRef: UploadRef = {
-  //     id: generateUid(),
-  //     company: data.company,
-  //     docName: data.docName,
-  //     fileName: selectedFileName,
-  //     createAt: Date.now(),
-  //     docType: fileUpload.name.split('.').pop()?.toUpperCase(),
-  //     docSize: fileUpload.size,
-  //   };
+  const handleSaveFirestore = async (data: ComplianceSchema, url: string): Promise<void> => {
+    await Promise.all([handleAddLog(data), handleAddFile(data, url)])
+      .then(async () => {
+        await queryClient.invalidateQueries({ queryKey: [FirestoreDocument.COMPLIANCE_LOG] });
+        toast.success('Arquivo enviado com sucesso');
+        closeDialog();
+        reset();
+      })
+      .catch((error) => {
+        toast.error('Erro ao enviar o formulário');
+        console.error('Erro ao enviar o formulário:', error);
+      });
+  };
 
-  //   await FirebaseService.updateUploadsRef(
-  //     FirestoreDocument.COMPLIANCE,
-  //     Field.LAST_UPLOADS,
-  //     updaloadRef
-  //   );
-  // };
+  const handleAddLog = async (data: ComplianceSchema): Promise<void> => {
+    const log = {
+      id: Date.now(),
+      company: companyRef.name,
+      collectionRef: data.company,
+      bucketName: companyRef.bucketName,
+      docName: data.docName,
+      docType: fileRef.type.split('/')[1].toLocaleUpperCase(),
+      docSize: formatFileSize(fileRef.size),
+      docId: editingDocument ? logRef.docId : globalId,
+      createAt: Date.now(),
+    };
+    await logsService.addLog(FirestoreDocument.COMPLIANCE_LOG, log);
+  };
 
-  // Abrir dialog para adicionar/editar
-  const openDialog = (documento?: DocumentoCompliance) => {
-    // if (documento) {
-    //   setEditingDocumento(documento);
-    //   setFormData({
-    //     nomeEmpresa: documento.nomeEmpresa,
-    //     nomeArquivo: documento.nomeArquivo,
-    //     link: documento.link,
-    //   });
-    //   setSelectedFileName(documento.nomeArquivo);
-    //   setSelectedFileType(documento.tipoArquivo);
-    // } else {
-    //   setEditingDocumento(null);
-    //   setFormData({
-    //     nomeEmpresa: "",
-    //     nomeArquivo: "",
-    //     link: "",
-    //   });
-    //   setSelectedFileName("");
-    //   setSelectedFileType("");
-    // }
+  const handleAddFile = async (data: ComplianceSchema, url: string): Promise<void> => {
+    const fileRef = {
+      id: 0,
+      docId: editingDocument ? logRef.docId : globalId,
+      downloadName: selectedFileName,
+      fileName: data.docName,
+      url: url,
+    };
+    await complianceService.addFile(data.company, fileRef);
+  };
+
+  const openDialog = (log?: IComplianceLog): void => {
+    if (log) {
+      setEditingDocument(true);
+      setLogRef(log);
+      handleEditDocument(log);
+    }
 
     setDialogOpen(true);
   };
 
-  // Manipular upload de arquivo
   const handleFileChange = (
     e: React.ChangeEvent<HTMLInputElement>,
     onChange: (...event: any[]) => void
-  ) => {
+  ): void => {
     const file = e.target.files?.[0];
     onChange(e);
-
+    setSelectedFileName(file?.name || '');
     if (file) {
-      setSelectedFileName(file.name);
-      setFileUpload(file);
+      setFileRef(file);
     }
   };
 
-  // Excluir documento
-  const handleDeleteDocumento = (id: string) => {
+  const handleEditDocument = async (log: IComplianceLog) => {
+    setValue('company', log.collectionRef);
+    setValue('docName', log.docName);
+  };
+
+  // Criar um loading para deletar um documento.
+  const handleDeleteDocument = async (log: IComplianceLog): Promise<void> => {
     if (confirm('Tem certeza que deseja excluir este documento?')) {
-      setDocumentos(documentos.filter((documento) => documento.id !== id));
-      toast.success('Documento excluído com sucesso!');
+      Promise.all([deleteLog(log.docId), deleteFile(log)])
+        .then(async () => {
+          await queryClient.invalidateQueries({ queryKey: [FirestoreDocument.COMPLIANCE_LOG] });
+          toast.success('Documento excluído com sucesso!');
+        })
+        .catch((error) => {
+          toast.error('Erro ao excluir o documento');
+          console.error('Erro ao excluir o documento:', error);
+        });
     }
   };
 
-  // Fechar dialog
+  const deleteLog = async (docId: string): Promise<boolean> => {
+    return await logsService.deleteLog(FirestoreDocument.COMPLIANCE_LOG, docId);
+  };
+
+  const deleteFile = async (log: IComplianceLog): Promise<boolean> => {
+    return await complianceService.deleteFile(log.collectionRef, log.docId);
+  };
+
   const closeDialog = () => {
     setDialogOpen(false);
-    setEditingDocumento(null);
+    setEditingDocument(false);
     setSelectedFileName('');
-    // setSelectedFileType("");
+    reset();
   };
 
-  // Remover
-  const [documentos, setDocumentos] = useState<DocumentoCompliance[]>(mockDocumentos);
-  const [editingDocumento, setEditingDocumento] = useState<DocumentoCompliance | null>(null);
-  const [searchTerm, setSearchTerm] = useState('');
+  const dismiss = (e: CustomEvent): void => {
+    if (e) {
+      reset();
+      setEditingDocument(false);
+    }
+  };
 
-  // Nome do arquivo selecionado
-  // Filtrar documentos pelo termo de busca
-  const filteredDocumentos = documentos.filter(
-    (documento) =>
-      documento.nomeEmpresa.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      documento.nomeArquivo.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredLogs = (logs || []).filter(
+    (log: IComplianceLog) =>
+      log.company.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      log.docName.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  if (isLoadingTabs || isLoadingLogs) return <LoadingPageAnimation />;
+  if (errorTabs || logErro) return <Loading404Animation />;
 
   return (
     <div className="space-y-6">
@@ -360,31 +265,35 @@ const Compliance = () => {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredDocumentos.length > 0 ? (
-                filteredDocumentos.map((documento) => (
-                  <TableRow key={documento.id}>
-                    <TableCell className="font-medium">{documento.nomeEmpresa}</TableCell>
+              {!logs || logs.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={6} className="text-center py-10 text-muted-foreground">
+                    Nenhum documento encontrado
+                  </TableCell>
+                </TableRow>
+              ) : (
+                filteredLogs.map((log: IComplianceLog) => (
+                  <TableRow key={log.id}>
+                    <TableCell className="font-medium">{log.company}</TableCell>
                     <TableCell className="flex items-center gap-2">
-                      {documento.tipoArquivo === 'PDF' ? (
+                      {log.docType === 'PDF' ? (
                         <FileText className="h-4 w-4 text-red-500" />
-                      ) : documento.tipoArquivo === 'DOCX' ? (
+                      ) : log.docType === 'DOCX' ? (
                         <FileText className="h-4 w-4 text-blue-500" />
                       ) : (
                         <FileText className="h-4 w-4 text-gray-500" />
                       )}
-                      {documento.nomeArquivo}
+                      {log.docName}
                     </TableCell>
-                    <TableCell>
-                      {new Date(documento.dataUpload).toLocaleDateString('pt-BR')}
-                    </TableCell>
-                    <TableCell>{documento.tipoArquivo}</TableCell>
-                    <TableCell>{documento.tamanhoArquivo}</TableCell>
+                    <TableCell>{new Date(log.createAt).toLocaleDateString('pt-BR')}</TableCell>
+                    <TableCell>{log.docType}</TableCell>
+                    <TableCell>{log.docSize}</TableCell>
                     <TableCell>
                       <div className="flex items-center gap-2">
-                        <Button variant="ghost" size="icon" onClick={() => openDialog(documento)}>
+                        <Button variant="ghost" size="icon" onClick={() => openDialog(log)}>
                           <Pencil className="h-4 w-4" />
                         </Button>
-                        <Button
+                        {/* <Button
                           variant="ghost"
                           size="icon"
                           onClick={() => {
@@ -393,12 +302,12 @@ const Compliance = () => {
                           }}
                         >
                           <Download className="h-4 w-4" />
-                        </Button>
+                        </Button> */}
                         <Button
                           variant="ghost"
                           size="icon"
                           className="text-red-500"
-                          onClick={() => handleDeleteDocumento(documento.id)}
+                          onClick={() => handleDeleteDocument(log)}
                         >
                           <Trash2 className="h-4 w-4" />
                         </Button>
@@ -406,12 +315,6 @@ const Compliance = () => {
                     </TableCell>
                   </TableRow>
                 ))
-              ) : (
-                <TableRow>
-                  <TableCell colSpan={6} className="text-center py-10 text-muted-foreground">
-                    Nenhum documento encontrado
-                  </TableCell>
-                </TableRow>
               )}
             </TableBody>
           </Table>
@@ -420,11 +323,11 @@ const Compliance = () => {
 
       {/* Dialog para adicionar/editar documento */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent>
+        <DialogContent onInteractOutside={(event) => dismiss(event)}>
           <form onSubmit={handleSubmit(onSubmit)}>
             <DialogHeader>
               <DialogTitle>
-                {editingDocumento ? 'Editar Documento' : 'Cadastrar Novo Documento'}
+                {editingDocument ? 'Editar Documento' : 'Cadastrar Novo Documento'}
               </DialogTitle>
               <DialogDescription>Upload de documento de compliance.</DialogDescription>
             </DialogHeader>
@@ -436,6 +339,7 @@ const Compliance = () => {
                 <Controller
                   name="company"
                   control={control}
+                  defaultValue=""
                   render={({ field }) => (
                     <Select onValueChange={field.onChange} value={field.value || ''}>
                       <SelectTrigger>
@@ -451,6 +355,9 @@ const Compliance = () => {
                     </Select>
                   )}
                 />
+                {errors.company && touchedFields.company && (
+                  <small className="text-red-400">{errors.company.message}</small>
+                )}
               </div>
 
               {/* Nome do Documento */}
@@ -467,7 +374,9 @@ const Compliance = () => {
                     />
                   )}
                 />
-                {errors.docName && <small className="text-red-400">{errors.docName.message}</small>}
+                {errors.docName && touchedFields.docName && (
+                  <small className="text-red-400">{errors.docName.message}</small>
+                )}
               </div>
 
               {/* Arquivo */}
