@@ -4,6 +4,13 @@ export interface IComplianceRepository {
   setFiles(collectionName: string, files: IFile[]): Promise<boolean>;
 }
 
+export interface IComplianceService {
+  getTabs: () => Promise<ITab[] | []>;
+  getFiles: (collectionName: string) => Promise<IFile[] | []>;
+  addFile: (collectionName: string, file: IFile) => Promise<boolean>;
+  deleteFile: (collectionName: string, docId: string) => Promise<boolean>;
+}
+
 export type CollectionName =
   | 'riza_allocation'
   | 'riza_asset'
@@ -24,6 +31,7 @@ export interface ITab {
 }
 export interface IFile {
   id: number;
+  docId: string;
   fileName: string;
   downloadName: string;
   url: string;
