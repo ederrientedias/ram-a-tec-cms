@@ -16,7 +16,7 @@ class ComplianceRepository implements IComplianceRepository {
   }
 
   /**
-   * @description | Retorna as tabs do compliance
+   * @description | Obtém as tabs do compliance
    * @returns | ITab[] | []
    */
   public async getTabs(): Promise<ITab[] | []> {
