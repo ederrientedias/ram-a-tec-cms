@@ -31,12 +31,12 @@ import LoadingPageAnimation from '@/components/animations/loadingPage';
 import Loading404Animation from '@/components/animations/loading404';
 import { formatText, formatToBucketName } from '@/lib/format-text';
 import { useFunds } from '@/hooks/firestore/funds/use-funds';
-import { ILog } from '@/repositories/logs/logs.repository';
 import { FirestoreDocument } from '@/enums/firestore.enum';
 import { useLog } from '@/hooks/firestore/logs/use-log';
 import { useQueryClient } from '@tanstack/react-query';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Controller, useForm } from 'react-hook-form';
+import { ILandingPageLog } from '@/models/log.model';
 import logsService from '@/services/logs.service';
 import apiService from '@/services/api.service';
 import { Button } from '@/components/ui/button';
@@ -44,7 +44,9 @@ import { useMonths } from '@/hooks/use-months';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { IFund } from '@/models/funds.model';
+import { globalId } from '@/utils/global-id';
 import { useEffect, useState } from 'react';
+import { doc } from 'firebase/firestore';
 import { toast } from 'sonner';
 
 const cuurentYear = new Date().getFullYear();
@@ -61,6 +63,7 @@ const LandingPage = () => {
   const [fileUpload, setFileUpload] = useState<File | null>(null);
   const [collections, setCollections] = useState<ICollectionMap[] | []>([]);
   const [collectionMap, setCollectionMap] = useState<ICollectionMap | null>(null);
+  const [logRef, setLogRef] = useState<ILandingPageLog | null>(null);
   const [years, setYears] = useState<string[] | []>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [fundRef, setFundRef] = useState<IFund | null>(null);
@@ -69,7 +72,7 @@ const LandingPage = () => {
     data: logs,
     isLoading: isLoadingLogs,
     error: logErro,
-  } = useLog({ logName: 'landing_page_log' });
+  } = useLog<ILandingPageLog>({ logName: FirestoreDocument.LANDING_PAGE_LOG });
   const {
     handleSubmit,
     reset,
@@ -175,7 +178,11 @@ const LandingPage = () => {
     collectionMap: ICollectionMap,
     url: string
   ) => {
-    await Promise.all([setFile(data, url), setLogRef(data), updateCollectionsMap(collectionMap)])
+    await Promise.all([
+      handleAddFile(data, url),
+      handleAddLog(data),
+      updateCollectionsMap(collectionMap),
+    ])
       .then(async () => {
         await queryClient.invalidateQueries({ queryKey: [FirestoreDocument.LANDING_PAGE_LOG] });
         toast.success('Arquivo enviado com sucesso!');
@@ -188,8 +195,8 @@ const LandingPage = () => {
       });
   };
 
-  const setLogRef = async (data: LandingPageSchema) => {
-    const logRef = {
+  const handleAddLog = async (data: LandingPageSchema) => {
+    const log = {
       id: Date.now(),
       fundName: data.fundName,
       tabName: newTabName
@@ -201,15 +208,17 @@ const LandingPage = () => {
       fileType: fileUpload.type.split('/')[1].toUpperCase(),
       collectionName: newTabName ? formatText(data.tabName) : data.tabName,
       fundRef: fundRef.collectionName,
+      docId: editingDocumento ? logRef.docId : globalId,
       createAt: Date.now(),
     };
 
-    await logsService.addLog(FirestoreDocument.LANDING_PAGE_LOG, logRef);
+    await logsService.addLog(FirestoreDocument.LANDING_PAGE_LOG, log);
   };
 
-  const setFile = async (data: LandingPageSchema, url: string) => {
+  const handleAddFile = async (data: LandingPageSchema, url: string) => {
     const fileRef: IFile = {
       id: data.month,
+      docId: editingDocumento ? logRef.docId : globalId,
       name: data.fileName,
       mes: data.month,
       downloadName: selectedFileName,
@@ -248,13 +257,13 @@ const LandingPage = () => {
   };
 
   const filteredDocumentos = (logs || []).filter(
-    (item: ILog) =>
+    (item: ILandingPageLog) =>
       item.fundName.toLowerCase().includes(searchTerm.toLowerCase()) ||
       item.tabName.toLowerCase().includes(searchTerm.toLowerCase()) ||
       item.fileName.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const openDialog = (logRef?: ILog) => {
+  const openDialog = (logRef?: ILandingPageLog) => {
     if (logRef) {
       setEditingDocumento(true);
       handleEditDocument(logRef);
@@ -282,22 +291,19 @@ const LandingPage = () => {
     }
   };
 
-  const handleEditDocument = async (log: ILog) => {
+  const handleEditDocument = async (log: ILandingPageLog) => {
     setValue('fundName', log.fundName);
     setValue('tabName', log.collectionName);
     setValue('fileName', log.fileName);
     setValue('year', log.fileYear);
     setValue('month', log.fileMonth);
     setFileUpload(null);
-    setSelectedFileName(log.fileName);
+    setSelectedFileName(null);
   };
 
-  const handleDeleteDocument = async (log: ILog) => {
+  const handleDeleteDocument = async (log: ILandingPageLog) => {
     if (confirm('Tem certeza que deseja excluir este documento?')) {
-      Promise.all([
-        logsService.deleteLog(FirestoreDocument.LANDING_PAGE_LOG, log.id),
-        documentsRepository.deleteFile(log),
-      ])
+      Promise.all([deleteLog(log.docId), documentsRepository.deleteFile(log)])
         .then(() => toast.success('Documento excluído com sucesso!'))
         .catch((error) => {
           console.log(error);
@@ -309,6 +315,12 @@ const LandingPage = () => {
         );
     }
   };
+
+  const deleteLog = async (docId: string): Promise<boolean> => {
+    return await logsService.deleteLog(FirestoreDocument.LANDING_PAGE_LOG, docId);
+  };
+
+  const deleteFile = async () => {};
 
   const handleNewTab = (): ICollectionMap => {
     const collectionMap: ICollectionMap = {
@@ -392,7 +404,7 @@ const LandingPage = () => {
                   </TableCell>
                 </TableRow>
               ) : (
-                filteredDocumentos.map((log: ILog) => (
+                filteredDocumentos.map((log: ILandingPageLog) => (
                   <TableRow key={log.id}>
                     {/* Nome do Fundo */}
                     <TableCell className="font-medium">{log.fundName}</TableCell>
