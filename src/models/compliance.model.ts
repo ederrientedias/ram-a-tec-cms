@@ -1,8 +1,6 @@
 export interface IComplianceRepository {
   getTabs: () => Promise<ITab[] | []>;
-  getLastUploadsRef: () => Promise<IUploadRef[] | []>;
   getFiles: (collectionName: string) => Promise<IFile[] | []>;
-  setUploadsRef: (uploadsRef: IUploadRef[]) => Promise<boolean>;
   setFiles(collectionName: string, files: IFile[]): Promise<boolean>;
 }
 
@@ -21,21 +19,9 @@ export interface ITab {
   id: number;
   name: string;
   collection: string;
+  bucketName: string;
   isActive: boolean;
 }
-
-export interface IUploadRef {
-  id: number;
-  companyName: string;
-  collection: string;
-  docName: string;
-  fileName: string;
-  docType: string;
-  docSize: number;
-  url: string;
-  createAt: number;
-}
-
 export interface IFile {
   id: number;
   fileName: string;
