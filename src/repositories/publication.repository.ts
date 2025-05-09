@@ -1,7 +1,7 @@
 import { DocumentData, Firestore, collection, doc, getDoc, setDoc } from 'firebase/firestore';
-import { firestoreSite } from '@/config/firebase/firebase-site.config';
-import { FirestoreDocument, FirestoreCollection } from '@/enums/firestore.enum';
 import { IPublication, IPublicationRepsitory } from '@/models/publication.model';
+import { FirestoreDocument, FirestoreCollection } from '@/enums/firestore.enum';
+import { firestoreSite } from '@/config/firebase/firebase-site.config';
 
 class PublicationRepository implements IPublicationRepsitory {
   protected readonly firestore: Firestore;
@@ -14,6 +14,10 @@ class PublicationRepository implements IPublicationRepsitory {
     this.development = collection(this.firestore, FirestoreCollection.DEVELOPMENT);
   }
 
+  /**
+   * @description | Obtém todas as publicações
+   * @returns | IPublication[] - Array de publicações
+   */
   public async get(): Promise<IPublication[] | []> {
     const docRef = doc(this.development, FirestoreDocument.PUBLICATIONS);
     const field = await getDoc(docRef);
@@ -25,10 +29,15 @@ class PublicationRepository implements IPublicationRepsitory {
     return data;
   }
 
-  public async set(data: IPublication[]): Promise<boolean> {
+  /**
+   * @description | Salva as publicações
+   * @param publications | Array de publicações
+   * @returns | boolean - true se salvou com sucesso
+   */
+  public async set(publications: IPublication[]): Promise<boolean> {
     try {
       const docRef = doc(this.development, FirestoreDocument.PUBLICATIONS);
-      await setDoc(docRef, { data }, { merge: true });
+      await setDoc(docRef, { data: publications }, { merge: true });
 
       return true;
     } catch (error) {
