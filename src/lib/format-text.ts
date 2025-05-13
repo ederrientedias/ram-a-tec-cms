@@ -10,10 +10,12 @@ export const formatText = (text: string): string => {
 
 export const formatToBucketName = (text: string): string => {
   return text
-    .normalize('NFD') // Remove acentos (transforma "ç" em "c", "ã" em "a")
-    .toLowerCase() // Converte para minúsculas
-    .replace(/[^\w\s]/g, '') // Remove caracteres especiais (exceto letras, números e espaços)
-    .replace(/\sao\s|\sa\s|\sde\s|\sdo\s|\sdos\s|\sdas\s|\sem\s|\spara\s/g, '-') // Substitui preposições por hífen
-    .replace(/\s+/g, '-') // Substitui espaços por hífen
-    .replace(/--+/g, '-'); // Remove hífens duplicados
+    .toLowerCase()
+    .normalize('NFD') // Remove acentos
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/_/g, ' ') // substitui _ por espaço
+    .replace(/\b(de|da|do|das|dos|ao|a|e|em|para|por|com)\b/g, '') // Remove preposições
+    .replace(/\s+/g, ' ') // Remove espaços duplos gerados
+    .trim() // Remove espaços extras nas pontas
+    .replace(/\s/g, '-'); // Troca espaço por hífen
 };
