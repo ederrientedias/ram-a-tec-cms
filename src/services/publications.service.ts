@@ -16,9 +16,20 @@ class PublicationsService implements IPublicationService {
    * @returns | true se salvou com sucesso
    */
   public async setPublications(newPublication: IPublication): Promise<boolean> {
-    const publications = await this.mergePublications(newPublication);
+    const publications = await this.handlePublications(newPublication);
 
     return await publicationRepository.set(publications);
+  }
+
+  /**
+   * @description | Deleta a publicação
+   * @param id | Id da publicação a ser deletada
+   * @returns | true se deletou com sucesso
+   */
+  public async deletePublication(id: string): Promise<boolean> {
+    const publications = await this.getPublications();
+    const filteredPublications = publications.filter((p: IPublication) => p.id !== id);
+    return await publicationRepository.set(filteredPublications);
   }
 
   /**
@@ -26,10 +37,18 @@ class PublicationsService implements IPublicationService {
    * @param newPublication | Nova publicação
    * @returns | Array de publicações
    */
-  private async mergePublications(newPublication: IPublication): Promise<IPublication[]> {
+  private async handlePublications(newPublication: IPublication): Promise<IPublication[]> {
     const publications = await this.getPublications();
-    const mergedPublication = [...publications, { ...newPublication, id: publications.length + 1 }];
+    const publicationIndex = publications.findIndex(
+      (p: IPublication) => p.id === newPublication.id
+    );
 
+    if (publicationIndex !== -1) {
+      publications[publicationIndex] = newPublication;
+      return publications;
+    }
+
+    const mergedPublication = [...publications, newPublication];
     return mergedPublication;
   }
 }
