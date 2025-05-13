@@ -6,10 +6,11 @@ export interface IPublicationRepsitory {
 export interface IPublicationService {
   getPublications: () => Promise<IPublication[]>;
   setPublications: (newPublication: IPublication) => Promise<boolean>;
+  deletePublication: (id: string) => Promise<boolean>;
 }
 
 export interface IPublication {
-  id?: number;
+  id: string;
   theme: string;
   product: string;
   type: string;
@@ -19,5 +20,6 @@ export interface IPublication {
   mediaLogo: string;
   description: string;
   link: string;
+  isPublic: boolean;
   createAt?: number;
 }
