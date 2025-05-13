@@ -21,17 +21,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import documentsRepository, {
-  ICollectionMap,
-  IFile,
-} from '@/repositories/products/documents.repository';
-import { LandingPageSchema, landingPageSchema, defaultValues } from '@/schemas/landing-page.schema';
+import { defaultValues, LandingPageSchema, landingPageSchema } from '@/schemas/landing-page.schema';
 import { FileText, FileUp, Pencil, Plus, Search, Trash2 } from 'lucide-react';
 import LoadingPageAnimation from '@/components/animations/loadingPage';
 import Loading404Animation from '@/components/animations/loading404';
 import { formatText, formatToBucketName } from '@/lib/format-text';
+import { ICollectionMap, IFile } from '@/models/documents.model';
 import { useFunds } from '@/hooks/firestore/funds/use-funds';
 import { FirestoreDocument } from '@/enums/firestore.enum';
+import documentService from '@/services/document.service';
 import { useLog } from '@/hooks/firestore/logs/use-log';
 import { useQueryClient } from '@tanstack/react-query';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -44,9 +42,7 @@ import { useMonths } from '@/hooks/use-months';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { IFund } from '@/models/funds.model';
-import { globalId } from '@/utils/global-id';
 import { useEffect, useState } from 'react';
-import { doc } from 'firebase/firestore';
 import { toast } from 'sonner';
 
 const cuurentYear = new Date().getFullYear();
@@ -56,7 +52,7 @@ const LandingPage = () => {
   const queryClient = useQueryClient();
   const months = useMonths();
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [editingDocumento, setEditingDocumento] = useState<boolean>(false);
+  const [editDocument, setEditDocument] = useState<boolean>(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [uploadingFile, setUploadingFile] = useState(false);
   const [selectedFileName, setSelectedFileName] = useState<string>('');
@@ -67,6 +63,7 @@ const LandingPage = () => {
   const [years, setYears] = useState<string[] | []>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [fundRef, setFundRef] = useState<IFund | null>(null);
+  const [globalId, setGlobalId] = useState<string>('');
   const { data: funds, isLoading, error } = useFunds();
   const {
     data: logs,
@@ -99,7 +96,7 @@ const LandingPage = () => {
         setLoading(true);
         const fund = funds.find((fund) => fund.name === selectedFund);
         setFundRef(fund);
-        const response = await documentsRepository.getCollectionsMap(fund.collectionName);
+        const response = await documentService.getCollectionsMap(fund.collectionName);
         if (response) setCollections(response);
         else setCollections([]);
         setLoading(false);
@@ -143,18 +140,28 @@ const LandingPage = () => {
     handleYears();
   }, [selectedTab, createNewTab, newTabName, collections, setValue]);
 
-  const onSubmit = async (data: LandingPageSchema) => {
+  const generateId = (): void => {
+    setGlobalId(crypto.randomUUID());
+  };
+
+  const onSubmit = async (data: LandingPageSchema): Promise<void> => {
     if (createNewTab && newTabName) {
+      const collectionMapRef = handleNewTab();
       data.tabName = data.newTabName;
-      const collectionMap = handleNewTab();
-      await handleFileUpload(data, collectionMap);
+      await handleFileUpload(data, collectionMapRef);
     } else {
       await handleFileUpload(data, collectionMap);
     }
   };
 
-  const handleFileUpload = async (data: LandingPageSchema, collectionMap: ICollectionMap) => {
-    const path = `produtos/${fundRef.idName}/${collectionMap.bucketName}/${data.year}/${selectedFileName}`;
+  const handleFileUpload = async (
+    data: LandingPageSchema,
+    collectionMap: ICollectionMap
+  ): Promise<void> => {
+    const path = `produtos/${fundRef.idName}/${formatToBucketName(data.tabName)}/${
+      data.year
+    }/${selectedFileName}`;
+
     try {
       setUploadingFile(true);
       const { data: response } = await apiService.uploadFile(fileUpload, path);
@@ -177,14 +184,14 @@ const LandingPage = () => {
     data: LandingPageSchema,
     collectionMap: ICollectionMap,
     url: string
-  ) => {
+  ): Promise<void> => {
     await Promise.all([
       handleAddFile(data, url),
       handleAddLog(data),
       updateCollectionsMap(collectionMap),
     ])
       .then(async () => {
-        await queryClient.invalidateQueries({ queryKey: [FirestoreDocument.LANDING_PAGE_LOG] });
+        await refreshData();
         toast.success('Arquivo enviado com sucesso!');
         closeDialog();
         reset();
@@ -195,9 +202,9 @@ const LandingPage = () => {
       });
   };
 
-  const handleAddLog = async (data: LandingPageSchema) => {
+  const handleAddLog = async (data: LandingPageSchema): Promise<void> => {
     const log = {
-      id: Date.now(),
+      id: globalId,
       fundName: data.fundName,
       tabName: newTabName
         ? newTabName
@@ -208,24 +215,24 @@ const LandingPage = () => {
       fileType: fileUpload.type.split('/')[1].toUpperCase(),
       collectionName: newTabName ? formatText(data.tabName) : data.tabName,
       fundRef: fundRef.collectionName,
-      docId: editingDocumento ? logRef.docId : globalId,
+      docId: editDocument ? logRef.docId : globalId,
       createAt: Date.now(),
     };
 
     await logsService.addLog(FirestoreDocument.LANDING_PAGE_LOG, log);
   };
 
-  const handleAddFile = async (data: LandingPageSchema, url: string) => {
+  const handleAddFile = async (data: LandingPageSchema, url: string): Promise<void> => {
     const fileRef: IFile = {
       id: data.month,
-      docId: editingDocumento ? logRef.docId : globalId,
+      docId: editDocument ? logRef.docId : globalId,
       name: data.fileName,
       mes: data.month,
       downloadName: selectedFileName,
       file: url,
     };
 
-    await documentsRepository.setDocument({
+    await documentService.updateFile({
       fundName: fundRef.collectionName,
       collectionName: data.tabName,
       year: data.year,
@@ -233,7 +240,7 @@ const LandingPage = () => {
     });
   };
 
-  const updateCollectionsMap = async (collectionMap: ICollectionMap) => {
+  const updateCollectionsMap = async (collectionMap: ICollectionMap): Promise<void> => {
     let collectionsMap: ICollectionMap[] = [];
 
     const collectionMapIndex = collections.findIndex(
@@ -253,7 +260,7 @@ const LandingPage = () => {
       collectionsMap = [...collections, collectionMap];
     }
 
-    await documentsRepository.updateCollectionsMap(fundRef.collectionName, collectionsMap);
+    await documentService.updateCollectionsMap(fundRef.collectionName, collectionsMap);
   };
 
   const filteredDocumentos = (logs || []).filter(
@@ -263,25 +270,31 @@ const LandingPage = () => {
       item.fileName.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const openDialog = (logRef?: ILandingPageLog) => {
-    if (logRef) {
-      setEditingDocumento(true);
+  const openDialog = (status: 'new' | 'edit', logRef?: ILandingPageLog): void => {
+    if (logRef && status === 'edit') {
+      setEditDocument(true);
+      setLogRef(logRef);
       handleEditDocument(logRef);
+      setDialogOpen(true);
+      return;
     }
-    setEditingDocumento(false);
+
+    resetForm();
+    setEditDocument(false);
+    generateId();
     setDialogOpen(true);
   };
 
-  const closeDialog = () => {
+  const closeDialog = (): void => {
     setDialogOpen(false);
-    setEditingDocumento(false);
+    setEditDocument(false);
     resetForm();
   };
 
   const handleFileChange = (
     e: React.ChangeEvent<HTMLInputElement>,
     onChange: (...event: any[]) => void
-  ) => {
+  ): void => {
     const file = e.target.files?.[0];
     onChange(e);
 
@@ -291,7 +304,7 @@ const LandingPage = () => {
     }
   };
 
-  const handleEditDocument = async (log: ILandingPageLog) => {
+  const handleEditDocument = async (log: ILandingPageLog): Promise<void> => {
     setValue('fundName', log.fundName);
     setValue('tabName', log.collectionName);
     setValue('fileName', log.fileName);
@@ -301,10 +314,13 @@ const LandingPage = () => {
     setSelectedFileName(null);
   };
 
-  const handleDeleteDocument = async (log: ILandingPageLog) => {
+  const handleDeleteDocument = async (log: ILandingPageLog): Promise<void> => {
     if (confirm('Tem certeza que deseja excluir este documento?')) {
-      Promise.all([deleteLog(log.docId), documentsRepository.deleteFile(log)])
-        .then(() => toast.success('Documento excluído com sucesso!'))
+      Promise.all([deleteLog(log.docId), deleteFile(log)])
+        .then(async () => {
+          await refreshData();
+          toast.success('Documento excluído com sucesso!');
+        })
         .catch((error) => {
           console.log(error);
           toast.error('Não foi possível excluir o documento');
@@ -320,7 +336,9 @@ const LandingPage = () => {
     return await logsService.deleteLog(FirestoreDocument.LANDING_PAGE_LOG, docId);
   };
 
-  const deleteFile = async () => {};
+  const deleteFile = async (log: ILandingPageLog): Promise<boolean> => {
+    return await documentService.deleteFile(log);
+  };
 
   const handleNewTab = (): ICollectionMap => {
     const collectionMap: ICollectionMap = {
@@ -335,14 +353,19 @@ const LandingPage = () => {
       order: collections.length,
     };
     setCollectionMap(collectionMap);
+
     return collectionMap;
   };
 
-  const resetForm = () => {
+  const resetForm = (): void => {
     reset();
     clearErrors();
     setSelectedFileName('');
     setFileUpload(null);
+  };
+
+  const refreshData = async (): Promise<void> => {
+    await queryClient.invalidateQueries({ queryKey: [FirestoreDocument.LANDING_PAGE_LOG] });
   };
 
   if (isLoading || isLoadingLogs) return <LoadingPageAnimation />;
@@ -352,7 +375,7 @@ const LandingPage = () => {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">Documentos da Landing Page</h1>
-        <Button onClick={() => openDialog()}>
+        <Button onClick={() => openDialog('new')}>
           <Plus className="mr-2 h-4 w-4" />
           Novo Documento
         </Button>
@@ -425,7 +448,7 @@ const LandingPage = () => {
                     <TableCell>{log.fileType}</TableCell>
                     <TableCell>
                       <div className="flex items-center gap-2">
-                        <Button variant="ghost" size="icon" onClick={() => openDialog(log)}>
+                        <Button variant="ghost" size="icon" onClick={() => openDialog('edit', log)}>
                           <Pencil className="h-4 w-4" />
                         </Button>
                         <Button
@@ -452,7 +475,7 @@ const LandingPage = () => {
           <form onSubmit={handleSubmit(onSubmit)}>
             <DialogHeader>
               <DialogTitle>
-                {editingDocumento ? 'Editar Documento' : 'Cadastrar Novo Documento'}
+                {editDocument ? 'Editar Documento' : 'Cadastrar Novo Documento'}
               </DialogTitle>
               <DialogDescription>Upload de documento para a landing page.</DialogDescription>
             </DialogHeader>
