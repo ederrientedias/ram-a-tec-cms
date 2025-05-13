@@ -7,6 +7,12 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import {
+  publicationSchema,
+  PublicationsSchema,
+  defaultValues,
+  convertToInputDateFormat,
+} from '@/schemas/publication.schema';
+import {
   Table,
   TableBody,
   TableCell,
@@ -14,25 +20,31 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { publicationSchema, PublicationsSchema } from '@/schemas/publication.schema';
-import { ExternalLink, Newspaper, Pencil, Plus, Search, Trash2 } from 'lucide-react';
+import { ExternalLink, Newspaper, Pencil, Plus, Search, Trash2, Eye, EyeOff } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import LoadingPageAnimation from '@/components/animations/loadingPage';
+import Loading404Animation from '@/components/animations/loading404';
 import { usePublications } from '@/hooks/firestore/use-publication';
 import publicationService from '@/services/publications.service';
+import { FirestoreDocument } from '@/enums/firestore.enum';
 import { IPublication } from '@/models/publication.model';
+import { useQueryClient } from '@tanstack/react-query';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { Controller, useForm } from 'react-hook-form';
 import { Textarea } from '@/components/ui/textarea';
+import { Switch } from '@/components/ui/switch';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
-import { useForm } from 'react-hook-form';
 import { useState } from 'react';
 import { toast } from 'sonner';
 
-const Publications = () => {
+const Publications = (): JSX.Element => {
+  const queryClient = useQueryClient();
   const { data, isLoading, error } = usePublications();
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [editingPublicacao, setEditingPublicacao] = useState<IPublication | null>(null);
+  const [editPublication, setEditPublication] = useState<boolean>(false);
+  const [publicationRef, setPublicationRef] = useState<IPublication | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [isloading, setLoading] = useState(false);
 
@@ -41,47 +53,48 @@ const Publications = () => {
     register,
     reset,
     setValue,
-    formState: { errors, isValid },
+    control,
+    formState: { errors, isValid, touchedFields },
   } = useForm<PublicationsSchema>({
     resolver: zodResolver(publicationSchema),
-    defaultValues: {
-      theme: '',
-      product: '',
-      type: '',
-      category: '',
-      publicationDate: '',
-      mediaOutlet: '',
-      mediaLogo: '',
-      link: '',
-      description: '',
-    },
+    defaultValues: defaultValues,
   });
 
-  const onSubmit = async (data: PublicationsSchema) => {
+  const onSubmit = async (data: PublicationsSchema): Promise<void> => {
     setLoading(true);
-    try {
-      const newPublication: IPublication = {
-        theme: data.theme,
-        product: data.product,
-        type: data.type,
-        category: data.category,
-        publicationDate: data.publicationDate,
-        mediaOutlet: data.mediaOutlet,
-        mediaLogo: data.mediaLogo,
-        description: data.description,
-        link: data.link,
-        createAt: Date.now(),
-      };
+    await handleSavePublication(data);
+  };
 
-      console.log(newPublication);
-      await publicationService.setPublications(newPublication);
-      toast.success('Publicação enviada com sucesso!');
+  const handleSavePublication = async (data: PublicationsSchema): Promise<void> => {
+    const newPublication: IPublication = {
+      id: editPublication ? publicationRef.id : crypto.randomUUID(),
+      theme: data.theme,
+      product: data.product,
+      type: data.type,
+      category: data.category,
+      publicationDate: data.publicationDate,
+      mediaOutlet: data.mediaOutlet,
+      mediaLogo: data.mediaLogo,
+      description: data.description,
+      link: data.link,
+      isPublic: data.isPublic,
+      createAt: Date.now(),
+    };
+
+    try {
+      const response = await publicationService.setPublications(newPublication);
+      if (response) {
+        toast.success('Publicação criada com sucesso!');
+        await refreshData();
+        reset();
+        closeDialog();
+      } else {
+        toast.error('Erro ao enviar a publicação. Tente novamente.');
+      }
     } catch (error) {
       toast.error('Erro ao enviar a publicação. Tente novamente.');
     } finally {
       setLoading(false);
-      reset();
-      closeDialog();
     }
   };
 
@@ -93,37 +106,47 @@ const Publications = () => {
       publication.category.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const openDialog = (publication?: IPublication) => {
-    if (publication) {
-      setValue('theme', publication.theme);
-      setValue('product', publication.product);
-      setValue('type', publication.type);
-      setValue('category', publication.category);
-      setValue('publicationDate', publication.publicationDate);
-      setValue('mediaOutlet', publication.mediaOutlet);
-      setValue('mediaLogo', publication.mediaLogo);
-      setValue('link', publication.link);
-      setValue('description', publication.description);
-    } else {
-      reset();
+  const openDialog = (status: 'new' | 'edit', publication?: IPublication): void => {
+    if (publication && status === 'edit') {
+      setEditPublication(true);
+      setPublicationRef(publication);
+      handleEditPublication(publication);
+      setDialogOpen(true);
+      return;
     }
-
+    setEditPublication(false);
     setDialogOpen(true);
   };
 
-  const closeDialog = () => {
-    setDialogOpen(false);
+  const handleEditPublication = (publication: IPublication): void => {
+    setValue('theme', publication.theme);
+    setValue('product', publication.product);
+    setValue('type', publication.type);
+    setValue('category', publication.category);
+    setValue('publicationDate', convertToInputDateFormat(publication.publicationDate));
+    setValue('mediaOutlet', publication.mediaOutlet);
+    setValue('mediaLogo', publication.mediaLogo);
+    setValue('link', publication.link);
+    setValue('description', publication.description);
+    setValue('isPublic', publication.isPublic);
   };
 
-  const handleDeletePublication = (id: number) => {
-    console.log(id);
-    // if (confirm('Tem certeza que deseja excluir esta publicação?')) {
-    //   setPublications(data.filter((publication) => publication.id !== id));
-    //   toast.success('Publicação excluída com sucesso!');
-    // }
+  const handleDeletePublication = (id: string): void => {
+    if (confirm('Tem certeza que deseja excluir esta publicação?')) {
+      publicationService
+        .deletePublication(id)
+        .then(async () => {
+          await refreshData();
+          toast.success('Publicação excluída com sucesso!');
+        })
+        .catch((error) => {
+          toast.error('Erro ao excluir a publicação. Tente novamente.');
+          console.error('Erro ao excluir a publicação:', error);
+        });
+    }
   };
 
-  const getPublicacoesByCategoria = () => {
+  const getPublicacoesByCategoria = (): [string, number][] => {
     const categories: Record<string, number> = {};
 
     data?.forEach((publication) => {
@@ -137,7 +160,7 @@ const Publications = () => {
     return Object.entries(categories).sort((a, b) => b[1] - a[1]);
   };
 
-  const getPublicacoesByTipo = () => {
+  const getPublicacoesByTipo = (): [string, number][] => {
     const types: Record<string, number> = {};
 
     data?.forEach((publication) => {
@@ -151,11 +174,31 @@ const Publications = () => {
     return Object.entries(types).sort((a, b) => b[1] - a[1]);
   };
 
+  const closeDialog = (): void => {
+    reset();
+    setDialogOpen(false);
+    setEditPublication(false);
+  };
+
+  const refreshData = async (): Promise<void> => {
+    await queryClient.invalidateQueries({ queryKey: [FirestoreDocument.PUBLICATIONS] });
+  };
+
+  const dismiss = (e: CustomEvent): void => {
+    if (e) {
+      reset();
+      setEditPublication(false);
+    }
+  };
+
+  if (isLoading) return <LoadingPageAnimation />;
+  if (error) return <Loading404Animation />;
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">Publicações e Materiais</h1>
-        <Button onClick={() => openDialog()}>
+        <Button onClick={() => openDialog('new')}>
           <Plus className="mr-2 h-4 w-4" />
           Nova Publicação
         </Button>
@@ -230,28 +273,45 @@ const Publications = () => {
                 <TableHead>Categoria</TableHead>
                 <TableHead>Data</TableHead>
                 <TableHead>Veículo</TableHead>
+                <TableHead>Visivel</TableHead>
                 <TableHead>Ações</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {filteredPublications?.length > 0 ? (
-                filteredPublications?.map((publication) => (
+                filteredPublications?.map((publication: IPublication) => (
                   <TableRow key={publication.id}>
                     <TableCell className="font-medium">{publication.theme}</TableCell>
                     <TableCell>{publication.product}</TableCell>
                     <TableCell>{publication.type}</TableCell>
                     <TableCell>{publication.category}</TableCell>
                     <TableCell>{publication.publicationDate}</TableCell>
-                    <TableCell className="flex items-center gap-2">
-                      <Newspaper className="h-4 w-4 text-gray-500" />
+                    <TableCell>
+                      {/* <img
+                        className="h-6 w-6 "
+                        src={publication.mediaLogo}
+                        alt={publication.mediaOutlet}
+                      /> */}
+                      {/* <Newspaper className="h-4 w-4 text-gray-500" /> */}
                       {publication.mediaOutlet}
                     </TableCell>
                     <TableCell>
+                      {publication.isPublic ? (
+                        <Eye className="h-4 w-4" />
+                      ) : (
+                        <EyeOff className="h-4 w-4" />
+                      )}
+                    </TableCell>
+                    <TableCell>
                       <div className="flex items-center gap-2">
-                        <Button variant="ghost" size="icon" onClick={() => openDialog(publication)}>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => openDialog('edit', publication)}
+                        >
                           <Pencil className="h-4 w-4" />
                         </Button>
-                        <Button
+                        {/* <Button
                           variant="ghost"
                           size="icon"
                           onClick={() => {
@@ -259,12 +319,12 @@ const Publications = () => {
                           }}
                         >
                           <ExternalLink className="h-4 w-4" />
-                        </Button>
+                        </Button> */}
                         <Button
                           variant="ghost"
                           size="icon"
                           className="text-red-500"
-                          onClick={() => handleDeletePublication(publication?.id)}
+                          onClick={() => handleDeletePublication(publication.id)}
                         >
                           <Trash2 className="h-4 w-4" />
                         </Button>
@@ -286,11 +346,11 @@ const Publications = () => {
 
       {/* Dialog para adicionar/editar publicação */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="max-w-4xl">
+        <DialogContent className="max-w-4xl" onInteractOutside={(event) => dismiss(event)}>
           <form onSubmit={handleSubmit(onSubmit)}>
             <DialogHeader>
               <DialogTitle>
-                {editingPublicacao ? 'Editar Publicação' : 'Cadastrar Nova Publicação'}
+                {editPublication ? 'Editar Publicação' : 'Cadastrar Nova Publicação'}
               </DialogTitle>
               <DialogDescription>
                 Preencha as informações sobre a publicação ou material.
@@ -308,7 +368,9 @@ const Publications = () => {
                     {...register('theme')}
                     placeholder="Ex: Mercado Financeiro"
                   />
-                  {errors.theme && <small className="text-red-400">{errors.theme.message}</small>}
+                  {errors.theme && touchedFields.theme && (
+                    <small className="text-red-400">{errors.theme.message}</small>
+                  )}
                 </div>
 
                 {/* Produto */}
@@ -320,7 +382,7 @@ const Publications = () => {
                     {...register('product')}
                     placeholder="Ex: Fundo Multimercado"
                   />
-                  {errors.product && (
+                  {errors.product && touchedFields.product && (
                     <small className="text-red-400">{errors.product.message}</small>
                   )}
                 </div>
@@ -334,7 +396,9 @@ const Publications = () => {
                     {...register('type')}
                     placeholder="Ex: Entrevista, Artigo, Notícia"
                   />
-                  {errors.type && <small className="text-red-400">{errors.type.message}</small>}
+                  {errors.type && touchedFields.type && (
+                    <small className="text-red-400">{errors.type.message}</small>
+                  )}
                 </div>
 
                 {/* Categoria */}
@@ -346,7 +410,7 @@ const Publications = () => {
                     {...register('category')}
                     placeholder="Ex: Investimentos, Educação Financeira"
                   />
-                  {errors.category && (
+                  {errors.category && touchedFields.category && (
                     <small className="text-red-400">{errors.category.message}</small>
                   )}
                 </div>
@@ -360,7 +424,7 @@ const Publications = () => {
                     type="date"
                     {...register('publicationDate')}
                   />
-                  {errors.publicationDate && (
+                  {errors.publicationDate && touchedFields.publicationDate && (
                     <small className="text-red-400">{errors.publicationDate.message}</small>
                   )}
                 </div>
@@ -376,7 +440,7 @@ const Publications = () => {
                     {...register('mediaOutlet')}
                     placeholder="Ex: Valor Econômico, InfoMoney"
                   />
-                  {errors.mediaOutlet && (
+                  {errors.mediaOutlet && touchedFields.mediaOutlet && (
                     <small className="text-red-400">{errors.mediaOutlet.message}</small>
                   )}
                 </div>
@@ -391,7 +455,7 @@ const Publications = () => {
                     {...register('mediaLogo')}
                     placeholder="https://exemplo.com/logo.png"
                   />
-                  {errors.mediaLogo && (
+                  {errors.mediaLogo && touchedFields.mediaLogo && (
                     <small className="text-red-400">{errors.mediaLogo.message}</small>
                   )}
                 </div>
@@ -406,7 +470,9 @@ const Publications = () => {
                     {...register('link')}
                     placeholder="https://exemplo.com/materia"
                   />
-                  {errors.link && <small className="text-red-400">{errors.link.message}</small>}
+                  {errors.link && touchedFields.link && (
+                    <small className="text-red-400">{errors.link.message}</small>
+                  )}
                 </div>
 
                 {/* Descrição */}
@@ -415,12 +481,40 @@ const Publications = () => {
                   <Textarea
                     id="description"
                     name="description"
+                    minLength={100}
+                    maxLength={300}
+                    rows={5}
                     {...register('description')}
                     placeholder="Breve descrição sobre a publicação"
-                    className="min-h-[120px]"
                   />
-                  {errors.description && (
+                  {errors.description && touchedFields.description && (
                     <small className="text-red-400">{errors.description.message}</small>
+                  )}
+                </div>
+
+                {/* Tornar publicação pública */}
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <Label htmlFor="isPublic">Tornar publicação pública</Label>
+                    <Controller
+                      name="isPublic"
+                      control={control}
+                      render={({ field }) => (
+                        <Switch
+                          id="isPublic"
+                          checked={field.value}
+                          onCheckedChange={field.onChange}
+                        />
+                      )}
+                    />
+                  </div>
+
+                  {errors.isPublic && touchedFields.isPublic ? (
+                    <small className="text-red-400">{errors.isPublic.message}</small>
+                  ) : (
+                    <small className="text-xs text-muted-foreground">
+                      Se ativado, qualquer pessoa poderá ver esta publicação.
+                    </small>
                   )}
                 </div>
               </div>
