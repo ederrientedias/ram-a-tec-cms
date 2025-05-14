@@ -138,7 +138,7 @@ const Compliance = () => {
       docType: fileRef.type.split('/')[1].toLocaleUpperCase(),
       docSize: formatFileSize(fileRef.size),
       docId: editingDocument ? logRef.docId : globalId,
-      createAt: Date.now(),
+      createdAt: Date.now(),
     };
     await logsService.addLog(FirestoreDocument.COMPLIANCE_LOG, log);
   };
@@ -285,7 +285,9 @@ const Compliance = () => {
                       )}
                       {log.docName}
                     </TableCell>
-                    <TableCell>{new Date(log.createAt).toLocaleDateString('pt-BR')}</TableCell>
+                    <TableCell>
+                      {new Date(log.createdAt ?? log['createAt']).toLocaleDateString('pt-BR')}
+                    </TableCell>
                     <TableCell>{log.docType}</TableCell>
                     <TableCell>{log.docSize}</TableCell>
                     <TableCell>
