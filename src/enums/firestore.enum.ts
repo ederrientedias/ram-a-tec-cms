@@ -18,6 +18,7 @@ export enum FirestoreDocument {
   PUBLICATIONS = 'publications',
   LANDING_PAGE_LOG = 'landing_page_log',
   COMPLIANCE_LOG = 'compliance_log',
+  PORTFOLIO_LOG = 'portfolio_log',
 }
 
 export enum FundDocument {
@@ -29,9 +30,15 @@ export enum FundDocument {
   DOCUMENTS = 'documents',
 }
 
+export enum DocumentCollection {
+  ASSETS_DETAILS = 'assets_details',
+  LIST_ASSETS = 'list_assets',
+}
+
 export enum Field {
   FILES = 'files',
   LAST_UPLOADS = 'last_uploads',
   DATA = 'data',
   TABS = 'tabs',
+  TABLE = 'table',
 }
