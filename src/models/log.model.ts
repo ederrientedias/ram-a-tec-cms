@@ -20,7 +20,7 @@ export interface ILandingPageLog {
   collectionName: string;
   fundRef: string;
   docId: string;
-  createAt: number;
+  createdAt: number;
 }
 
 export interface IComplianceLog {
@@ -32,5 +32,14 @@ export interface IComplianceLog {
   docName: string;
   docType: string;
   docSize: string;
-  createAt: number;
+  createdAt: number;
+}
+
+export interface IPortfolioLog {
+  id: string;
+  fundName: string;
+  fileName: string;
+  fileSize: string;
+  collectionName: string;
+  createdAt: number;
 }
