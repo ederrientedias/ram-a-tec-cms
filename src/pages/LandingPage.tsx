@@ -444,7 +444,7 @@ const LandingPage = () => {
                       )}
                       {log.fileName}
                     </TableCell>
-                    <TableCell>{new Date(log.createAt).toLocaleDateString('pt-BR')}</TableCell>
+                    <TableCell>{new Date(log.createdAt).toLocaleDateString('pt-BR')}</TableCell>
                     <TableCell>{log.fileType}</TableCell>
                     <TableCell>
                       <div className="flex items-center gap-2">
