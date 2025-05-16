@@ -37,7 +37,8 @@ export interface IDocumentProps {
 export interface IFile {
   id: number | string;
   name: string;
-  mes: string;
+  mes?: string;
+  month: string;
   downloadName: string;
   docId: string;
   file: string;
