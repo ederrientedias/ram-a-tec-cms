@@ -216,7 +216,7 @@ const LandingPage = () => {
       collectionName: newTabName ? formatText(data.tabName) : data.tabName,
       fundRef: fundRef.collectionName,
       docId: editDocument ? logRef.docId : globalId,
-      createAt: Date.now(),
+      createdAt: Date.now(),
     };
 
     await logsService.addLog(FirestoreDocument.LANDING_PAGE_LOG, log);
@@ -224,17 +224,17 @@ const LandingPage = () => {
 
   const handleAddFile = async (data: LandingPageSchema, url: string): Promise<void> => {
     const fileRef: IFile = {
-      id: data.month,
+      id: crypto.randomUUID(),
       docId: editDocument ? logRef.docId : globalId,
       name: data.fileName,
-      mes: data.month,
+      month: data.month,
       downloadName: selectedFileName,
       file: url,
     };
 
     await documentService.updateFile({
       fundName: fundRef.collectionName,
-      collectionName: data.tabName,
+      collectionName: formatText(data.tabName),
       year: data.year,
       file: fileRef,
     });
@@ -434,7 +434,7 @@ const LandingPage = () => {
                     {/* Nome da Aba */}
                     <TableCell>{log.tabName}</TableCell>
                     {/* Nome do Arquivo */}
-                    <TableCell className="flex items-center gap-2">
+                    <TableCell className="flex items-center gap-2 h-20">
                       {log.fileType === 'PDF' ? (
                         <FileText className="h-4 w-4 text-red-500" />
                       ) : log.fileType === 'DOCX' ? (
@@ -445,7 +445,9 @@ const LandingPage = () => {
                       {log.fileName}
                     </TableCell>
                     <TableCell>{new Date(log.createdAt).toLocaleDateString('pt-BR')}</TableCell>
-                    <TableCell>{log.fileType}</TableCell>
+                    <TableCell className="max-w-20 truncate" title={log.fileType}>
+                      {log.fileType}
+                    </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-2">
                         <Button variant="ghost" size="icon" onClick={() => openDialog('edit', log)}>
