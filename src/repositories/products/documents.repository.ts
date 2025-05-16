@@ -34,7 +34,7 @@ class DocumentsRepository implements IDocumentsRepository {
    * @returns | retorna o mapa de coleções de um fundo
    */
   public async getCollectionsMap(fundName: string): Promise<ICollectionMap[] | []> {
-    const docRef = doc(this.development, FirestoreDocument.INVESTMENT_FUNDS);
+    const docRef = doc(this.production, FirestoreDocument.INVESTMENT_FUNDS);
     const collectionRef = collection(docRef, fundName);
     const documentRef = doc(collectionRef, FundDocument.DOCUMENTS);
     const document = await getDoc(documentRef);
@@ -56,7 +56,7 @@ class DocumentsRepository implements IDocumentsRepository {
     collectionMap: ICollectionMap[]
   ): Promise<boolean> {
     try {
-      const docRef = doc(this.development, FirestoreDocument.INVESTMENT_FUNDS);
+      const docRef = doc(this.production, FirestoreDocument.INVESTMENT_FUNDS);
       const fundRef = collection(docRef, fundName);
       const documentRef = doc(fundRef, FundDocument.DOCUMENTS);
       await setDoc(documentRef, { collectionMap }, { merge: true });
@@ -73,7 +73,7 @@ class DocumentsRepository implements IDocumentsRepository {
    * @returns | retorna os arquivos de um fundo
    */
   public async getFiles(documentProps: Partial<IDocumentProps>): Promise<IFile[] | []> {
-    const docRef = doc(this.development, FirestoreDocument.INVESTMENT_FUNDS);
+    const docRef = doc(this.production, FirestoreDocument.INVESTMENT_FUNDS);
     const fundRef = collection(docRef, documentProps.fundName);
     const documentRef = doc(fundRef, FundDocument.DOCUMENTS);
     const collectionRef = collection(documentRef, documentProps.collectionName);
@@ -92,7 +92,7 @@ class DocumentsRepository implements IDocumentsRepository {
    */
   public async setFiles(documentProps: IDocumentProps): Promise<boolean> {
     try {
-      const docRef = doc(this.development, FirestoreDocument.INVESTMENT_FUNDS);
+      const docRef = doc(this.production, FirestoreDocument.INVESTMENT_FUNDS);
       const fundRef = collection(docRef, documentProps.fundName);
       const documentRef = doc(fundRef, FundDocument.DOCUMENTS);
       const collectionRef = collection(documentRef, documentProps.collectionName);
