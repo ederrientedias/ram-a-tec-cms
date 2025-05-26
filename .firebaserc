@@ -1,5 +1,18 @@
 {
   "projects": {
-    "default": "intranet-45bad"
-  }
+    "default": "intranet-e34a3"
+  },
+  "targets": {
+    "intranet-e34a3": {
+      "hosting": {
+        "development": [
+          "intranet-development"
+        ],
+        "production": [
+          "intranet-production"
+        ]
+      }
+    }
+  },
+  "etags": {}
 }
