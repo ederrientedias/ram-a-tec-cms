@@ -81,11 +81,11 @@ const navItems = [
     label: 'Dashboard',
     href: '/dashboard',
   },
-  {
-    icon: Database,
-    label: 'Fundos',
-    href: '/fundos',
-  },
+  // {
+  //   icon: Database,
+  //   label: 'Fundos',
+  //   href: '/fundos',
+  // },
   {
     icon: FileText,
     label: 'Portfólios',
