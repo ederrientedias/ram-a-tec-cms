@@ -2,9 +2,13 @@ import { IFund, IFundsService, IGenericType } from '@/models/funds.model';
 import fundsRepository from '@/repositories/funds.repository';
 
 class FundsService implements IFundsService {
-
   public async getFunds(): Promise<IFund[]> {
     return await fundsRepository.getAllFunds();
+  }
+
+  public async getFundById(id: string | number): Promise<IFund | null> {
+    const funds = await this.getFunds();
+    return funds.find((fund: IFund) => fund.id === Number(id)) || null;
   }
 
   public async getUniqueValues<T extends keyof IFund>(propertyName: T): Promise<IGenericType[]> {
