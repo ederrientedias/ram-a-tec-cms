@@ -70,7 +70,7 @@ const NavItem = ({ icon: Icon, label, href, isCollapsed }: NavItemProps) => {
       )}
     >
       <Icon size={20} className="mr-3" />
-      <span>{label}</span>
+      <span className="text-base font-normal">{label}</span>
     </Link>
   );
 };
@@ -105,6 +105,11 @@ const navItems = [
     icon: Newspaper,
     label: 'Publicações',
     href: '/publicacoes',
+  },
+  {
+    icon: FileText,
+    label: 'Sumário',
+    href: '/informational-transparency',
   },
 ];
 
