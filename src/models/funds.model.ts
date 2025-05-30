@@ -5,6 +5,7 @@ export interface IFundsRepository {
 
 export interface IFundsService {
   getFunds: () => Promise<IFund[]>;
+  getFundById: (id: string | number) => Promise<IFund | null>;
   getUniqueValues: <T extends keyof IFund>(propertyName: T) => Promise<IGenericType[]>;
   setFunds: (newFund: IFund) => Promise<boolean>;
 }
