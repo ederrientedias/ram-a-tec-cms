@@ -5,6 +5,7 @@ import { Toaster as Sonner } from '@/components/ui/sonner';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { Toaster } from '@/components/ui/toaster';
 
+import { InformationalTransparency } from './pages/InformationalTransparency';
 import DashboardLayout from './components/layout/DashboardLayout';
 import Publicacoes from './pages/Publications';
 import LandingPage from './pages/LandingPage';
@@ -39,6 +40,7 @@ const App = () => {
               <Route path="/compliance" element={<Compliance />} />
               <Route path="/landing-page" element={<LandingPage />} />
               <Route path="/publicacoes" element={<Publicacoes />} />
+              <Route path="/informational-transparency" element={<InformationalTransparency />} />
             </Route>
             <Route path="*" element={<NotFound />} />
           </Routes>
