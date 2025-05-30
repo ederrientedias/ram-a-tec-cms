@@ -1,0 +1,252 @@
+export const Style = `
+.a4-sheet {
+    width: 210mm;
+    height: 297mm;
+    padding: 1cm;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    background-color: #fffdf6;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.page-head {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.page-head .page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.page-head .page-header .month-ref {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.page-head .page-header .month-ref h3 {
+    font-size: 16px;
+    font-family: 'Inter';
+    font-weight: 400;
+    color: #282828;
+    line-height: 190%;
+    margin: 0;
+}
+
+.page-head .page-header .month-ref .date-ref {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.page-head .page-header .month-ref .date-ref span {
+    font-size: 16px;
+    font-family: 'Inter';
+    font-weight: 400;
+    color: #282828;
+    line-height: 160%;
+}
+
+.page-head .page-header .month-ref .date-ref .bar {
+    width: 1px;
+    height: 18px;
+    background-color: #b87700;
+}
+
+.page-head .logo img {
+    width: 100px;
+}
+
+.content {
+    height: 100%;
+}
+
+.content .content-title {
+    width: 100%;
+    border-bottom: 1px solid #757575;
+    margin-bottom: 16px;
+}
+
+.content .content-title h1 {
+    font-size: 20px;
+    font-family: 'Inter';
+    font-weight: 500;
+    text-align: left;
+    color: #282828;
+    line-height: 1.3;
+    letter-spacing: 0.05em;
+    padding-bottom: 4px;
+    margin: 0;
+}
+
+.content .box {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.content .box .box-title {
+    width: 100%;
+    margin-bottom: 8px;
+}
+
+.content .box .box-title h2 {
+    font-size: 16px;
+    font-family: 'Inter';
+    font-weight: 500;
+    text-align: left;
+    color: #282828;
+    line-height: 1.3;
+    letter-spacing: 0.02em;
+    margin: 0;
+}
+
+.content .box .box-subtitle {
+    width: 100%;
+    margin-bottom: 8px;
+}
+
+.content .box .box-subtitle h3 {
+    font-size: 14px;
+    font-family: 'Inter';
+    font-weight: 500;
+    text-align: left;
+    color: #282828;
+    line-height: 1.3;
+    letter-spacing: 0.02em;
+    margin: 0;
+}
+
+.content .box .box-content {
+    display: flex;
+    align-items: baseline;
+    column-gap: 24px;
+    row-gap: 16px;
+    flex-wrap: wrap;
+    margin-bottom: 16px;
+}
+
+.content .box .box-content .box-content-title {
+    width: 100%;
+    margin-bottom: 4px;
+}
+
+.content .box .box-content .box-content-title h4 {
+    font-size: 12px;
+    font-family: 'Inter';
+    font-weight: 700;
+    color: #282828;
+    line-height: 1.3;
+    letter-spacing: 0.02em;
+    margin: 0;
+}
+
+.content .box .box-content .box-content-row {
+    width: 100%;
+    display: flex;
+    align-items: baseline;
+    column-gap: 20px;
+    flex-wrap: wrap;
+}
+
+.content .box .box-content .box-content-row .box-item {
+    width: auto;
+    max-width: 300px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+
+.content .box .box-content .box-item strong {
+    font-size: 12px;
+    font-family: 'Inter';
+    font-weight: 500;
+    color: #282828;
+    line-height: 1.3;
+    letter-spacing: 0.02em;
+    margin: 0;
+}
+
+.content .box .box-content .box-item .divider {
+    width: 100%;
+    height: 1px;
+    background-color: #757575;
+}
+
+.content .box .box-content .box-item .double-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.content .box .box-content .box-item span {
+    font-size: 10px;
+    font-family: 'Inter';
+    font-weight: 300;
+    color: #282828;
+    line-height: 1.3;
+    letter-spacing: 0.02em;
+    margin: 0;
+}
+
+.footer {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    height: 60px;
+}
+
+.footer .anbima img {
+    width: 80px;
+}
+
+.obs-content {
+    margin-bottom: 16px;
+}
+
+.obs {
+    font-size: 8px;
+    font-family: 'Inter';
+    font-weight: 300;
+    color: #282828;
+    text-align: left;
+    line-height: 1.3;
+    letter-spacing: 0.05em;
+}
+
+@media print {
+ * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    color-adjust: exact !important;
+    box-sizing: border-box;
+  }
+
+  @page {
+    size: A4 portrait;
+    margin: 0;
+    padding: 0;
+  }
+
+  body {
+    margin: 0;
+    padding: 0;
+    background: #fffdf6;
+  }
+
+  .a4-sheet {
+    page-break-after: always;
+    page-break-inside: avoid;
+    break-after: page;
+  }
+
+  .no-print {
+    display: none !important;
+  }
+}
+`;
