@@ -1,112 +1,106 @@
-export interface ISalesforceRizaFundsResponse {
-  success: boolean;
-  data: Data[];
-}
-
-export interface Data {
-  id: string;
-  name: string;
-  isWebsite: boolean;
-  idFund: string;
-}
-
 /**
- *
+ * Interface de resposta do método GET fundos Riza
  */
-export interface FundData {
-  mesReferencia: string;
-  gestor: EntidadeCNPJ;
-  administrador: EntidadeCNPJ;
-  fundo: EntidadeCNPJ;
-  publicoAlvo: string;
-  categoria: string;
-  classe: EntidadeCNPJ;
-  subclasses: Subclasse[];
-  cogestor: EntidadeCNPJ;
-  taxaAdministracao: number;
-  taxaGestao: number;
-  taxaDistribuicao: number;
-  taxaEstruturacaoPrevidencia: number;
-  formaRemuneracaoTaxaGlobal: 'Valor Fixo' | 'Percentual do PL' | 'Valor Mínimo' | 'Outros';
-  valorRemuneracaoTaxaGlobal: number;
-  obsFormaRemuneracao: string;
-  taxaPerformance: TaxaPerformance | null;
-  investimentoInicialMinimo: number;
-  movimentacaoMinima: number;
-  saldoMinimoPermanencia: number;
-  cotizacaoAplicacao: string;
-  cotizacaoResgate: string;
-  pagamentoResgate: string;
-  taxaSaida: number;
-  carenciaResgate: CarenciaResgate | null;
-  sidePocket: boolean;
-  aplicacaoOuResgateAtivos: boolean;
-  descricaoBarreiraDeResgate: string | null;
-  outrasObservacoes: string;
-  formasRemuneração: FormasRemuneracao;
-  obsTaxasAdministracao: string;
-  taxaAdmDistribuidores: EntidadeCNPJ[];
-  acordosComerciais: AcordoComercial[];
-  emails: string[]; // Deve conter pelo menos 1 email
+
+export interface IRizaFundsResponse {
+  success: boolean;
+  data: IFundResponse[];
+}
+export interface IFundResponse {
+  id: string;
+  idFund: string | null;
+  name: string;
+  category: string | null;
+  flagship: boolean;
+  isWebsite: boolean;
 }
 
-export interface EntidadeCNPJ {
+/** INTERFACE DE RETORNO DO METODO GET ANBIMA SUMMARY */
+export interface IGetAnbimaSummaryResponse {
+  success: boolean;
+  data: IAnbimaSummaryData;
+}
+
+export interface IAnbimaSummaryData {
+  valorRemuneracaoTaxaGlobal: number;
+  taxaSaida: null;
+  taxaPerformance: ITaxaPerformance;
+  taxaGestao: number;
+  taxaEstruturacaoPrevidencia: null;
+  taxaDistribuicao: null;
+  taxaAdministracao: number;
+  subclasses: ISubClass[] | null;
+  sidePocket: boolean;
+  saldoMinimoPermanencia: number;
+  publicoAlvo: string;
+  pagamentoResgate: string;
+  outrasObservacoes: null;
+  obsTaxasAdministracao: null;
+  obsFormaRemuneracao: null;
+  movimentacaoMinima: number;
+  mesReferencia: null;
+  investimentoInicialMinimo: number;
+  gestor: Gestor;
+  fundo: Gestor;
+  formasRemuneracao: IFormasRemuneracao;
+  formaRemuneracaoTaxaGlobal: string;
+  emails: string[];
+  distribuidores: Gestor[];
+  descricaoBarreiraDeResgate: null;
+  cotizacaoResgate: string;
+  cotizacaoAplicacao: string;
+  cogestor: Gestor[] | null;
+  classe: Gestor | null;
+  categoria: string;
+  carenciaResgate: null;
+  aplicacaoOuResgateAtivos: boolean;
+  administrador: Gestor | null;
+  acordosComerciais: IAcordosComerciai[] | null;
+}
+
+interface IAcordosComerciai {
+  taxaPerformance: null;
+  percentualPL: IPercentualPL2;
+  outrasReceitas: null;
+  obs: null;
+  minimo: null;
+  fixo: null;
+  condicoesComplementares: null;
+  distribuidor: Gestor;
+}
+
+interface IPercentualPL2 {
+  taxaPerfGestor: number;
+  taxaPerfDistribuidor: number;
+  taxaAdmGestor: number;
+  taxaAdmDistribuidor: number;
+  taxaAdmCogestor: null;
+}
+
+interface IFormasRemuneracao {
+  volumeSobAdministracao: null;
+  valorMinimo: IPercentualPL | null;
+  valorFixo: IPercentualPL | null;
+  percentualPL: IPercentualPL;
+  faixaPorPL: null;
+}
+
+interface ISubClass {
+  nome: string;
+  codigoCVM: string;
+}
+interface IPercentualPL {
+  valor: number;
+  tipo: string;
+}
+
+interface Gestor {
   nome: string;
   cnpj: string;
 }
 
-export interface Subclasse {
-  nome: string;
-  codigoCVM: string;
-}
-
-export interface TaxaPerformance {
+interface ITaxaPerformance {
+  valorTaxaPerformance: number;
   indiceTaxaPerformance: string;
   descricaoTaxaPerformance: string;
-  valorTaxaPerformance: number;
-}
-
-export interface CarenciaResgate {
-  tipoDias: 'Úteis' | 'Corridos';
-  dias: number;
-}
-
-export interface FormaRemuneracaoBase {
-  valor: number;
-  tipo: 'Classe/Subclasse' | 'Parcela da Taxa Global';
-}
-
-export interface FaixaRemuneracao {
-  faixaAtual: boolean;
-  de: number;
-  ate: number;
-  valor: number;
-  taxa: number;
-  obs: string;
-}
-
-export interface FormasRemuneracao {
-  valorMinimo: FormaRemuneracaoBase | null;
-  valorFixo: FormaRemuneracaoBase | null;
-  percentualPL: FormaRemuneracaoBase | null;
-  volumeSobAdministracao: FaixaRemuneracao[] | null;
-  faixaPorPL: FaixaRemuneracao[] | null;
-}
-
-export interface TaxasAcordoComercial {
-  taxaAdmDistribuidor: number;
-  taxaAdmGestor: number;
-  taxaPerfDistribuidor: number;
-  taxaPerfGestor: number;
-  taxaAdmCogestor: number;
-}
-
-export interface AcordoComercial {
-  fixo: TaxasAcordoComercial;
-  minimo: TaxasAcordoComercial;
-  percentualPL: TaxasAcordoComercial;
-  taxaPerformance: TaxasAcordoComercial | null;
-  outrasReceitas: string;
-  condicoesComplementares: string;
-  obs: string;
 }
