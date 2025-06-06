@@ -1,14 +1,14 @@
 import { useQuery, UseQueryResult } from '@tanstack/react-query';
 import salesforceService from '@/services/salesforce.service';
-import { Data } from '@/models/salesforce.model';
+import { IFundResponse } from '@/models/salesforce.model';
 
 const QUERY_KEY = ['riza-funds'];
 
-const fetchRizaFunds = async (): Promise<Data[]> => {
+const fetchRizaFunds = async (): Promise<IFundResponse[]> => {
   return await salesforceService.getAllRizaFunds();
 };
 
-export const useRizaFunds = (): UseQueryResult<Data[], Error> => {
+export const useRizaFunds = (): UseQueryResult<IFundResponse[], Error> => {
   return useQuery({
     queryKey: QUERY_KEY,
     queryFn: fetchRizaFunds,
