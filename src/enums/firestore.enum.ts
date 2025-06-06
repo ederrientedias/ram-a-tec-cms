@@ -10,7 +10,7 @@ export enum FirestoreDocument {
   CONTACTS = 'contacts',
   ETHICAL_CHANEL = 'ethical_chagel',
   HOME = 'home',
-  INFORMATIONAL_TRANPARENCY = 'information_tranparency',
+  INFORMATIONAL_TRANPARENCY = 'informational_transparency',
   INVEST = 'invest',
   INVESTMENT_FUNDS = 'investment_funds',
   SOLUTIONS = 'solutions',
