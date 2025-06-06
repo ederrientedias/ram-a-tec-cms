@@ -20,8 +20,12 @@ export interface ICreatePDFProps {
 
 export interface ISelectedFund {
   id: string;
-  name: string;
+  idFund: string;
   idName: string;
+  name: string;
+  category: string | null;
+  flagship: boolean;
+  isWebsite: boolean;
 }
 
 export interface IGeneratePDFResponse {
