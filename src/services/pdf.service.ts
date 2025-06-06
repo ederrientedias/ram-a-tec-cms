@@ -12,7 +12,6 @@ class PdfService {
   public async generatePDF(props: ICreatePDFProps): Promise<IGeneratePDFResponse> {
     const api = createApiInstance(this.base_url);
     const data = await this.buildPDF(props);
-    console.log(data);
     const response = await api.post<IGeneratePDFResponse>('/pdf-generator', data);
     return response.data;
   }
@@ -48,7 +47,7 @@ class PdfService {
       htmlContent: null,
       cssContent: null,
       uriGsUtil: import.meta.env.VITE_GOOGLE_STORAGE_URI,
-      filePath: 'test/pdfs',
+      filePath: `sumarios/${props.year}/${props.month}/${props.selectedFund.idName}`,
       pdfName: `sumario-${props.selectedFund.idName}`,
       useHtmlContent: false,
       useCssContent: false,
