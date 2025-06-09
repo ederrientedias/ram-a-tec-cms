@@ -109,7 +109,7 @@ const navItems = [
   {
     icon: FileText,
     label: 'Sumário',
-    href: '/informational-transparency',
+    href: '/sumario',
   },
 ];
 
