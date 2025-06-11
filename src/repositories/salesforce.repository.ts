@@ -27,7 +27,7 @@ class SalesforceRepository {
   public async getAnbimaSummary(id: string): Promise<IAnbimaSummaryData | null> {
     const api = createApiInstance(this.base_url);
     try {
-      const { data: response } = await api.post<IGetAnbimaSummaryResponse>('/test', { id });
+      const { data: response } = await api.post<IGetAnbimaSummaryResponse>('/fund', { id });
       return response.success ? response.data : null;
     } catch (error) {
       console.log(error);
