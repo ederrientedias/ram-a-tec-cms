@@ -23,7 +23,10 @@ export interface ISelectedFund {
   idFund: string;
   idName: string;
   name: string;
+  product: string | null;
+  type: string | null;
   category: string | null;
+  subSegment: string | null;
   flagship: boolean;
   isWebsite: boolean;
 }
