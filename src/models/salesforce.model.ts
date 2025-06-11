@@ -10,6 +10,9 @@ export interface IFundResponse {
   id: string;
   idFund: string | null;
   name: string;
+  subSegment: string | null;
+  product: string | null;
+  type: string | null;
   category: string | null;
   flagship: boolean;
   isWebsite: boolean;
@@ -60,6 +63,7 @@ export interface IAnbimaSummaryData {
 
 interface IAcordosComerciai {
   taxaPerformance: null;
+  rebateLiquido: boolean;
   percentualPL: IPercentualPL2;
   outrasReceitas: null;
   obs: null;
