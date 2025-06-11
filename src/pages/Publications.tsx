@@ -7,10 +7,10 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import {
+  convertToInputDateFormat,
+  defaultValues,
   publicationSchema,
   PublicationsSchema,
-  defaultValues,
-  convertToInputDateFormat,
 } from '@/schemas/publication.schema';
 import {
   Table,
@@ -20,8 +20,8 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { ExternalLink, Newspaper, Pencil, Plus, Search, Trash2, Eye, EyeOff } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Eye, EyeOff, Pencil, Plus, Search, Trash2 } from 'lucide-react';
 import LoadingPageAnimation from '@/components/animations/loadingPage';
 import Loading404Animation from '@/components/animations/loading404';
 import { usePublications } from '@/hooks/firestore/use-publication';
