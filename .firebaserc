@@ -10,6 +10,9 @@
         ],
         "production": [
           "intranet-production"
+        ],
+        "web-staff-portal": [
+          "web-staff-portal"
         ]
       }
     }
