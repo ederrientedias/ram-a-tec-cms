@@ -9,6 +9,7 @@
     "build:dev": "vite build --mode development",
     "deploy:production": "npm run build && firebase deploy --only hosting:production",
     "deploy:development": "npm run build:dev && firebase deploy --only hosting:development",
+    "deploy:web-staff-portal": "npm run build:dev && firebase deploy --only hosting:web-staff-portal",
     "lint": "eslint . --ext .ts,.tsx,.js,.jsx",
     "preview": "vite preview"
   },
