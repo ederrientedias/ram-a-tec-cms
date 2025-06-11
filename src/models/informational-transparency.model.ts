@@ -1,6 +1,7 @@
 export interface IInformationalTransparency {
   id: number | string;
   idName: string;
+  flagship: boolean;
   totalFee: string;
   fund: Fund;
   admFee: AdmFee;
@@ -75,8 +76,12 @@ export interface AdmFee {
 export interface Fund {
   collumnName: string;
   id: number;
-  subtitle: string;
   title: string;
+  subtitle: string;
+  product: string | null;
+  type: string | null;
+  category: string | null;
+  subSegment: string | null;
 }
 
 export interface IUpdateSummaries {
