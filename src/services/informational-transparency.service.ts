@@ -170,18 +170,21 @@ export class InformationalTransparencyService {
   }
 
   private async updateTranparencyTable(
-    informationalTransparencyData: IInformationalTransparency[]
+    transparencyData: IInformationalTransparency[]
   ): Promise<boolean> {
     try {
       const data = this.getData();
-      const index = informationalTransparencyData.findIndex(
-        (item) => item.idName === this.props.fundRef.collectionName
+      const selectedFundName = this.props.selectedFund.name;
+
+      const updatedData = transparencyData.map((item) =>
+        item.fund.title === selectedFundName ? data : item
       );
-      const updatedData =
-        index !== -1
-          ? [...informationalTransparencyData, (informationalTransparencyData[index] = data)]
-          : [...informationalTransparencyData, data];
-      await informationalTransparencyRepository.updateInformationalTransparency(updatedData);
+
+      const fundExists = transparencyData.some((item) => item.fund.title === selectedFundName);
+
+      const finalData = fundExists ? updatedData : [...transparencyData, data];
+
+      await informationalTransparencyRepository.updateInformationalTransparency(finalData);
       return true;
     } catch (error) {
       console.log('❌ updateTranparencyTable:', error);
@@ -217,11 +220,16 @@ export class InformationalTransparencyService {
       id: this.props.selectedFund.id,
       idName: this.props.fundRef.collectionName,
       totalFee: this.props.anbimaSummary.valorRemuneracaoTaxaGlobal.toString(),
+      flagship: this.props.selectedFund.flagship,
       fund: {
-        id: 0,
         collumnName: 'Fundos',
+        id: 0,
         title: this.props.selectedFund.name || this.props.fundRef.name,
         subtitle: this.props.selectedFund.category || this.props.fundRef.category,
+        product: this.props.selectedFund.product,
+        type: this.props.selectedFund.type,
+        category: this.props.selectedFund.category,
+        subSegment: this.props.selectedFund.subSegment,
       },
       admFee: {
         id: 1,
@@ -261,7 +269,7 @@ export class InformationalTransparencyService {
                   item.percentualPL.taxaAdmDistribuidor && item.percentualPL.taxaAdmDistribuidor > 0
                     ? `${item.percentualPL.taxaAdmDistribuidor}%`
                     : 'Não há',
-                text: 'Adm. + Gestão',
+                text: !item.rebateLiquido ? 'Adm. + Gestão' : 'Gestão',
               },
               {
                 id: 2,
