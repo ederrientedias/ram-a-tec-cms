@@ -47,7 +47,9 @@ class PdfService {
       htmlContent: null,
       cssContent: null,
       uriGsUtil: import.meta.env.VITE_GOOGLE_STORAGE_URI,
-      filePath: `sumarios/${props.year}/${props.month}/${props.selectedFund.idName}`,
+      filePath: `sumarios/${
+        props.year
+      }/${props.month.toLowerCase()}/${props.selectedFund.name.replace(/\s+/g, '')}`,
       pdfName: `sumario-${props.selectedFund.idName}`,
       useHtmlContent: false,
       useCssContent: false,
