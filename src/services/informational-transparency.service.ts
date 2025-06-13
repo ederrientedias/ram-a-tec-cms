@@ -262,6 +262,10 @@ export class InformationalTransparencyService {
           return {
             id: index + 1,
             uuid: item.distribuidor.cnpj,
+            hasSimulator:
+              item.percentualPL.taxaPerfDistribuidor && item.percentualPL.taxaPerfDistribuidor > 0
+                ? true
+                : false,
             values: [
               {
                 id: 1,
