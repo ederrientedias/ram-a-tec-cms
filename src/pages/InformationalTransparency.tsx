@@ -1,7 +1,16 @@
 import '../styles/summary.css';
 
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, } from '@/components/ui/select';
-import { InformationalTransparencyService, ISummaryProps, } from '@/services/informational-transparency.service';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import {
+  InformationalTransparencyService,
+  ISummaryProps,
+} from '@/services/informational-transparency.service';
 import LoadingSavingFileAnimation from '@/components/animations/loadinfSavingFile';
 import LoadingFindDataAnimation from '@/components/animations/loadingFinddata';
 import { IAnbimaSummaryData, IFundResponse } from '@/models/salesforce.model';
@@ -22,7 +31,6 @@ import { IFund } from '@/models/funds.model';
 import { toast } from 'sonner';
 
 import { Style } from '../styles/summary';
-
 
 interface FeeLabels {
   administrationFee: number | null;
@@ -83,6 +91,7 @@ export const InformationalTransparency = () => {
     setIsLoadingAnbimaSummary(true);
     const fund = rizaFunds?.find((fund: any) => fund.id === fundId);
     const idName = convertToNameID(fund?.name, fund?.id);
+    console.log(fund);
     setSelectedFund({ ...fund, idName });
   };
 
