@@ -36,7 +36,7 @@ class PublicationRepository implements IPublicationRepsitory {
    */
   public async set(publications: IPublication[]): Promise<boolean> {
     try {
-      const docRef = doc(this.development, FirestoreDocument.PUBLICATIONS);
+      const docRef = doc(this.production, FirestoreDocument.PUBLICATIONS);
       await setDoc(docRef, { data: publications }, { merge: true });
 
       return true;

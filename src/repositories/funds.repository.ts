@@ -26,7 +26,7 @@ class FundRepository {
    * @returns {Promise<IFund[] | []>} Retorna todos os fundos de investimento ou um array vazio caso não existam
    */
   public async getAllFunds(): Promise<IFund[] | []> {
-    const docRef = doc(this.development, FirestoreDocument.INVESTMENT_FUNDS);
+    const docRef = doc(this.production, FirestoreDocument.INVESTMENT_FUNDS);
     const field = await getDoc(docRef);
 
     if (!field.exists()) return [];
@@ -43,7 +43,7 @@ class FundRepository {
    * @returns {Promise<DocumentData | []>}
    */
   public async getFundDocument(fundName: string, documentName: string): Promise<DocumentData> {
-    const docRef = doc(this.development, FirestoreDocument.INVESTMENT_FUNDS);
+    const docRef = doc(this.production, FirestoreDocument.INVESTMENT_FUNDS);
     const collectionRef = collection(docRef, fundName);
     const documentRef = doc(collectionRef, documentName);
     const document = await getDoc(documentRef);
@@ -60,7 +60,7 @@ class FundRepository {
    */
   public async set(data: IFund[]): Promise<boolean> {
     try {
-      const docRef = doc(this.development, FirestoreDocument.INVESTMENT_FUNDS);
+      const docRef = doc(this.production, FirestoreDocument.INVESTMENT_FUNDS);
       await setDoc(docRef, { data }, { merge: true });
 
       return true;
@@ -77,7 +77,7 @@ class FundRepository {
    */
   public async setDocument(props: DocumentProps): Promise<boolean> {
     try {
-      const docRef = doc(this.development, FirestoreDocument.INVESTMENT_FUNDS);
+      const docRef = doc(this.production, FirestoreDocument.INVESTMENT_FUNDS);
       const collectionRef = collection(docRef, props.fundName);
       const documentRef = doc(collectionRef, props.documentName);
 

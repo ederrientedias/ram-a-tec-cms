@@ -28,7 +28,7 @@ class PortfolioRepository implements IPortfolioRepository {
    */
   public async saveAssetsTable(fundName: string, table: ITable): Promise<boolean> {
     try {
-      const docRef = doc(this.development, FirestoreDocument.INVESTMENT_FUNDS);
+      const docRef = doc(this.production, FirestoreDocument.INVESTMENT_FUNDS);
       const fundRef = collection(docRef, fundName);
       const documentRef = doc(fundRef, FundDocument.PORTFOLIO);
       const collectionRef = collection(documentRef, DocumentCollection.LIST_ASSETS);

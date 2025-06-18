@@ -20,7 +20,7 @@ class ComplianceRepository implements IComplianceRepository {
    * @returns | ITab[] | []
    */
   public async getTabs(): Promise<ITab[] | []> {
-    const docRef = doc(this.development, FirestoreDocument.COMPLIANCE);
+    const docRef = doc(this.production, FirestoreDocument.COMPLIANCE);
     const fields = await getDoc(docRef);
 
     if (!fields.exists()) return [];
@@ -36,7 +36,7 @@ class ComplianceRepository implements IComplianceRepository {
    * @returns | IFile[] | []
    */
   public async getFiles(collectionName: string): Promise<IFile[] | []> {
-    const docRef = doc(this.development, FirestoreDocument.COMPLIANCE);
+    const docRef = doc(this.production, FirestoreDocument.COMPLIANCE);
     const collectionRef = collection(docRef, collectionName);
     const document = doc(collectionRef, Field.FILES);
     const field = await getDoc(document);
@@ -56,7 +56,7 @@ class ComplianceRepository implements IComplianceRepository {
    */
   public async setFiles(collectionName: string, files: IFile[]): Promise<boolean> {
     try {
-      const docRef = doc(this.development, FirestoreDocument.COMPLIANCE);
+      const docRef = doc(this.production, FirestoreDocument.COMPLIANCE);
       const collectionRef = collection(docRef, collectionName);
       const document = doc(collectionRef, Field.FILES);
       await setDoc(document, { data: files }, { merge: true });
