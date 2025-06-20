@@ -9,6 +9,7 @@ import {
 } from 'firebase/firestore';
 import {
   IInformationalTransparency,
+  ISimmulatorTable,
   IUpdateSummaries,
 } from '@/models/informational-transparency.model';
 import { FirestoreCollection, FirestoreDocument } from '@/enums/firestore.enum';
@@ -53,6 +54,13 @@ class InformationalTransparencyRepository {
     const { file } = response.data() as DocumentData;
 
     return file;
+  }
+
+  public async setSimulatorDataTable(fundName: string, data: ISimmulatorTable) {
+    const docRef = doc(this.production, FirestoreDocument.INVESTMENT_FUNDS);
+    const fundDocumentRef = collection(docRef, fundName);
+    const collectionRef = doc(fundDocumentRef, 'simulator');
+    return await setDoc(collectionRef, { data }, { merge: true });
   }
 }
 export default new InformationalTransparencyRepository();
