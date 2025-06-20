@@ -91,7 +91,6 @@ export const InformationalTransparency = () => {
     setIsLoadingAnbimaSummary(true);
     const fund = rizaFunds?.find((fund: any) => fund.id === fundId);
     const idName = convertToNameID(fund?.name, fund?.id);
-    console.log(fund);
     setSelectedFund({ ...fund, idName });
   };
 
