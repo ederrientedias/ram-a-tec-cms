@@ -3,6 +3,8 @@ export interface IInformationalTransparency {
   idName: string;
   flagship: boolean;
   totalFee: string;
+  managerFee: string;
+  administratorFee: string;
   fund: Fund;
   admFee: AdmFee;
   managementFee: AdmFee;
@@ -96,4 +98,26 @@ export interface IFile {
   downloadName: string;
   file: string;
   name: string;
+}
+
+export interface ISimmulatorTable {
+  feesAdmManagementTable: ITable[];
+  performanceFeeTable: ITable[];
+  totalFeeTable: ITable[];
+}
+
+export interface ITable {
+  id: number;
+  name: string;
+  uuid: string;
+  allocation: string;
+  manager: IManager;
+  distributor: IManager;
+  administration: IManager;
+  totalFee: IManager;
+}
+
+export interface IManager {
+  pl: string;
+  vl: string;
 }
