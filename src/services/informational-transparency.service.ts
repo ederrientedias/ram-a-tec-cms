@@ -2,6 +2,7 @@ import {
   IInformationalTransparency,
   IFile as ISummaryFile,
   IUpdateSummaries,
+  ISimmulatorTable,
 } from '@/models/informational-transparency.model';
 import informationalTransparencyRepository from '@/repositories/informational-transparency.repository';
 import documentsRepository from '@/repositories/products/documents.repository';
@@ -161,7 +162,10 @@ export class InformationalTransparencyService {
   private async createTranparencyTable() {
     try {
       const data = this.getData();
+      const simulatorData = this.generateSimulatorTable();
+      const fundName = this.props.fundRef.collectionName || this.props.selectedFund.idName;
       await informationalTransparencyRepository.updateInformationalTransparency([data]);
+      await informationalTransparencyRepository.setSimulatorDataTable(fundName, simulatorData);
       return true;
     } catch (error) {
       console.log('❌ createTranparencyTable', error);
@@ -174,6 +178,8 @@ export class InformationalTransparencyService {
   ): Promise<boolean> {
     try {
       const data = this.getData();
+      const simulatorData = this.generateSimulatorTable();
+      const fundName = this.props.fundRef.collectionName || this.props.selectedFund.idName;
       const selectedFundName = this.props.selectedFund.name;
 
       const updatedData = transparencyData.map((item) =>
@@ -185,6 +191,7 @@ export class InformationalTransparencyService {
       const finalData = fundExists ? updatedData : [...transparencyData, data];
 
       await informationalTransparencyRepository.updateInformationalTransparency(finalData);
+      await informationalTransparencyRepository.setSimulatorDataTable(fundName, simulatorData);
       return true;
     } catch (error) {
       console.log('❌ updateTranparencyTable:', error);
@@ -220,6 +227,8 @@ export class InformationalTransparencyService {
       id: this.props.selectedFund.id,
       idName: this.props.fundRef.collectionName,
       totalFee: this.props.anbimaSummary.valorRemuneracaoTaxaGlobal.toString(),
+      managerFee: this.props.anbimaSummary.taxaGestao.toString(),
+      administratorFee: this.props.anbimaSummary.taxaAdministracao.toString(),
       flagship: this.props.selectedFund.flagship,
       fund: {
         collumnName: 'Fundos',
@@ -321,5 +330,95 @@ export class InformationalTransparencyService {
     };
 
     return data;
+  }
+
+  private generateSimulatorTable(): ISimmulatorTable {
+    const managerFee = this.props.anbimaSummary.taxaGestao;
+    const adminitratorFee = this.props.anbimaSummary.taxaAdministracao;
+    const globalFee = this.props.anbimaSummary.valorRemuneracaoTaxaGlobal;
+
+    const feesAdmManagementTable = this.props.anbimaSummary.acordosComerciais.map((item, i) => {
+      const feeRef = !item.rebateLiquido ? globalFee : managerFee;
+      const distributorFee = feeRef * (item.percentualPL.taxaAdmDistribuidor / 100);
+
+      return {
+        id: i,
+        name: item.distribuidor.nome,
+        uuid: item.distribuidor.cnpj,
+        allocation: String(item.percentualPL.taxaAdmDistribuidor / 100),
+        manager: {
+          pl: String(globalFee - adminitratorFee - distributorFee),
+          vl: '0',
+        },
+        distributor: {
+          pl: String(distributorFee),
+          vl: '-',
+        },
+        administration: {
+          pl: String(adminitratorFee),
+          vl: '-',
+        },
+        totalFee: {
+          pl: '0',
+          vl: '-',
+        },
+      };
+    });
+
+    const performanceFeeTable = this.props.anbimaSummary.acordosComerciais.map((item, i) => {
+      return {
+        id: i,
+        name: item.distribuidor.nome,
+        uuid: item.distribuidor.cnpj,
+        allocation: String(item.percentualPL.taxaAdmDistribuidor / 100),
+        manager: {
+          pl: '0',
+          vl: '-',
+        },
+        distributor: {
+          pl: '0',
+          vl: '-',
+        },
+        administration: {
+          pl: '0',
+          vl: '-',
+        },
+        totalFee: {
+          pl: '0',
+          vl: '-',
+        },
+      };
+    });
+
+    const totalFeeTable = this.props.anbimaSummary.acordosComerciais.map((item, i) => {
+      return {
+        id: i,
+        name: item.distribuidor.nome,
+        uuid: item.distribuidor.cnpj,
+        allocation: '0',
+        manager: {
+          pl: '-',
+          vl: '-',
+        },
+        distributor: {
+          pl: '-',
+          vl: '-',
+        },
+        administration: {
+          pl: '-',
+          vl: '-',
+        },
+        totalFee: {
+          pl: '-',
+          vl: '-',
+        },
+      };
+    });
+
+    return {
+      feesAdmManagementTable, //Taxas (Adm. + Gestão)
+      performanceFeeTable, //Taxa de Performance
+      totalFeeTable, // Taxa Total
+    };
   }
 }
