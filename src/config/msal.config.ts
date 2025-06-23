@@ -6,6 +6,7 @@ export const msalConfig = {
     authority: 'https://login.microsoftonline.com/rizaasset.onmicrosoft.com',
     redirectUri:
       import.meta.env.VITE_MSAL_REDIRECT_URI_WEB_STAFF_PORTAL || 'https://web-staff-portal.web.app',
+    // 'http://localhost:8080/',
     // import.meta.env.VITE_MSAL_REDIRECT_URI_WEB_STAFF_PORTAL || 'http://localhost:8080/',
   },
   cache: {
