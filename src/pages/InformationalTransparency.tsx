@@ -113,6 +113,7 @@ export const InformationalTransparency = () => {
   };
 
   const formatPercentage = (number: number): string => {
+    if (!number) return '-';
     const numeroFormatado = number.toFixed(4).replace('.', ',');
     return `${numeroFormatado}%`;
   };
