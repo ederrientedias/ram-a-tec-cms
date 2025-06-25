@@ -19,6 +19,9 @@ export enum FirestoreDocument {
   LANDING_PAGE_LOG = 'landing_page_log',
   COMPLIANCE_LOG = 'compliance_log',
   PORTFOLIO_LOG = 'portfolio_log',
+  GROUPS = 'groups',
+  INSTRUMENTS_GROUP = 'instruments-group',
+  INSTRUMENTS = 'instruments',
 }
 
 export enum FundDocument {
