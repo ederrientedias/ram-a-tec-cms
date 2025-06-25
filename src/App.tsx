@@ -7,6 +7,7 @@ import { Toaster } from '@/components/ui/toaster';
 
 import { InformationalTransparency } from './pages/InformationalTransparency';
 import DashboardLayout from './components/layout/DashboardLayout';
+import { Instrument } from './pages/instruments/index';
 import Publicacoes from './pages/Publications';
 import LandingPage from './pages/LandingPage';
 import Portfolios from './pages/Portfolios';
@@ -41,6 +42,7 @@ const App = () => {
               <Route path="/landing-page" element={<LandingPage />} />
               <Route path="/publicacoes" element={<Publicacoes />} />
               <Route path="/sumario" element={<InformationalTransparency />} />
+              <Route path="/instrumento" element={<Instrument />} />
             </Route>
             <Route path="*" element={<NotFound />} />
           </Routes>

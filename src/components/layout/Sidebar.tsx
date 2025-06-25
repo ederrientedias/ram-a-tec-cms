@@ -16,6 +16,7 @@ import {
   Newspaper,
   Upload,
   User,
+  FilePlus2,
 } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -110,6 +111,11 @@ const navItems = [
     icon: FileText,
     label: 'Sumário',
     href: '/sumario',
+  },
+  {
+    icon: FilePlus2,
+    label: 'Instrumentos',
+    href: '/instrumento',
   },
 ];
 
