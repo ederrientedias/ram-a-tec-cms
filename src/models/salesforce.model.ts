@@ -101,6 +101,7 @@ interface IPercentualPL {
 interface Gestor {
   nome: string;
   cnpj: string;
+  nomeComercial: string;
 }
 
 interface ITaxaPerformance {
