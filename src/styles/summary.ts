@@ -155,11 +155,52 @@ export const Style = `
   row-gap: 6px;
   flex-wrap: wrap;
 }
+/*Lista de Distribuidores */
+.content .box .box-content-collumn {
+  width: 100%;
+  min-height: 645px;
+  column-count: 2;
+  column-gap: 34px;
+  column-width: auto;
+}
 
-.box-content-col {
+.box-content-collumn .block {
   display: flex;
   align-items: baseline;
   gap: 8px;
+  break-inside: avoid;
+  margin-bottom: 8px;
+}
+
+.box-content-collumn .block .item {
+  flex: 1;
+}
+
+.box-content-collumn .block .item strong {
+  font-size: 12px;
+  font-family: 'Inter';
+  font-weight: 500;
+  color: #282828;
+  line-height: 1.3;
+  letter-spacing: 0.02em;
+  /* white-space: nowrap; */
+  margin: 0;
+}
+
+.box-content-collumn .block .item .divider {
+  width: 100%;
+  height: 1px;
+  background-color: #ede8e0;
+}
+
+.box-content-collumn .block .item span {
+  font-size: 10px;
+  font-family: 'Inter';
+  font-weight: 300;
+  color: #282828;
+  line-height: 1.3;
+  letter-spacing: 0.02em;
+  margin: 0;
 }
 
 .box-content-col .box-item {
@@ -190,7 +231,7 @@ export const Style = `
 .content .box .box-content .box-item .divider {
   width: 100%;
   height: 1px;
-  background-color: #757575;
+  background-color: #ede8e0;
 }
 
 .content .box .box-content .box-item .double-item {
@@ -243,11 +284,16 @@ export const Style = `
   height: 60px;
 }
 
+.footer .anbima{
+  width: 80px;
+}
+
 .footer .anbima img {
   width: 80px;
 }
 
 /* Observações */
+
 .obs-content {
   margin-bottom: 16px;
 }
