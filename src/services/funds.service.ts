@@ -3,7 +3,8 @@ import fundsRepository from '@/repositories/funds.repository';
 
 class FundsService implements IFundsService {
   public async getFunds(): Promise<IFund[]> {
-    return await fundsRepository.getAllFunds();
+    const response = await fundsRepository.getAllFunds();
+    return response.sort((a: any, b: any) => a.name.localeCompare(b.name));
   }
 
   public async getFundById(id: string | number): Promise<IFund | null> {
