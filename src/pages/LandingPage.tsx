@@ -97,8 +97,10 @@ const LandingPage = () => {
         const fund = funds.find((fund) => fund.name === selectedFund);
         setFundRef(fund);
         const response = await documentService.getCollectionsMap(fund.collectionName);
-        if (response) setCollections(response);
+        if (response.length > 0) setCollections(response);
         else setCollections([]);
+
+        setYears(defaultYears);
         setLoading(false);
       }
     };
@@ -124,13 +126,16 @@ const LandingPage = () => {
           (item: ICollectionMap) => item.collectionName === selectedTab
         );
         setCollectionMap(collectionMap);
+
         if (!collectionMap) {
           setYears(defaultYears);
           return;
+        } else {
+          const lastYear = Number(collectionMap.years[collectionMap.years.length - 1]);
+          const years = [...collectionMap.years, (lastYear + 1).toString()];
+          console.log(years);
+          setYears(years);
         }
-        const lastYear = Number(collectionMap.years[collectionMap.years.length - 1]);
-        const years = [...collectionMap.years, (lastYear + 1).toString()];
-        setYears(years);
       }
 
       if (!selectedTab.length && createNewTab && newTabName) {
@@ -586,8 +591,8 @@ const LandingPage = () => {
                         />
                       </SelectTrigger>
                       <SelectContent>
-                        {years?.map((year: string) => (
-                          <SelectItem key={year} value={year}>
+                        {years?.map((year: string, i: number) => (
+                          <SelectItem key={i} value={year}>
                             {year}
                           </SelectItem>
                         ))}
