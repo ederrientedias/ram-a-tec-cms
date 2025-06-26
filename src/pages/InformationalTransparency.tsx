@@ -340,7 +340,7 @@ export const InformationalTransparency = () => {
                             <span>{anbimaSummary?.classe?.cnpj || '-'}</span>
                           </div>
                           <div className="box-item">
-                            <strong>Possui Sublcasse?</strong>
+                            <strong>Possui Subclasse?</strong>
                             <div className="divider"></div>
                             <span>{!anbimaSummary?.subclasses ? 'Não' : 'Sim'}</span>
                           </div>
@@ -398,7 +398,7 @@ export const InformationalTransparency = () => {
                       <div className="box-content">
                         <div className="box-content-row">
                           <div className="box-item">
-                            <strong>Taxa Global composta por:</strong>
+                            <strong>Taxa Global composta por</strong>
                             <div className="divider"></div>
                             <div className="double-item">
                               <span>
@@ -521,7 +521,7 @@ export const InformationalTransparency = () => {
                     </p>
                     <div className="anbima">
                       <img
-                        src="https://docs.rizaasset.com/img/selo-anbima-gestao-recursos-permanente.svg"
+                        src="https://storage.googleapis.com/docs.rizaasset.com/img/art-gestao.jpg"
                         alt="Selo Anbima gestão de recursos permanente"
                       />
                     </div>
@@ -633,40 +633,38 @@ export const InformationalTransparency = () => {
                       <div className="box-title">
                         <h2>Lista de Distribuidores Contratados</h2>
                       </div>
-                      <div className="box-content">
-                        <div className="box-content-row">
-                          {anbimaSummary?.distribuidores ? (
-                            anbimaSummary.distribuidores?.map((item) => {
-                              return (
-                                <div key={item?.cnpj} className="box-content-col">
-                                  <div className="box-item">
-                                    <strong>Distribuidor</strong>
-                                    <div className="divider"></div>
-                                    <span>{item?.nome || '-'}</span>
-                                  </div>
-                                  <div className="box-item">
-                                    <strong>CNPJ</strong>
-                                    <div className="divider"></div>
-                                    <span>{item?.cnpj || '-'}</span>
-                                  </div>
+                      <div className="box-content-collumn">
+                        {anbimaSummary?.distribuidores ? (
+                          anbimaSummary.distribuidores?.map((item) => {
+                            return (
+                              <div key={item?.cnpj} className="block">
+                                <div className="item">
+                                  <strong>Distribuidor</strong>
+                                  <div className="divider"></div>
+                                  <span>{item?.nome || '-'}</span>
                                 </div>
-                              );
-                            })
-                          ) : (
-                            <>
-                              <div className="box-item">
-                                <strong>Distribuidor</strong>
-                                <div className="divider"></div>
-                                <span>Nome do distribuidor</span>
+                                <div className="item">
+                                  <strong>CNPJ</strong>
+                                  <div className="divider"></div>
+                                  <span>{item?.cnpj || '-'}</span>
+                                </div>
                               </div>
-                              <div className="box-item">
-                                <strong>CNPJ</strong>
-                                <div className="divider"></div>
-                                <span>CNPJ do distrinuidor</span>
-                              </div>
-                            </>
-                          )}
-                        </div>
+                            );
+                          })
+                        ) : (
+                          <div className="block">
+                            <div className="item">
+                              <strong>Distribuidor</strong>
+                              <div className="divider"></div>
+                              <span>Não há</span>
+                            </div>
+                            <div className="item">
+                              <strong>CNPJ</strong>
+                              <div className="divider"></div>
+                              <span>Não há</span>
+                            </div>
+                          </div>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -683,7 +681,7 @@ export const InformationalTransparency = () => {
                     </p>
                     <div className="anbima">
                       <img
-                        src="https://docs.rizaasset.com/img/selo-anbima-gestao-recursos-permanente.svg"
+                        src="https://storage.googleapis.com/docs.rizaasset.com/img/art-gestao.jpg"
                         alt="Selo Anbima gestão de recursos permanente"
                       />
                     </div>
@@ -918,7 +916,7 @@ export const InformationalTransparency = () => {
                           </p>
                           <div className="anbima">
                             <img
-                              src="https://docs.rizaasset.com/img/selo-anbima-gestao-recursos-permanente.svg"
+                              src="https://storage.googleapis.com/docs.rizaasset.com/img/art-gestao.jpg"
                               alt="Selo Anbima gestão de recursos permanente"
                             />
                           </div>
