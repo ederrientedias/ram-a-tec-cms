@@ -52,6 +52,10 @@ export class InformationalTransparencyService {
       this.props.fundRef.collectionName
     );
 
+    if (!collectionMap) {
+      return await this.creatCollectionMap(collectionMap || []);
+    }
+
     const isCollectionMap = collectionMap.findIndex(
       (item: ICollectionMap) => item.collectionName === this.documentRef
     );
@@ -179,7 +183,9 @@ export class InformationalTransparencyService {
     try {
       const data = this.getData();
       const simulatorData = this.generateSimulatorTable();
-      const fundName = this.props.fundRef.collectionName || this.props.selectedFund.idName;
+      const fundName = this.props.fundRef
+        ? this.props.fundRef.collectionName
+        : this.props.selectedFund.idName;
       const selectedFundName = this.props.selectedFund.name;
 
       const updatedData = transparencyData.map((item) =>
@@ -223,18 +229,25 @@ export class InformationalTransparencyService {
   }
 
   private getData(): IInformationalTransparency {
+    const subtitle = this.props.fundRef
+      ? this.props.fundRef?.category
+      : this.props.selectedFund.category ?? this.props.selectedFund.subSegment;
+    const idName = this.props.fundRef
+      ? this.props.fundRef.collectionName
+      : this.props.selectedFund.idName;
+
     const data: IInformationalTransparency = {
       id: this.props.selectedFund.id,
-      idName: this.props.fundRef.collectionName,
-      totalFee: this.props.anbimaSummary.valorRemuneracaoTaxaGlobal.toString(),
-      managerFee: this.props.anbimaSummary.taxaGestao.toString(),
-      administratorFee: this.props.anbimaSummary.taxaAdministracao.toString(),
+      idName: idName,
+      totalFee: this.props.anbimaSummary.valorRemuneracaoTaxaGlobal?.toString() ?? '-',
+      managerFee: this.props.anbimaSummary.taxaGestao?.toString() ?? '-',
+      administratorFee: this.props.anbimaSummary.taxaAdministracao?.toString() ?? '-',
       flagship: this.props.selectedFund.flagship,
       fund: {
         collumnName: 'Fundos',
         id: 0,
         title: this.props.selectedFund.name || this.props.fundRef.name,
-        subtitle: this.props.selectedFund.category || this.props.fundRef.category,
+        subtitle: subtitle,
         product: this.props.selectedFund.product,
         type: this.props.selectedFund.type,
         category: this.props.selectedFund.category,
@@ -243,72 +256,111 @@ export class InformationalTransparencyService {
       admFee: {
         id: 1,
         collumnName: 'Taxa de administração',
-        value: `${this.props.anbimaSummary.taxaAdministracao}%`.replace('.', ','),
-        text: this.props.anbimaSummary.administrador.nome,
+        value: !this.props.anbimaSummary.taxaAdministracao
+          ? 'Não há'
+          : `${this.props.anbimaSummary.taxaAdministracao}%`.replace('.', ','),
+        text: this.props.anbimaSummary.administrador
+          ? this.props.anbimaSummary.administrador.nomeComercial
+          : '',
       },
       managementFee: {
         id: 2,
         collumnName: 'Taxa de gestão',
-        value: `${this.props.anbimaSummary.taxaGestao}%`.replace('.', ','),
+        value: `${this.props.anbimaSummary.taxaGestao ?? 0}%`.replace('.', ','),
         text: this.props.anbimaSummary.gestor.nome,
       },
       performanceFee: {
         id: 3,
         collumnName: 'Taxa de performance',
-        value: this.props.anbimaSummary?.taxaPerformance
-          ? `${this.props.anbimaSummary?.taxaPerformance.valorTaxaPerformance}%`.replace('.', ',')
-          : 'Não há',
-        text: this.props.anbimaSummary?.taxaPerformance
-          ? this.props.anbimaSummary.taxaPerformance.descricaoTaxaPerformance
-              .replace(/^\d+%/, '')
-              .trim()
-          : '',
+        value:
+          this.props.anbimaSummary?.taxaPerformance &&
+          this.props.anbimaSummary?.taxaPerformance.valorTaxaPerformance > 0
+            ? `${this.props.anbimaSummary?.taxaPerformance.valorTaxaPerformance}%`.replace('.', ',')
+            : 'Não há',
+        text:
+          this.props.anbimaSummary?.taxaPerformance &&
+          this.props.anbimaSummary?.taxaPerformance.valorTaxaPerformance > 0
+            ? this.props.anbimaSummary.taxaPerformance.descricaoTaxaPerformance
+                .replace(/^\d+%/, '')
+                .trim()
+            : '',
       },
       distributorRebate: {
         id: 4,
         collumnName: 'Rebate ao distribuidor',
-        rebates: this.props.anbimaSummary.acordosComerciais.map((item, index) => {
-          return {
-            id: index + 1,
-            uuid: item.distribuidor.cnpj,
-            hasSimulator:
-              item.percentualPL.taxaPerfDistribuidor && item.percentualPL.taxaPerfDistribuidor > 0
-                ? true
-                : false,
-            values: [
-              {
-                id: 1,
-                value:
-                  item.percentualPL.taxaAdmDistribuidor && item.percentualPL.taxaAdmDistribuidor > 0
-                    ? `${item.percentualPL.taxaAdmDistribuidor}%`
-                    : 'Não há',
-                text: !item.rebateLiquido ? 'Adm. + Gestão' : 'Gestão',
-              },
-              {
-                id: 2,
-                value:
+        rebates: this.props.anbimaSummary.acordosComerciais
+          ? this.props.anbimaSummary.acordosComerciais.map((item, index) => {
+              return {
+                id: index + 1,
+                uuid: item.distribuidor.cnpj,
+                hasSimulator:
                   item.percentualPL.taxaPerfDistribuidor &&
                   item.percentualPL.taxaPerfDistribuidor > 0
-                    ? `${item.percentualPL.taxaPerfDistribuidor}%`
-                    : 'Não há',
-                text: 'Performance',
+                    ? true
+                    : false,
+                values: [
+                  {
+                    id: 1,
+                    value:
+                      item.percentualPL.taxaAdmDistribuidor &&
+                      item.percentualPL.taxaAdmDistribuidor > 0
+                        ? `${item.percentualPL.taxaAdmDistribuidor}%`
+                        : 'Não há',
+                    text: !item.rebateLiquido ? 'Adm. + Gestão' : 'Gestão',
+                  },
+                  {
+                    id: 2,
+                    value:
+                      item.percentualPL.taxaPerfDistribuidor &&
+                      item.percentualPL.taxaPerfDistribuidor > 0
+                        ? `${item.percentualPL.taxaPerfDistribuidor}%`
+                        : 'Não há',
+                    text: 'Performance',
+                  },
+                ],
+              };
+            })
+          : [
+              {
+                uuid: '-',
+                hasSimulator: false,
+                id: 0,
+                values: [
+                  {
+                    value: 'Não há',
+                    id: 1,
+                    text: 'Adm. + Gestão',
+                  },
+                  {
+                    value: 'Não há',
+                    id: 2,
+                    text: 'Performance',
+                  },
+                ],
               },
             ],
-          };
-        }),
       },
       distributors: {
         id: 5,
         collumnName: 'Distribuidores',
-        uuid: this.props.fundRef.collectionName,
-        options: this.props.anbimaSummary.distribuidores.map((item, index) => {
-          return {
-            id: index + 1,
-            uuid: item.cnpj,
-            name: item.nome,
-            displayName: item.nome,
-          };
-        }),
+        uuid: this.props.fundRef ? this.props.fundRef.collectionName : crypto.randomUUID(),
+        options: this.props.anbimaSummary.distribuidores
+          ? this.props.anbimaSummary.distribuidores.map((item, index) => {
+              return {
+                id: index + 1,
+                uuid: item.cnpj,
+                name: item.nome,
+                displayName: item.nomeComercial,
+              };
+            })
+          : [
+              {
+                id: 0,
+                uuid: crypto.randomUUID(),
+                displayName: null,
+                name: null,
+              },
+            ],
       },
       summary: {
         id: 6,
@@ -325,7 +377,7 @@ export class InformationalTransparencyService {
         id: 8,
         hasSimulator: false,
         collumnName: 'Simulação de cenários',
-        uuid: this.props.fundRef.collectionName,
+        uuid: idName,
       },
     };
 
@@ -336,84 +388,92 @@ export class InformationalTransparencyService {
     const managerFee = this.props.anbimaSummary.taxaGestao;
     const adminitratorFee = this.props.anbimaSummary.taxaAdministracao;
     const globalFee = this.props.anbimaSummary.valorRemuneracaoTaxaGlobal;
+    //Verifica se existe acordos comerciais
+    const hasTradeAgreements = this.props.anbimaSummary.acordosComerciais ? true : false;
 
-    const feesAdmManagementTable = this.props.anbimaSummary.acordosComerciais.map((item, i) => {
-      const feeRef = !item.rebateLiquido ? globalFee : managerFee;
-      const distributorFee = feeRef * (item.percentualPL.taxaAdmDistribuidor / 100);
+    const feesAdmManagementTable = hasTradeAgreements
+      ? this.props.anbimaSummary.acordosComerciais.map((item, i) => {
+          const feeRef = !item.rebateLiquido ? globalFee : managerFee;
+          const distributorFee = feeRef * (item.percentualPL.taxaAdmDistribuidor / 100);
 
-      return {
-        id: i,
-        name: item.distribuidor.nome,
-        uuid: item.distribuidor.cnpj,
-        allocation: String(item.percentualPL.taxaAdmDistribuidor / 100),
-        manager: {
-          pl: String(globalFee - adminitratorFee - distributorFee),
-          vl: '0',
-        },
-        distributor: {
-          pl: String(distributorFee),
-          vl: '-',
-        },
-        administration: {
-          pl: String(adminitratorFee),
-          vl: '-',
-        },
-        totalFee: {
-          pl: '0',
-          vl: '-',
-        },
-      };
-    });
+          return {
+            id: i,
+            name: item.distribuidor.nome,
+            uuid: item.distribuidor.cnpj,
+            allocation: String(item.percentualPL.taxaAdmDistribuidor / 100),
+            manager: {
+              pl: String(globalFee - adminitratorFee - distributorFee),
+              vl: '0',
+            },
+            distributor: {
+              pl: String(distributorFee),
+              vl: '-',
+            },
+            administration: {
+              pl: String(adminitratorFee),
+              vl: '-',
+            },
+            totalFee: {
+              pl: '0',
+              vl: '-',
+            },
+          };
+        })
+      : [];
 
-    const performanceFeeTable = this.props.anbimaSummary.acordosComerciais.map((item, i) => {
-      return {
-        id: i,
-        name: item.distribuidor.nome,
-        uuid: item.distribuidor.cnpj,
-        allocation: String(item.percentualPL.taxaAdmDistribuidor / 100),
-        manager: {
-          pl: '0',
-          vl: '-',
-        },
-        distributor: {
-          pl: '0',
-          vl: '-',
-        },
-        administration: {
-          pl: '0',
-          vl: '-',
-        },
-        totalFee: {
-          pl: '0',
-          vl: '-',
-        },
-      };
-    });
+    const performanceFeeTable = hasTradeAgreements
+      ? this.props.anbimaSummary.acordosComerciais.map((item, i) => {
+          return {
+            id: i,
+            name: item.distribuidor.nome,
+            uuid: item.distribuidor.cnpj,
+            allocation: String(item.percentualPL.taxaAdmDistribuidor / 100),
+            manager: {
+              pl: '0',
+              vl: '-',
+            },
+            distributor: {
+              pl: '0',
+              vl: '-',
+            },
+            administration: {
+              pl: '0',
+              vl: '-',
+            },
+            totalFee: {
+              pl: '0',
+              vl: '-',
+            },
+          };
+        })
+      : [];
 
-    const totalFeeTable = this.props.anbimaSummary.acordosComerciais.map((item, i) => {
-      return {
-        id: i,
-        name: item.distribuidor.nome,
-        uuid: item.distribuidor.cnpj,
-        allocation: '0',
-        manager: {
-          pl: '-',
-          vl: '-',
-        },
-        distributor: {
-          pl: '-',
-          vl: '-',
-        },
-        administration: {
-          pl: '-',
-          vl: '-',
-        },
-        totalFee: {
-          pl: '-',
-          vl: '-',
-        },
-      };
-    });
+    const totalFeeTable = hasTradeAgreements
+      ? this.props.anbimaSummary.acordosComerciais.map((item, i) => {
+          return {
+            id: i,
+            name: item.distribuidor.nome,
+            uuid: item.distribuidor.cnpj,
+            allocation: '0',
+            manager: {
+              pl: '-',
+              vl: '-',
+            },
+            distributor: {
+              pl: '-',
+              vl: '-',
+            },
+            administration: {
+              pl: '-',
+              vl: '-',
+            },
+            totalFee: {
+              pl: '-',
+              vl: '-',
+            },
+          };
+        })
+      : [];
 
     return {
       feesAdmManagementTable, //Taxas (Adm. + Gestão)
