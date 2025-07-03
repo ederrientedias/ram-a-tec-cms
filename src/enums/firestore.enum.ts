@@ -22,6 +22,9 @@ export enum FirestoreDocument {
   GROUPS = 'groups',
   INSTRUMENTS_GROUP = 'instruments-group',
   INSTRUMENTS = 'instruments',
+  FORMS = 'forms',
+  FIELDS_BLOCKS = 'fields-blocks',
+  FIELDS = 'fields',
 }
 
 export enum FundDocument {
