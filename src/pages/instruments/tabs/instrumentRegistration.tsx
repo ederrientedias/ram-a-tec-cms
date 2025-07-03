@@ -27,13 +27,14 @@ import {
   defaultValues,
 } from '@/schemas/instruments/instrument.schema';
 import { useInstrumentGroup } from '@/hooks/firestore/instrument/use-instrument-group';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { useInstrument } from '@/hooks/firestore/instrument/use-instrument';
 import { IInstrument, IInstrumentGroup } from '@/models/instruments.model';
 import instrumentService from '@/services/instruments/instrument.service';
 import LoadingPageAnimation from '@/components/animations/loadingPage';
 import Loading404Animation from '@/components/animations/loading404';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { FilePen, Plus, Search, Trash2 } from 'lucide-react';
+import { FilePen, Info, Plus, Search, Trash2 } from 'lucide-react';
 import { FirestoreDocument } from '@/enums/firestore.enum';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Controller, useForm } from 'react-hook-form';
@@ -293,7 +294,22 @@ export const InstrumentRegistration = () => {
                 </div>
                 {/* Grupo de Instrumento */}
                 <div className="space-y-2">
-                  <Label htmlFor="instrumentGroup">Grupo de Instrumento</Label>
+                  <Label
+                    className="w-full flex items-center justify-between"
+                    htmlFor="instrumentGroup"
+                  >
+                    Grupo de Instrumento
+                    {instrumentGroupRef && (
+                      <Tooltip>
+                        <TooltipTrigger>
+                          <Info size={16} />
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>{instrumentGroupRef.description}</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    )}
+                  </Label>
                   <Controller
                     name="instrumentGroup"
                     control={control}
