@@ -18,10 +18,12 @@ import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@/componen
 import { useInstrumentGroup } from '@/hooks/firestore/instrument/use-instrument-group';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { useFieldsBlocks } from '@/hooks/firestore/instrument/use-fields-blocks';
+import { IInstrument, IInstrumentGroup } from '@/models/instruments.model';
 import { ChevronDown, FilePen, Plus, Search, Trash2 } from 'lucide-react';
 import { useFields } from '@/hooks/firestore/instrument/use-fields';
 import { useForms } from '@/hooks/firestore/instrument/use-forms';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useState } from 'react';
@@ -31,13 +33,16 @@ import { instrumentGroup } from '../../../schemas/instruments/instrument-group.s
 export const FormGenerator = () => {
   const [dialogOpen, setDialogOpen] = useState<boolean>(false);
   const [isCreateForm, setIsCreateForm] = useState<boolean>(false);
-
+  const [instruments, setInstruments] = useState<IInstrumentGroup[]>([]);
+  const [selectedInstruments, setSelectedInstruments] = useState<IInstrumentGroup[]>([]);
   const { data: forms, isLoading: formLoading, error: formError } = useForms();
+
   const {
     data: instrumentGroup,
     isLoading: istrumentGroupLoading,
     error: instrumentGroupError,
   } = useInstrumentGroup();
+
   const {
     data: fieldsBlocks,
     isLoading: fieldsBlocksLoading,
@@ -49,6 +54,59 @@ export const FormGenerator = () => {
     setIsCreateForm(true);
   };
 
+  const handleInstrumentSelect = (
+    instrument: IInstrumentGroup,
+    checked: boolean | 'indeterminate'
+  ) => {
+    const isChecked = checked === true;
+
+    setSelectedInstruments((prev) => {
+      const exists = prev.some((item) => item.uuid === instrument.uuid);
+
+      if (isChecked && !exists) {
+        return [...prev, instrument];
+      }
+      if (!isChecked) {
+        return prev.filter((item) => item.uuid !== instrument.uuid);
+      }
+      return prev;
+    });
+  };
+
+  // const handleInstrumentSelect = (instrument: IInstrumentGroup, checked: any) => {
+  //   console.log('Instrument selected:', instrument, 'Checked:', checked);
+
+  //   setInstruments((prevInstruments) => {
+  //     const exists = prevInstruments.some((item) => item.uuid === instrument.uuid);
+  //     console.log('Instrument exists (inside setState):', exists);
+
+  //     if (checked) {
+  //       // Se já existe, não adiciona novamente
+  //       if (exists) return prevInstruments;
+  //       // Se não existe, adiciona
+  //       return [...prevInstruments, instrument];
+  //     } else {
+  //       // Remove se estiver desmarcado
+  //       return prevInstruments.filter((item) => item.uuid !== instrument.uuid);
+  //     }
+  //   });
+
+  //   // setInstruments((prevInstruments) => {
+  //   //   const exists = prevInstruments.some((item) => item.instrument.uuid === instrument.uuid);
+
+  //   //   if (exists) {
+  //   //     return prevInstruments.map((item) =>
+  //   //       item.instrument.uuid === instrument.uuid ? { ...item, checked } : item
+  //   //     );
+  //   //   } else {
+  //   //     return [...prevInstruments, { instrument, checked }];
+  //   //   }
+  //   // });
+  //   console.log(instruments);
+  // };
+  const saveForm = () => {
+    console.log(selectedInstruments);
+  };
   const openDialog = () => {
     setDialogOpen(true);
   };
@@ -118,13 +176,36 @@ export const FormGenerator = () => {
                           <ChevronDown className="h-4 w-4" />
                         </div>
                       </PopoverTrigger>
-                      <PopoverContent>Place content for the popover here.</PopoverContent>
+                      <PopoverContent className="w-auto">
+                        <div className="flex flex-col gap-2 max-h-60 overflow-y-auto">
+                          {instrumentGroup?.map((instrument) => {
+                            return (
+                              <div
+                                key={instrument.uuid}
+                                className="flex items-center gap-2 text-zinc-900 text-sm font-medium"
+                              >
+                                <Checkbox
+                                  checked={selectedInstruments.some(
+                                    (item) => item.uuid === instrument.uuid
+                                  )}
+                                  onCheckedChange={(checked) =>
+                                    handleInstrumentSelect(instrument, checked)
+                                  }
+                                />
+                                {instrument.name}
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </PopoverContent>
                     </Popover>
                   </div>
                 </div>
                 <div className="w-full flex items-center justify-end gap-4 border-t pt-2 border-zinc-200">
                   <Button variant="outline">Cancelar</Button>
-                  <Button variant="default">Salvar</Button>
+                  <Button variant="default" onClick={() => saveForm()}>
+                    Salvar
+                  </Button>
                 </div>
               </div>
             </ResizablePanel>
