@@ -427,7 +427,7 @@ export class InformationalTransparencyService {
             id: i,
             name: item.distribuidor.nome,
             uuid: item.distribuidor.cnpj,
-            allocation: String(item.percentualPL.taxaAdmDistribuidor / 100),
+            allocation: String(item.percentualPL.taxaPerfDistribuidor / 100),
             manager: {
               pl: '0',
               vl: '-',
