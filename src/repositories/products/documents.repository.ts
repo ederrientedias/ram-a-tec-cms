@@ -56,7 +56,7 @@ class DocumentsRepository implements IDocumentsRepository {
     collectionMap: ICollectionMap[]
   ): Promise<boolean> {
     try {
-      const docRef = doc(this.development, FirestoreDocument.INVESTMENT_FUNDS);
+      const docRef = doc(this.production, FirestoreDocument.INVESTMENT_FUNDS);
       const fundRef = collection(docRef, fundName);
       const documentRef = doc(fundRef, FundDocument.DOCUMENTS);
       await setDoc(documentRef, { collectionMap }, { merge: true });
@@ -92,7 +92,7 @@ class DocumentsRepository implements IDocumentsRepository {
    */
   public async setFiles(documentProps: IDocumentProps): Promise<boolean> {
     try {
-      const docRef = doc(this.development, FirestoreDocument.INVESTMENT_FUNDS);
+      const docRef = doc(this.production, FirestoreDocument.INVESTMENT_FUNDS);
       const fundRef = collection(docRef, documentProps.fundName);
       const documentRef = doc(fundRef, FundDocument.DOCUMENTS);
       const collectionRef = collection(documentRef, documentProps.collectionName);

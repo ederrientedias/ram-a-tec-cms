@@ -27,7 +27,7 @@ class InformationalTransparencyRepository {
   }
 
   public async getInformationalTransparency(): Promise<IInformationalTransparency[] | []> {
-    const docRef = doc(this.development, FirestoreDocument.INFORMATIONAL_TRANPARENCY);
+    const docRef = doc(this.production, FirestoreDocument.INFORMATIONAL_TRANPARENCY);
     const response = await getDoc(docRef);
 
     if (!response.exists()) return [];
@@ -38,12 +38,12 @@ class InformationalTransparencyRepository {
   }
 
   public async updateInformationalTransparency(data: IInformationalTransparency[]) {
-    const docRef = doc(this.development, FirestoreDocument.INFORMATIONAL_TRANPARENCY);
+    const docRef = doc(this.production, FirestoreDocument.INFORMATIONAL_TRANPARENCY);
     return await setDoc(docRef, { data }, { merge: true });
   }
 
   public async updateSummaries(props: IUpdateSummaries) {
-    const docRef = doc(this.development, FirestoreDocument.INFORMATIONAL_TRANPARENCY);
+    const docRef = doc(this.production, FirestoreDocument.INFORMATIONAL_TRANPARENCY);
     const collectionRef = collection(docRef, 'summaries');
     const fundDocumentRef = doc(collectionRef, props.fundName);
     const yearRef = collection(fundDocumentRef, props.year);
@@ -57,7 +57,7 @@ class InformationalTransparencyRepository {
   }
 
   public async setSimulatorDataTable(fundName: string, data: ISimmulatorTable) {
-    const docRef = doc(this.development, FirestoreDocument.INVESTMENT_FUNDS);
+    const docRef = doc(this.production, FirestoreDocument.INVESTMENT_FUNDS);
     const fundDocumentRef = collection(docRef, fundName);
     const collectionRef = doc(fundDocumentRef, 'simulator');
     return await setDoc(collectionRef, { data }, { merge: true });
