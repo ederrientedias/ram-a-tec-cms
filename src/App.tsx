@@ -7,10 +7,10 @@ import { Toaster } from '@/components/ui/toaster';
 
 import { InformationalTransparency } from './pages/InformationalTransparency';
 import DashboardLayout from './components/layout/DashboardLayout';
+import Compliance from './pages/compliance/index';
 import Publicacoes from './pages/Publications';
 import LandingPage from './pages/LandingPage';
 import Portfolios from './pages/Portfolios';
-import Compliance from './pages/Compliance';
 import Dashboard from './pages/Dashboard';
 import NotFound from './pages/NotFound';
 import Fundos from './pages/Funds';
