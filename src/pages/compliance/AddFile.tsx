@@ -230,7 +230,7 @@ const AddFile = () => {
               <SelectValue placeholder="Selecione uma empresa" />
             </SelectTrigger>
             <SelectContent>
-              {companies.map((item) => (
+              {companies?.map((item) => (
                 <SelectItem key={item.id} value={item.collection}>
                   {item.name}
                 </SelectItem>
