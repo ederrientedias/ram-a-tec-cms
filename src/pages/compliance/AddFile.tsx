@@ -192,7 +192,7 @@ const AddFile = () => {
   };
 
   const handleFileUpload = async (): Promise<{ url: any }> => {
-    const path = `test/${companyRef.bucketName}/${selectedFileName}`;
+    const path = `compliance/${companyRef.bucketName}/${selectedFileName}`;
 
     try {
       const { data: response } = await apiService.uploadFile(fileRef, path);
