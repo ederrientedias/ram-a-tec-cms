@@ -30,9 +30,11 @@ export interface ITab {
   isActive: boolean;
 }
 export interface IFile {
-  id: number;
-  docId: string;
+  id: number | string;
+  docId?: string;
   fileName: string;
   downloadName: string;
   url: string;
+  createAt?: number;
+  updateAt?: number;
 }
