@@ -67,6 +67,23 @@ class ComplianceRepository implements IComplianceRepository {
       return false;
     }
   }
+
+  /**
+   * @description | Salva as abas do compliance
+   * @param tabs | metadados das abas
+   * @returns | boolean
+   */
+  public async setTabs(tabs: ITab[]): Promise<boolean> {
+    try {
+      const docRef = doc(this.production, FirestoreDocument.COMPLIANCE);
+      await setDoc(docRef, { tabs }, { merge: true });
+
+      return true;
+    } catch (error) {
+      console.error('Erro ao salvar as abas:', error);
+      return false;
+    }
+  }
 }
 
 export default new ComplianceRepository();
