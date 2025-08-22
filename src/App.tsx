@@ -7,14 +7,15 @@ import { Toaster } from '@/components/ui/toaster';
 
 import { InformationalTransparency } from './pages/InformationalTransparency';
 import DashboardLayout from './components/layout/DashboardLayout';
+import LandingPage from './pages/landingpages/index';
 import Compliance from './pages/compliance/index';
 import Publicacoes from './pages/Publications';
-import LandingPage from './pages/LandingPage';
 import Portfolios from './pages/Portfolios';
 import Dashboard from './pages/Dashboard';
 import NotFound from './pages/NotFound';
 import Fundos from './pages/Funds';
 import Login from './pages/Login';
+
 
 const queryClient = new QueryClient();
 
