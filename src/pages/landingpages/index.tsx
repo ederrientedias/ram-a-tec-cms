@@ -15,9 +15,7 @@ const LandingPage = () => {
       <div className="bg-white p-6 rounded-lg shadow">
         <Tabs defaultValue="addFile" className="w-full">
           <TabsList>
-            {/* <TabsTrigger value="createLandingPage" disabled={true}>
-              Criar landing page
-            </TabsTrigger> */}
+            <TabsTrigger value="createLandingPage">Criar landing page</TabsTrigger>
             <TabsTrigger value="addFile">Adicionar arquivo</TabsTrigger>
             <TabsTrigger value="createTab">Criar aba</TabsTrigger>
           </TabsList>
