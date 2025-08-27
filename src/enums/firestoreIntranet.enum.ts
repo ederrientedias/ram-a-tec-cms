@@ -1,0 +1,9 @@
+export enum Collection {
+  InstrumentRegistration = 'instrument_registration',
+}
+
+export enum Documents {
+  Fields = 'fields',
+  FieldsBlock = 'fields_block',
+  SelectOption = 'select_option',
+}
