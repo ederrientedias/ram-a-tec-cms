@@ -111,6 +111,11 @@ const navItems = [
     label: 'Sumário',
     href: '/sumario',
   },
+  {
+    icon: FileText,
+    label: 'Instrumentos',
+    href: '/cadastro-instrumentos',
+  },
 ];
 
 export const Sidebar = () => {

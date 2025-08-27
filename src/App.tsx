@@ -6,6 +6,7 @@ import { TooltipProvider } from '@/components/ui/tooltip';
 import { Toaster } from '@/components/ui/toaster';
 
 import { InformationalTransparency } from './pages/InformationalTransparency';
+import InstrumentRegistration from './pages/instrument-registration/index';
 import DashboardLayout from './components/layout/DashboardLayout';
 import LandingPage from './pages/landingpages/index';
 import Compliance from './pages/compliance/index';
@@ -15,7 +16,6 @@ import Dashboard from './pages/Dashboard';
 import NotFound from './pages/NotFound';
 import Fundos from './pages/Funds';
 import Login from './pages/Login';
-
 
 const queryClient = new QueryClient();
 
@@ -42,6 +42,7 @@ const App = () => {
               <Route path="/landing-page" element={<LandingPage />} />
               <Route path="/publicacoes" element={<Publicacoes />} />
               <Route path="/sumario" element={<InformationalTransparency />} />
+              <Route path="/cadastro-instrumentos" element={<InstrumentRegistration />} />
             </Route>
             <Route path="*" element={<NotFound />} />
           </Routes>
