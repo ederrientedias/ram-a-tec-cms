@@ -1,8 +1,9 @@
-import { IField, IFieldsBlock, ISelectOption } from '@/models/instrumentsRegistration.model';
+import { IField, IFieldsBlock, IInstrumentsGroup, ISelectOption, } from '@/models/instrumentsRegistration.model';
 import firestoreRepository from '@/repositories/firestore-intranet/firestore.repository';
 
 
 class FirestoreService {
+  /* GET */
   public async getFields(): Promise<any> {
     const fields = await firestoreRepository.getFields();
     return fields;
@@ -13,16 +14,21 @@ class FirestoreService {
     return fieldsBlock;
   }
 
-  public async getSelectOptions(): Promise<ISelectOption[]> {
+  public async getSelectOptions(): Promise<ISelectOption[] | []> {
     return await firestoreRepository.getSelectOptions();
   }
 
   public async getSelectOptionByID(optionRef: string): Promise<ISelectOption> {
     const response = await firestoreRepository.getSelectOptions();
-    const options = response.find((option) => option.id === optionRef);
+    const options = response?.find((option: ISelectOption) => option.id === optionRef);
     return options;
   }
 
+  public async getInstrumentsGroup(): Promise<IInstrumentsGroup[] | []> {
+    return await firestoreRepository.getInstrumentsGroup();
+  }
+
+  /* SET */
   public async setField(field: IField): Promise<boolean> {
     console.log('setField', field);
     const fields = await firestoreRepository.getFields();
@@ -88,6 +94,28 @@ class FirestoreService {
     }
   }
 
+  public async setInstrumentGroup(data: IInstrumentsGroup): Promise<boolean> {
+    const instrumentsGroup = await firestoreRepository.getInstrumentsGroup();
+
+    if (Array.isArray(instrumentsGroup) && instrumentsGroup.length === 0) {
+      return await firestoreRepository.setInstrumentGroup([data]);
+    }
+
+    if (Array.isArray(instrumentsGroup) && instrumentsGroup.length > 0) {
+      const exists = instrumentsGroup.some((e: IInstrumentsGroup) => e.id === data.id);
+      const index = instrumentsGroup.findIndex((e: IInstrumentsGroup) => e.id === data.id);
+
+      if (exists && index !== -1) {
+        instrumentsGroup[index] = data;
+        return await firestoreRepository.setInstrumentGroup(instrumentsGroup);
+      }
+
+      const mergedSelectOptions = [...instrumentsGroup, data];
+      return await firestoreRepository.setInstrumentGroup(mergedSelectOptions);
+    }
+  }
+
+  /* DELETE */
   public async deleteField(field: IField): Promise<boolean> {
     const fields = await firestoreRepository.getFields();
     if (!Array.isArray(fields) || fields.length === 0) {
@@ -147,6 +175,28 @@ class FirestoreService {
       if (exists && index !== -1) {
         fieldsBlock.splice(index, 1);
         return await firestoreRepository.setFieldsBlock(fieldsBlock);
+      }
+    }
+  }
+
+  public async deleteIntrumentGroup(id: string): Promise<boolean> {
+    const instrumentsGroup = await firestoreRepository.getInstrumentsGroup();
+
+    if (!Array.isArray(instrumentsGroup) || instrumentsGroup.length === 0) {
+      return false;
+    }
+
+    if (Array.isArray(instrumentsGroup) && instrumentsGroup.length > 0) {
+      const exists = instrumentsGroup.some((e: IInstrumentsGroup) => e.id === id);
+      const index = instrumentsGroup.findIndex((e: IInstrumentsGroup) => e.id === id);
+
+      if (!exists && index === -1) {
+        return false;
+      }
+
+      if (exists && index !== -1) {
+        instrumentsGroup.splice(index, 1);
+        return await firestoreRepository.setInstrumentGroup(instrumentsGroup);
       }
     }
   }
