@@ -1,4 +1,4 @@
-import { IField, IFieldsBlock, IInstrumentsGroup, ISelectOption, } from '@/models/instrumentsRegistration.model';
+import { IField, IFieldsBlock, IInstrument, IInstrumentsGroup, ISelectOption, } from '@/models/instrumentsRegistration.model';
 import firestoreRepository from '@/repositories/firestore-intranet/firestore.repository';
 
 
@@ -26,6 +26,10 @@ class FirestoreService {
 
   public async getInstrumentsGroup(): Promise<IInstrumentsGroup[] | []> {
     return await firestoreRepository.getInstrumentsGroup();
+  }
+
+  public async getInstruments(): Promise<IInstrument[] | []> {
+    return await firestoreRepository.getInstruments();
   }
 
   /* SET */
@@ -110,8 +114,29 @@ class FirestoreService {
         return await firestoreRepository.setInstrumentGroup(instrumentsGroup);
       }
 
-      const mergedSelectOptions = [...instrumentsGroup, data];
-      return await firestoreRepository.setInstrumentGroup(mergedSelectOptions);
+      const mergedInstrumentGroup = [...instrumentsGroup, data];
+      return await firestoreRepository.setInstrumentGroup(mergedInstrumentGroup);
+    }
+  }
+
+  public async setInstrument(instrument: IInstrument): Promise<boolean> {
+    const instruments = await firestoreRepository.getInstruments();
+
+    if (Array.isArray(instruments) && instruments.length === 0) {
+      return await firestoreRepository.setInstruments([instrument]);
+    }
+
+    if (Array.isArray(instruments) && instruments.length > 0) {
+      const exists = instruments.some((e: IInstrument) => e.id === instrument.id);
+      const index = instruments.findIndex((e: IInstrument) => e.id === instrument.id);
+
+      if (exists && index !== -1) {
+        instruments[index] = instrument;
+        return await firestoreRepository.setInstruments(instruments);
+      }
+
+      const mergedInstruments = [...instruments, instrument];
+      return await firestoreRepository.setInstruments(mergedInstruments);
     }
   }
 
@@ -197,6 +222,28 @@ class FirestoreService {
       if (exists && index !== -1) {
         instrumentsGroup.splice(index, 1);
         return await firestoreRepository.setInstrumentGroup(instrumentsGroup);
+      }
+    }
+  }
+
+  public async deleteIntrument(id: string): Promise<boolean> {
+    const instruments = await firestoreRepository.getInstruments();
+
+    if (!Array.isArray(instruments) || instruments.length === 0) {
+      return false;
+    }
+
+    if (Array.isArray(instruments) && instruments.length > 0) {
+      const exists = instruments.some((e: IInstrument) => e.id === id);
+      const index = instruments.findIndex((e: IInstrument) => e.id === id);
+
+      if (!exists && index === -1) {
+        return false;
+      }
+
+      if (exists && index !== -1) {
+        instruments.splice(index, 1);
+        return await firestoreRepository.setInstruments(instruments);
       }
     }
   }
