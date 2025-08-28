@@ -1,6 +1,7 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
-import { InstrumentGroup } from './components/CreateInstrumentGroup';
+import { CreateInstrumentGroup } from './components/CreateInstrumentGroup';
+import { CreateInstrument } from './components/CreateInstrument';
 import { CreateFieldBLock } from './components/CreateFieldBlock';
 import { CreateField } from './components/CreateField';
 
@@ -18,6 +19,7 @@ export const InstrumentRegistration = () => {
             <TabsTrigger value="c-c">Criar Campo</TabsTrigger>
             <TabsTrigger value="c-b">Criar Bloco de Campos</TabsTrigger>
             <TabsTrigger value="c-g-i">Criar Grupo de Instrumentos</TabsTrigger>
+            <TabsTrigger value="c-i">Criar Instrumento</TabsTrigger>
           </TabsList>
           <TabsContent value="c-c">
             <CreateField />
@@ -26,7 +28,10 @@ export const InstrumentRegistration = () => {
             <CreateFieldBLock />
           </TabsContent>
           <TabsContent value="c-g-i">
-            <InstrumentGroup />
+            <CreateInstrumentGroup />
+          </TabsContent>
+          <TabsContent value="c-i">
+            <CreateInstrument />
           </TabsContent>
         </Tabs>
       </div>
