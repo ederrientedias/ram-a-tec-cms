@@ -3,12 +3,12 @@ import { CreateFieldSchema, createfieldSchema, createFieldDefaultValues, } from 
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, } from '@/components/ui/dialog';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow, } from '@/components/ui/table';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, } from '@/components/ui/select';
+import { ChevronDown, Pencil, Plus, Search, ServerCrash, Trash2 } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import firestoreService from '@/services/firestore-intranet/firestore.service';
 import { IField, ISelectOption } from '@/models/instrumentsRegistration.model';
 import { useFieldsBlock } from '@/hooks/firestore-intranet/use-fields-block';
 import firestoreAssetManagement from '@/services/firestoreAssetManagement';
-import { ChevronDown, Pencil, Plus, Search, Trash2 } from 'lucide-react';
 import { useFields } from '@/hooks/firestore-intranet/use-fields';
 import { Controller, useForm, useWatch } from 'react-hook-form';
 import { Documents } from '@/enums/firestoreIntranet.enum';
@@ -175,7 +175,7 @@ export const CreateField = () => {
   const [isOptions, setIsOptions] = useState<boolean>(false);
   const [isCollectionData, setIsCollectionData] = useState<boolean>(false);
   const { data: fieldsBlock, error, isLoading: fieldsBlockIsloading } = useFieldsBlock();
-  const { data: fields, error: fielsError, isLoading: fieldsLoading } = useFields();
+  const { data: fields, error: fieldsError, isLoading: fieldsLoading } = useFields();
 
   const {
     handleSubmit,
@@ -218,9 +218,9 @@ export const CreateField = () => {
     loadOptions();
   }, [loadOptions]);
 
-  const filteredFields = fields?.filter((f) => {
-    f.label.toLowerCase().includes(searchTerm.toLowerCase());
-  });
+  const filteredFields = fields?.filter((f) =>
+    f.label.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   const openDialog = (field?: IField) => {
     if (field) {
@@ -246,29 +246,10 @@ export const CreateField = () => {
 
   const onSubmit = async (data: CreateFieldSchema) => {
     setIsLoading(true);
-    await addField(data);
+    await createField(data);
   };
 
-  const addField = async (data: CreateFieldSchema): Promise<void> => {
-    try {
-      const { options, field } = createField(data);
-      const response = await firestoreService.setField(field);
-      if (response) toast.success('Campo adicionado com sucesso!');
-
-      if (selectedCollectionData && options.options.length > 0) {
-        await addOption(options);
-      }
-    } catch (error) {
-      toast.error('Erro ao adicionar o campo');
-      console.error('Erro ao adicionar o campo:', error);
-    } finally {
-      setIsLoading(false);
-      closeDialog();
-      loadFields();
-    }
-  };
-
-  const createField = (data: CreateFieldSchema) => {
+  const createField = async (data: CreateFieldSchema) => {
     const fieldBlockId = fieldsBlock.find((e) => e.name === data.fieldBlockRef).id;
 
     const options: ISelectOption = {
@@ -288,13 +269,42 @@ export const CreateField = () => {
       isRequire: data.isRequire ?? false,
     };
 
-    return { options, field };
+    await addField({ options, field });
+  };
+
+  const addField = async ({ options, field }): Promise<void> => {
+    try {
+      const isFieldCreated = await firestoreService.setField(field);
+
+      if (!isFieldCreated) {
+        toast.error('Não foi possível criar o campo.');
+        return;
+      }
+
+      toast.success('O campo foi criado com sucesso.');
+
+      if (selectedCollectionData && options.options.length > 0) {
+        await addOption(options);
+      }
+    } catch (error) {
+      toast.error('Erro ao adicionar o campo');
+      console.error('Erro ao adicionar o campo:', error);
+    } finally {
+      setIsLoading(false);
+      closeDialog();
+      loadFields();
+    }
   };
 
   const addOption = async (options: ISelectOption) => {
-    const response = await firestoreService.setSelectOption(options);
-    if (!response) toast.error('Erro ao adicionar as opções');
-    toast.success('Opções adicionada com sucesso!');
+    const isSelectOptionCreated = await firestoreService.setSelectOption(options);
+
+    if (!isSelectOptionCreated) {
+      toast.error('Não foi possível criar as opções.');
+      return;
+    }
+
+    toast.success('As Opções foram criadas com sucesso!');
   };
 
   const getOptions = async (optionRef: string) => {
@@ -428,53 +438,59 @@ export const CreateField = () => {
       </div>
       <div className="flex flex-col">
         <div className="rounded-md border overflow-hidden">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>ID</TableHead>
-                <TableHead>Nome do Campo</TableHead>
-                {/* <TableHead>Boloco de Campo</TableHead> */}
-                <TableHead>Ações</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {fieldsLoading ? (
+          {fieldsError ? (
+            <div className="w-full flex items-center justify-center gap-2 p-5">
+              <ServerCrash className="h-4 w-4" size={32} />
+              <span className="font-medium">Ops! Tivemos um problema ao buscar os dados.</span>
+            </div>
+          ) : (
+            <Table>
+              <TableHeader>
                 <TableRow>
-                  <TableCell colSpan={6} className="text-center py-10 text-muted-foreground">
-                    <Skeleton className="h-[50px] w-full" />
-                  </TableCell>
+                  <TableHead>ID</TableHead>
+                  <TableHead>Nome do Campo</TableHead>
+                  <TableHead>Ações</TableHead>
                 </TableRow>
-              ) : !fields || fields.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={6} className="text-center py-10 text-muted-foreground">
-                    Nenhuma empresa está selecionada
-                  </TableCell>
-                </TableRow>
-              ) : (
-                fields?.map((field: IField) => (
-                  <TableRow key={field.id}>
-                    <TableCell className="font-medium">{field.id}</TableCell>
-                    <TableCell>{field.label}</TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-2">
-                        <Button variant="ghost" size="icon" onClick={() => openDialog(field)}>
-                          <Pencil className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="text-red-500"
-                          onClick={() => openAlert(field)}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
+              </TableHeader>
+              <TableBody>
+                {fieldsLoading ? (
+                  <TableRow>
+                    <TableCell colSpan={6} className="text-center py-10 text-muted-foreground">
+                      <Skeleton className="h-[50px] w-full" />
                     </TableCell>
                   </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
+                ) : !fields || fields.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={6} className="text-center py-10 text-muted-foreground">
+                      Ainda não há dados cadastrados.
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  filteredFields?.map((field: IField) => (
+                    <TableRow key={field.id}>
+                      <TableCell className="font-medium">{field.id}</TableCell>
+                      <TableCell>{field.label}</TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          <Button variant="ghost" size="icon" onClick={() => openDialog(field)}>
+                            <Pencil className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="text-red-500"
+                            onClick={() => openAlert(field)}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+            </Table>
+          )}
         </div>
       </div>
 
