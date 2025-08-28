@@ -21,7 +21,7 @@ import { useState } from 'react';
 import { toast } from 'sonner';
 
 
-export const InstrumentGroup = () => {
+export const CreateInstrumentGroup = () => {
   const queryClient = useQueryClient();
   const [instrumentGroupRef, setInstrumentGroupRef] = useState<IInstrumentsGroup | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
@@ -214,7 +214,7 @@ export const InstrumentGroup = () => {
                 ) : !instrumentsGroup || instrumentsGroup.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={6} className="text-center py-10 text-muted-foreground">
-                      Nenhuma empresa está selecionada
+                      Ainda não há dados cadastrados.
                     </TableCell>
                   </TableRow>
                 ) : (
