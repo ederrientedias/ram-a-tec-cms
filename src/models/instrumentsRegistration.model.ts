@@ -28,3 +28,11 @@ export interface IInstrumentsGroup {
   nickname: string;
   description: string;
 }
+
+export interface IInstrument {
+  id: string;
+  name: string;
+  nickname: string;
+  instrumentGroupRef: string;
+  legislation: string;
+}
