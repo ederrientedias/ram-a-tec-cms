@@ -1,4 +1,4 @@
-import { IField, IFieldsBlock, IInstrumentsGroup, ISelectOption, } from '@/models/instrumentsRegistration.model';
+import { IField, IFieldsBlock, IInstrument, IInstrumentsGroup, ISelectOption, } from '@/models/instrumentsRegistration.model';
 import { collection, doc, DocumentData, Firestore, getDoc, setDoc } from 'firebase/firestore';
 import { Collection, Documents } from '@/enums/firestoreIntranet.enum';
 import { firestoreIntranet } from '@/config/firebase.config';
@@ -59,7 +59,18 @@ class FirestoreIntranetRepository {
     return data ?? [];
   }
 
-  public async setFields(fields: IField[]): Promise<any> {
+  public async getInstruments(): Promise<IInstrument[] | []> {
+    const docRef = doc(this.development, Documents.Instruments);
+    const instruments = await getDoc(docRef);
+
+    if (!instruments.exists()) return [];
+
+    const { data } = instruments.data();
+
+    return data ?? [];
+  }
+
+  public async setFields(fields: IField[]): Promise<boolean> {
     try {
       const docRef = doc(this.development, Documents.Fields);
       await setDoc(docRef, { data: fields }, { merge: true });
@@ -70,7 +81,7 @@ class FirestoreIntranetRepository {
     }
   }
 
-  public async setFieldsBlock(fieldsBlock: any[]): Promise<any> {
+  public async setFieldsBlock(fieldsBlock: IFieldsBlock[]): Promise<boolean> {
     try {
       const docRef = doc(this.development, Documents.FieldsBlock);
       await setDoc(docRef, { data: fieldsBlock }, { merge: true });
@@ -81,7 +92,7 @@ class FirestoreIntranetRepository {
     }
   }
 
-  public async setSelectOptions(data: ISelectOption[]): Promise<any> {
+  public async setSelectOptions(data: ISelectOption[]): Promise<boolean> {
     try {
       const docRef = doc(this.development, Documents.SelectOption);
       await setDoc(docRef, { data }, { merge: true });
@@ -92,9 +103,20 @@ class FirestoreIntranetRepository {
     }
   }
 
-  public async setInstrumentGroup(data: IInstrumentsGroup[]): Promise<any> {
+  public async setInstrumentGroup(data: IInstrumentsGroup[]): Promise<boolean> {
     try {
       const docRef = doc(this.development, Documents.InstrumentsGroup);
+      await setDoc(docRef, { data }, { merge: true });
+      return true;
+    } catch (error) {
+      console.error('Erro ao salvar documento:', error);
+      return false;
+    }
+  }
+
+  public async setInstruments(data: IInstrument[]): Promise<boolean> {
+    try {
+      const docRef = doc(this.development, Documents.Instruments);
       await setDoc(docRef, { data }, { merge: true });
       return true;
     } catch (error) {
