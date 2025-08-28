@@ -7,4 +7,5 @@ export enum Documents {
   FieldsBlock = 'fields_block',
   SelectOption = 'select_option',
   InstrumentsGroup = 'instruments_group',
+  Instruments = 'instruments',
 }
