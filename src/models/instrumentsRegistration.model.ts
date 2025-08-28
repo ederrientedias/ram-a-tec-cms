@@ -20,3 +20,11 @@ export interface IField {
   optionsRef: string | null;
   isRequire: boolean;
 }
+
+export interface IInstrumentsGroup {
+  id: string;
+  group: string;
+  name: string;
+  nickname: string;
+  description: string;
+}
