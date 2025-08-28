@@ -5,8 +5,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow, } from '
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, } from '@/components/ui/select';
 import firestoreService from '@/services/firestore-intranet/firestore.service';
 import { useFieldsBlock } from '@/hooks/firestore-intranet/use-fields-block';
+import { Pencil, Plus, Search, ServerCrash, Trash2 } from 'lucide-react';
 import { IFieldsBlock } from '@/models/instrumentsRegistration.model';
-import { Pencil, Plus, Search, Trash2 } from 'lucide-react';
 import { Documents } from '@/enums/firestoreIntranet.enum';
 import { useQueryClient } from '@tanstack/react-query';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -15,6 +15,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
+import { groups } from '@/utils/groups';
 import { useState } from 'react';
 import { toast } from 'sonner';
 
@@ -39,17 +40,9 @@ export const CreateFieldBLock = () => {
     defaultValues: createFieldsBlockDefaultValues,
   });
 
-  const groups = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('').map((g, i) => {
-    return {
-      id: i + 1,
-      code: g.toLowerCase(),
-      name: `Grupo ${g}`,
-    };
-  });
-
-  const filteredFieldsBlock = fieldsBlock?.filter((f) => {
-    f.name.toLowerCase().includes(searchTerm.toLowerCase());
-  });
+  const filteredFieldsBlock = fieldsBlock?.filter((f) =>
+    f.name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   const openDialog = (fieldBlock?: IFieldsBlock) => {
     if (fieldBlock) {
@@ -72,29 +65,30 @@ export const CreateFieldBLock = () => {
 
   const onSubmit = (data: CreateFieldsBlockSchema) => {
     setIsLoading(true);
-    addFieldBlock(data);
+    createFieldBlock(data);
   };
 
-  const addFieldBlock = async (data: CreateFieldsBlockSchema) => {
-    const fieldBlock = createFieldBlock(data);
-    const response = await firestoreService.setFieldsBlock(fieldBlock).finally(() => finalize());
-
-    if (!response) {
-      toast.error('Não foi possível adicionar o bloco de campo');
-      return;
-    }
-
-    toast.success('Bloco de campo adicionado com sucesso!');
-  };
-
-  const createFieldBlock = (data: CreateFieldsBlockSchema) => {
+  const createFieldBlock = async (data: CreateFieldsBlockSchema) => {
     const fieldBlock = {
       id: fieldBlockRef ? fieldBlockRef.id : crypto.randomUUID(),
       name: data.name,
       group: data.group,
     };
 
-    return fieldBlock;
+    await addFieldBlock(fieldBlock);
+  };
+
+  const addFieldBlock = async (fieldBlock: IFieldsBlock) => {
+    const isFieldBlockCreated = await firestoreService
+      .setFieldsBlock(fieldBlock)
+      .finally(() => finalize());
+
+    if (!isFieldBlockCreated) {
+      toast.error('Não foi possível criar o bloco de campo');
+      return;
+    }
+
+    toast.success('O bloco de campo foi criardo com sucesso!');
   };
 
   const editFieldBlock = async (fieldBlock: IFieldsBlock) => {
@@ -114,10 +108,10 @@ export const CreateFieldBLock = () => {
     });
 
     if (!response) {
-      toast.error('Não foi possível excluir o Bloco de campo');
+      toast.error('Não foi possível excluir o bloco de campo');
     }
 
-    toast.success('Bloco de campo excluído com sucesso!');
+    toast.success('O bloco de campo foi excluído com sucesso!');
   };
 
   const loadFieldsBlock = async () => {
@@ -167,56 +161,63 @@ export const CreateFieldBLock = () => {
       </div>
       <div className="flex flex-col">
         <div className="rounded-md border overflow-hidden">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>ID</TableHead>
-                <TableHead>Nome do Campo</TableHead>
-                <TableHead>Bloco</TableHead>
-                <TableHead>Ações</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {fieldsBlockLoading ? (
+          {error ? (
+            <div className="w-full flex items-center justify-center gap-2 p-5">
+              <ServerCrash className="h-4 w-4" size={32} />
+              <span className="font-medium">Ops! Tivemos um problema ao buscar os dados.</span>
+            </div>
+          ) : (
+            <Table>
+              <TableHeader>
                 <TableRow>
-                  <TableCell colSpan={6} className="text-center py-10 text-muted-foreground">
-                    <Skeleton className="h-[50px] w-full" />
-                  </TableCell>
+                  <TableHead>ID</TableHead>
+                  <TableHead>Nome do Campo</TableHead>
+                  <TableHead>Bloco</TableHead>
+                  <TableHead>Ações</TableHead>
                 </TableRow>
-              ) : !fieldsBlock || fieldsBlock.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={6} className="text-center py-10 text-muted-foreground">
-                    Nenhuma empresa está selecionada
-                  </TableCell>
-                </TableRow>
-              ) : (
-                fieldsBlock?.map((field: IFieldsBlock) => (
-                  <TableRow key={field.id}>
-                    <TableCell className="font-medium">{field.id}</TableCell>
-                    <TableCell>{field.name}</TableCell>
-                    <TableCell>{field.group.toUpperCase()}</TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-2">
-                        {/* onClick={() => openDialog(field)} */}
-                        <Button variant="ghost" size="icon" onClick={() => openDialog(field)}>
-                          <Pencil className="h-4 w-4" />
-                        </Button>
-                        {/* onClick={() => openAlert(field)} */}
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="text-red-500"
-                          onClick={() => openAlert(field)}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
+              </TableHeader>
+              <TableBody>
+                {fieldsBlockLoading ? (
+                  <TableRow>
+                    <TableCell colSpan={6} className="text-center py-10 text-muted-foreground">
+                      <Skeleton className="h-[50px] w-full" />
                     </TableCell>
                   </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
+                ) : !fieldsBlock || fieldsBlock.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={6} className="text-center py-10 text-muted-foreground">
+                      Ainda não há dados cadastrados.
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  filteredFieldsBlock?.map((field: IFieldsBlock) => (
+                    <TableRow key={field.id}>
+                      <TableCell className="font-medium">{field.id}</TableCell>
+                      <TableCell>{field.name}</TableCell>
+                      <TableCell>{field.group.toUpperCase()}</TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          {/* onClick={() => openDialog(field)} */}
+                          <Button variant="ghost" size="icon" onClick={() => openDialog(field)}>
+                            <Pencil className="h-4 w-4" />
+                          </Button>
+                          {/* onClick={() => openAlert(field)} */}
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="text-red-500"
+                            onClick={() => openAlert(field)}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+            </Table>
+          )}
         </div>
       </div>
 
@@ -256,7 +257,7 @@ export const CreateFieldBLock = () => {
                     <Select onValueChange={field.onChange} value={field.value || ''}>
                       <SelectTrigger>
                         <SelectValue
-                          placeholder={!groups.length ? 'Carregando...' : 'Selecione um fundo'}
+                          placeholder={!groups.length ? 'Carregando...' : 'Selecione um grupo'}
                         />
                       </SelectTrigger>
                       <SelectContent>
