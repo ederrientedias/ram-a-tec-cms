@@ -1,5 +1,5 @@
+import { IField, IFieldsBlock, IInstrumentsGroup, ISelectOption, } from '@/models/instrumentsRegistration.model';
 import { collection, doc, DocumentData, Firestore, getDoc, setDoc } from 'firebase/firestore';
-import { IField, IFieldsBlock, ISelectOption } from '@/models/instrumentsRegistration.model';
 import { Collection, Documents } from '@/enums/firestoreIntranet.enum';
 import { firestoreIntranet } from '@/config/firebase.config';
 
@@ -37,13 +37,24 @@ class FirestoreIntranetRepository {
     return data ?? [];
   }
 
-  public async getSelectOptions(): Promise<ISelectOption[]> {
+  public async getSelectOptions(): Promise<ISelectOption[] | []> {
     const docRef = doc(this.development, Documents.SelectOption);
     const selectOption = await getDoc(docRef);
 
     if (!selectOption.exists()) return [];
 
     const { data } = selectOption.data();
+
+    return data ?? [];
+  }
+
+  public async getInstrumentsGroup(): Promise<IInstrumentsGroup[] | []> {
+    const docRef = doc(this.development, Documents.InstrumentsGroup);
+    const instrumentsGroup = await getDoc(docRef);
+
+    if (!instrumentsGroup.exists()) return [];
+
+    const { data } = instrumentsGroup.data();
 
     return data ?? [];
   }
@@ -73,6 +84,17 @@ class FirestoreIntranetRepository {
   public async setSelectOptions(data: ISelectOption[]): Promise<any> {
     try {
       const docRef = doc(this.development, Documents.SelectOption);
+      await setDoc(docRef, { data }, { merge: true });
+      return true;
+    } catch (error) {
+      console.error('Erro ao salvar documento:', error);
+      return false;
+    }
+  }
+
+  public async setInstrumentGroup(data: IInstrumentsGroup[]): Promise<any> {
+    try {
+      const docRef = doc(this.development, Documents.InstrumentsGroup);
       await setDoc(docRef, { data }, { merge: true });
       return true;
     } catch (error) {
