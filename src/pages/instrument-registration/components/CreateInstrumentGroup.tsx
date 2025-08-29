@@ -198,7 +198,7 @@ export const CreateInstrumentGroup = () => {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>ID</TableHead>
+                  {/* <TableHead>ID</TableHead> */}
                   <TableHead>Grupo</TableHead>
                   <TableHead>Nome Completo</TableHead>
                   <TableHead>Ações</TableHead>
@@ -220,7 +220,7 @@ export const CreateInstrumentGroup = () => {
                 ) : (
                   filteredInstrumentsGroup?.map((item: IInstrumentsGroup) => (
                     <TableRow key={item.id}>
-                      <TableCell className="font-medium">{item.id}</TableCell>
+                      {/* <TableCell className="font-medium">{item.id}</TableCell> */}
                       <TableCell>{item.group}</TableCell>
                       <TableCell>{item.name}</TableCell>
                       <TableCell>
