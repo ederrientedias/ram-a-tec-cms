@@ -1,6 +1,11 @@
-import { IField, IFieldsBlock, IInstrument, IInstrumentsGroup, ISelectOption, } from '@/models/instrumentsRegistration.model';
+import {
+  IField,
+  IFieldsBlock,
+  IInstrument,
+  IInstrumentsGroup,
+  ISelectOption,
+} from '@/models/instrumentsRegistration.model';
 import firestoreRepository from '@/repositories/firestore-intranet/firestore.repository';
-
 
 class FirestoreService {
   /* GET */
@@ -10,8 +15,16 @@ class FirestoreService {
   }
 
   public async getFieldsBlock(): Promise<IFieldsBlock[] | []> {
-    const fieldsBlock = await firestoreRepository.getFieldsBlock();
-    return fieldsBlock;
+    return await firestoreRepository.getFieldsBlock();
+  }
+
+  public async getFieldsBlockByGroup(group: string): Promise<IFieldsBlock[] | []> {
+    const fieldsBlock: IFieldsBlock[] = await firestoreRepository.getFieldsBlock();
+    if (fieldsBlock.length === 0) return [];
+
+    const data = fieldsBlock.filter((field) => field.group === group);
+
+    return data;
   }
 
   public async getSelectOptions(): Promise<ISelectOption[] | []> {
@@ -26,6 +39,16 @@ class FirestoreService {
 
   public async getInstrumentsGroup(): Promise<IInstrumentsGroup[] | []> {
     return await firestoreRepository.getInstrumentsGroup();
+  }
+
+  public async getInstrumentsById(id: string): Promise<IInstrument[] | []> {
+    const instrumentsGroup: IInstrument[] = await firestoreRepository.getInstruments();
+
+    if (instrumentsGroup.length === 0) return [];
+
+    const data = instrumentsGroup.filter((item) => item.instrumentGroupRef === id);
+
+    return data;
   }
 
   public async getInstruments(): Promise<IInstrument[] | []> {
