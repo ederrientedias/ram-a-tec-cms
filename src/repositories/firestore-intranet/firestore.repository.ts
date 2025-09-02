@@ -1,8 +1,15 @@
-import { IField, IFieldsBlock, IInstrument, IInstrumentsGroup, ISelectOption, } from '@/models/instrumentsRegistration.model';
+import {
+  IField,
+  IFieldsBlock,
+  IForm,
+  IFormsMap,
+  IInstrument,
+  IInstrumentsGroup,
+  ISelectOption,
+} from '@/models/instrumentsRegistration.model';
 import { collection, doc, DocumentData, Firestore, getDoc, setDoc } from 'firebase/firestore';
 import { Collection, Documents } from '@/enums/firestoreIntranet.enum';
 import { firestoreIntranet } from '@/config/firebase.config';
-
 
 class FirestoreIntranetRepository {
   protected readonly firestore: Firestore;
@@ -70,6 +77,30 @@ class FirestoreIntranetRepository {
     return data ?? [];
   }
 
+  public async getFormById(formId: string): Promise<IForm[] | []> {
+    const docRef = doc(this.development, Documents.Forms);
+    const formCollection = collection(docRef, formId);
+    const formDocument = doc(formCollection, 'form');
+    const fields = await getDoc(formDocument);
+
+    if (!fields.exists()) return [];
+
+    const { data } = fields.data();
+
+    return data ?? [];
+  }
+
+  public async getFormsMap(): Promise<IFormsMap[] | []> {
+    const docRef = doc(this.development, Documents.Forms);
+    const fields = await getDoc(docRef);
+
+    if (!fields.exists()) return [];
+
+    const { formsMap } = fields.data();
+
+    return formsMap ?? [];
+  }
+
   public async setFields(fields: IField[]): Promise<boolean> {
     try {
       const docRef = doc(this.development, Documents.Fields);
@@ -118,6 +149,30 @@ class FirestoreIntranetRepository {
     try {
       const docRef = doc(this.development, Documents.Instruments);
       await setDoc(docRef, { data }, { merge: true });
+      return true;
+    } catch (error) {
+      console.error('Erro ao salvar documento:', error);
+      return false;
+    }
+  }
+
+  public async setForm(form: IForm): Promise<boolean> {
+    try {
+      const docRef = doc(this.development, Documents.Forms);
+      const formCollectionRef = collection(docRef, form.id);
+      const formDocumentRef = doc(formCollectionRef, 'form');
+      await setDoc(formDocumentRef, { data: form.forms }, { merge: true });
+      return true;
+    } catch (error) {
+      console.error('Erro ao salvar documento:', error);
+      return false;
+    }
+  }
+
+  public async setFormsMap(data: IFormsMap[]): Promise<boolean> {
+    try {
+      const docRef = doc(this.development, Documents.Forms);
+      await setDoc(docRef, { formsMap: data }, { merge: true });
       return true;
     } catch (error) {
       console.error('Erro ao salvar documento:', error);
