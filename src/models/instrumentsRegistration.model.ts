@@ -36,3 +36,27 @@ export interface IInstrument {
   instrumentGroupRef: string;
   legislation: string;
 }
+
+export interface IFormsMap {
+  formId: string;
+  instrumentId: string;
+  name: string;
+  nickname: string;
+  instrumentGroupRef: IInstrumentGroupRef;
+}
+
+interface IInstrumentGroupRef {
+  id: string;
+  group: string;
+}
+
+export interface IForm {
+  id: string;
+  forms: Form[];
+}
+
+interface Form {
+  id: string;
+  name: string;
+  fields: IField[];
+}
