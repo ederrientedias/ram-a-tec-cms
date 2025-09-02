@@ -1,11 +1,14 @@
 import {
   IField,
   IFieldsBlock,
+  IForm,
+  IFormsMap,
   IInstrument,
   IInstrumentsGroup,
   ISelectOption,
 } from '@/models/instrumentsRegistration.model';
 import firestoreRepository from '@/repositories/firestore-intranet/firestore.repository';
+import { toast } from 'sonner';
 
 class FirestoreService {
   /* GET */
@@ -53,6 +56,14 @@ class FirestoreService {
 
   public async getInstruments(): Promise<IInstrument[] | []> {
     return await firestoreRepository.getInstruments();
+  }
+
+  public async getFormById(formId: string): Promise<IForm[] | []> {
+    return await firestoreRepository.getFormById(formId);
+  }
+
+  public async getFormsMap(): Promise<IFormsMap[] | []> {
+    return await firestoreRepository.getFormsMap();
   }
 
   /* SET */
@@ -160,6 +171,39 @@ class FirestoreService {
 
       const mergedInstruments = [...instruments, instrument];
       return await firestoreRepository.setInstruments(mergedInstruments);
+    }
+  }
+
+  // /instrument_registration/forms/LFT/form
+  public async setForm(form: IForm): Promise<boolean> {
+    return await firestoreRepository.setForm(form);
+  }
+
+  public async setFormMap(formMap: IFormsMap): Promise<boolean> {
+    const formsMap: IFormsMap[] = await firestoreRepository.getFormsMap();
+    console.log('formsMap:', formsMap);
+    const exists = formsMap?.findIndex((f) => f.nickname === formMap.nickname);
+
+    if (formsMap.length > 0 && exists !== -1) {
+      toast.info(`O formulário de cadastro para "${formMap.nickname}" já existe.`);
+      return false;
+    }
+
+    if (Array.isArray(formsMap) && formsMap.length === 0) {
+      return await firestoreRepository.setFormsMap([formMap]);
+    }
+
+    if (Array.isArray(formsMap) && formsMap.length > 0) {
+      const exists = formsMap.some((e: IFormsMap) => e.formId === formMap.formId);
+      const index = formsMap.findIndex((e: IFormsMap) => e.formId === formMap.formId);
+
+      if (exists && index !== -1) {
+        formsMap[index] = formMap;
+        return await firestoreRepository.setFormsMap(formsMap);
+      }
+
+      const mergedFormsMap = [...formsMap, formMap];
+      return await firestoreRepository.setFormsMap(mergedFormsMap);
     }
   }
 
