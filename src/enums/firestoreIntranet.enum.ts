@@ -8,4 +8,5 @@ export enum Documents {
   SelectOption = 'select_option',
   InstrumentsGroup = 'instruments_group',
   Instruments = 'instruments',
+  Forms = 'forms',
 }
