@@ -1,4 +1,5 @@
 import {
+  ICollectionFields,
   IField,
   IFieldsBlock,
   IForm,
@@ -58,7 +59,7 @@ class FirestoreService {
     return await firestoreRepository.getInstruments();
   }
 
-  public async getFormById(formId: string): Promise<IForm[] | []> {
+  public async getFormById(formId: string): Promise<ICollectionFields[] | []> {
     return await firestoreRepository.getFormById(formId);
   }
 

@@ -1,4 +1,5 @@
 import {
+  ICollectionFields,
   IField,
   IFieldsBlock,
   IForm,
@@ -77,7 +78,7 @@ class FirestoreIntranetRepository {
     return data ?? [];
   }
 
-  public async getFormById(formId: string): Promise<IForm[] | []> {
+  public async getFormById(formId: string): Promise<ICollectionFields[] | []> {
     const docRef = doc(this.development, Documents.Forms);
     const formCollection = collection(docRef, formId);
     const formDocument = doc(formCollection, 'form');
