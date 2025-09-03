@@ -9,6 +9,8 @@ import {
 import {
   ChevronLeft,
   Database,
+  FileCog,
+  FilePen,
   FileText,
   Home,
   LogOut,
@@ -112,9 +114,14 @@ const navItems = [
     href: '/sumario',
   },
   {
-    icon: FileText,
+    icon: FileCog,
     label: 'Instrumentos',
     href: '/cadastro-instrumentos',
+  },
+  {
+    icon: FilePen,
+    label: 'Cadastro de Ativo',
+    href: '/cadastro-ativo',
   },
 ];
 
@@ -165,7 +172,7 @@ export const Sidebar = () => {
             isCollapsed ? 'justify-center' : 'justify-between'
           )}
         >
-          {!isCollapsed && <div className="font-semibold text-base">Portal do Colaborador</div>}
+          {!isCollapsed && <div className="font-semibold text-xl">CMS RIZA</div>}
           <Button
             variant="ghost"
             size="icon"
