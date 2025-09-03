@@ -52,10 +52,10 @@ interface IInstrumentGroupRef {
 
 export interface IForm {
   id: string;
-  forms: Form[];
+  forms: ICollectionFields[];
 }
 
-interface Form {
+export interface ICollectionFields {
   id: string;
   name: string;
   fields: IField[];
