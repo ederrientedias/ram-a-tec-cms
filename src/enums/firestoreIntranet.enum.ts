@@ -9,4 +9,5 @@ export enum Documents {
   InstrumentsGroup = 'instruments_group',
   Instruments = 'instruments',
   Forms = 'forms',
+  RegistredAssets = 'registred_assets',
 }
