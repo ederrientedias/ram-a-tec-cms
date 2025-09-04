@@ -8,6 +8,7 @@ import { Toaster } from '@/components/ui/toaster';
 import { InformationalTransparency } from './pages/InformationalTransparency';
 import InstrumentRegistration from './pages/instrument-registration/index';
 import DashboardLayout from './components/layout/DashboardLayout';
+import { AssetRegister } from './pages/asset-register/index';
 import LandingPage from './pages/landingpages/index';
 import Compliance from './pages/compliance/index';
 import Publicacoes from './pages/Publications';
@@ -43,6 +44,7 @@ const App = () => {
               <Route path="/publicacoes" element={<Publicacoes />} />
               <Route path="/sumario" element={<InformationalTransparency />} />
               <Route path="/cadastro-instrumentos" element={<InstrumentRegistration />} />
+              <Route path="/cadastro-ativo" element={<AssetRegister />} />
             </Route>
             <Route path="*" element={<NotFound />} />
           </Routes>
