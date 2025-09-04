@@ -7,7 +7,7 @@ import {
 } from '@/components/ui/select';
 import { useFormsMap } from '@/hooks/firestore-intranet/use-forms-map';
 import { IFormsMap } from '@/models/instrumentsRegistration.model';
-import { useFormSteps } from '@/hooks/stepper/use-form-steps';
+import { useFormStepper } from '@/hooks/stepper/use-form-stepper';
 import { useCallback, useEffect, useState } from 'react';
 import { Label } from '@/components/ui/label';
 
@@ -24,7 +24,7 @@ export const AssetRegister = () => {
     isLoading: formLoading,
     error: formError,
     formData,
-  } = useFormSteps(selectedForm);
+  } = useFormStepper(selectedForm);
 
   const loadForm = useCallback(async () => {
     if (!selectedForm) return;
