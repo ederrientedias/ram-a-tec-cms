@@ -15,6 +15,7 @@ import { Button } from '@/components/ui/button';
 import { ChevronDownIcon } from 'lucide-react';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
+import CleaveInput from 'cleave.js/react';
 
 export const Form = ({ fields }) => {
   const { data: selectOptins } = useSelectOptions();
@@ -44,9 +45,22 @@ export const Form = ({ fields }) => {
                 <Controller
                   name={fieldName}
                   control={control}
-                  render={({ field }) => (
-                    <Input type={item.type} placeholder={item.placeholder} {...field} />
-                  )}
+                  render={({ field }) => {
+                    if (!item.inputMaskOptions) {
+                      return <Input type={item.type} placeholder={item.placeholder} {...field} />;
+                    }
+                    return (
+                      <CleaveInput
+                        {...field}
+                        key={item.id}
+                        type="text"
+                        className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
+                        placeholder={item.placeholder}
+                        options={item.inputMaskOptions}
+                        onChange={(e: any) => field.onChange(e.target.rawValue)}
+                      />
+                    );
+                  }}
                 />
               </div>
             )}
@@ -58,9 +72,22 @@ export const Form = ({ fields }) => {
                 <Controller
                   name={fieldName}
                   control={control}
-                  render={({ field }) => (
-                    <Input type={item.type} placeholder={item.placeholder} {...field} />
-                  )}
+                  render={({ field }) => {
+                    if (!item.inputMaskOptions) {
+                      return <Input type={item.type} placeholder={item.placeholder} {...field} />;
+                    }
+                    return (
+                      <CleaveInput
+                        {...field}
+                        key={item.id}
+                        type="number"
+                        className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
+                        placeholder={item.placeholder}
+                        options={item.inputMaskOptions}
+                        onChange={(e: any) => field.onChange(e.target.rawValue)}
+                      />
+                    );
+                  }}
                 />
               </div>
             )}
@@ -85,7 +112,7 @@ export const Form = ({ fields }) => {
                             key={option['ID'].toString()}
                             value={option['ID'].toString() ?? ''}
                           >
-                            {option['NOME'] ?? option['CLASSE'] ?? option['COD']}
+                            {option['NOME'] ?? option['CLASSE'] ?? option['COD'] ?? option['name']}
                           </SelectItem>
                         ))}
                       </SelectContent>
