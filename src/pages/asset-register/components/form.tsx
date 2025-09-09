@@ -47,7 +47,15 @@ export const Form = ({ fields }) => {
                   control={control}
                   render={({ field }) => {
                     if (!item.inputMaskOptions) {
-                      return <Input type={item.type} placeholder={item.placeholder} {...field} />;
+                      return (
+                        <Input
+                          type={item.type}
+                          placeholder={
+                            item.placeholder.length > 0 ? item.placeholder : `Digite ${item.label}`
+                          }
+                          {...field}
+                        />
+                      );
                     }
                     return (
                       <CleaveInput
@@ -104,7 +112,11 @@ export const Form = ({ fields }) => {
                   render={({ field }) => (
                     <Select value={field.value ?? ''} onValueChange={field.onChange}>
                       <SelectTrigger className="w-full">
-                        <SelectValue placeholder={item.placeholder ?? 'Selecione uma opção'} />
+                        <SelectValue
+                          placeholder={
+                            item.placeholder.length > 0 ? item.placeholder : 'Selecione uma opção'
+                          }
+                        />
                       </SelectTrigger>
                       <SelectContent>
                         {fecthSelectOptions(item.optionsRef).map((option) => (
