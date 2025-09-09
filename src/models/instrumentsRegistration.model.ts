@@ -19,6 +19,7 @@ export interface IField {
   collectionData: string | null;
   optionsRef: string | null;
   isRequire: boolean;
+  inputMaskOptions: any | null;
 }
 
 export interface IInstrumentsGroup {
