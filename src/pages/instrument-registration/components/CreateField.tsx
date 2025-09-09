@@ -7,9 +7,9 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import {
+  createFieldDefaultValues,
   CreateFieldSchema,
   createfieldSchema,
-  createFieldDefaultValues,
 } from '@/schemas/instrument-registration/createField.schema';
 import {
   Dialog,
@@ -20,6 +20,16 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import {
+  ChevronDown,
+  Pencil,
+  Plus,
+  Search,
+  ServerCrash,
+  Settings2Icon,
+  Trash2,
+  X,
+} from 'lucide-react';
+import {
   Table,
   TableBody,
   TableCell,
@@ -28,13 +38,19 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+} from '@/components/ui/sheet';
+import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { ChevronDown, Pencil, Plus, Search, ServerCrash, Trash2 } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import firestoreService from '@/services/firestore-intranet/firestore.service';
 import { IField, ISelectOption } from '@/models/instrumentsRegistration.model';
@@ -43,7 +59,8 @@ import firestoreAssetManagement from '@/services/firestoreAssetManagement';
 import { useFields } from '@/hooks/firestore-intranet/use-fields';
 import { Controller, useForm, useWatch } from 'react-hook-form';
 import { Documents } from '@/enums/firestoreIntranet.enum';
-import { useCallback, useState, useEffect } from 'react';
+import { useCallback, useEffect, useState } from 'react';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import { CheckedState } from '@radix-ui/react-checkbox';
 import { useQueryClient } from '@tanstack/react-query';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -54,6 +71,8 @@ import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
+
+import { CustomInputMask } from './CustomInputMask';
 
 const types = [
   {
@@ -73,8 +92,18 @@ const types = [
   },
   {
     id: 3,
-    name: 'Select',
+    name: 'Lista',
     type: 'select',
+  },
+  {
+    id: 4,
+    name: 'Lista Customizável',
+    type: 'custom-list',
+  },
+  {
+    id: 5,
+    name: 'Checkbox',
+    type: 'checkbox',
   },
 ];
 
@@ -206,6 +235,11 @@ export const CreateField = () => {
   const [isCollectionData, setIsCollectionData] = useState<boolean>(false);
   const { data: fieldsBlock, error, isLoading: fieldsBlockIsloading } = useFieldsBlock();
   const { data: fields, error: fieldsError, isLoading: fieldsLoading } = useFields();
+  const [customList, setCustomList] = useState([]);
+  const [customName, setCustomName] = useState('');
+  const [customInputMaskName, setCustomInputMaskName] = useState(null);
+  const [isCustomInputMaskOpen, setIsCustomInputMaskOpen] = useState(false);
+  const [inputMaskOptions, setInputMaskOption] = useState(null);
 
   const {
     handleSubmit,
@@ -216,6 +250,7 @@ export const CreateField = () => {
   } = useForm<CreateFieldSchema>({
     resolver: zodResolver(createfieldSchema),
     defaultValues: createFieldDefaultValues,
+    shouldUnregister: false,
   });
 
   const selectedType = useWatch({
@@ -239,10 +274,20 @@ export const CreateField = () => {
 
   useEffect(() => {
     if (!selectedType) return;
-    if (selectedType === 'select') {
-      setIsCollectionData(true);
+    switch (selectedType) {
+      case 'select':
+        setCustomList([]);
+        setCustomName('');
+        break;
+      case 'custom-list':
+        setOptions([]);
+        setIsOptions(false);
+        setValue('collectionData', '');
+        break;
+      default:
+        break;
     }
-  }, [selectedType]);
+  }, [selectedType, setValue]);
 
   useEffect(() => {
     loadOptions();
@@ -284,7 +329,7 @@ export const CreateField = () => {
 
     const options: ISelectOption = {
       id: fieldRef ? fieldRef.optionsRef : crypto.randomUUID(),
-      options: selectedOptions,
+      options: selectedType === 'custom-list' ? customList : selectedOptions,
     };
 
     const field: IField = {
@@ -295,8 +340,9 @@ export const CreateField = () => {
       placeholder: data.placeholder ?? null,
       collectionData: data.collectionData.length > 0 ? data.collectionData : null,
       fieldBlockRef: fieldBlockId,
-      optionsRef: selectedCollectionData ? options.id : null,
+      optionsRef: selectedCollectionData || selectedType === 'custom-list' ? options.id : null,
       isRequire: data.isRequire ?? false,
+      inputMaskOptions: inputMaskOptions ?? null,
     };
 
     await addField({ options, field });
@@ -422,6 +468,37 @@ export const CreateField = () => {
     });
   };
 
+  const addItemCustomList = () => {
+    if (!customName.trim()) return;
+    setCustomList((prev) => [...prev, { id: crypto.randomUUID(), name: customName }]);
+    setCustomName('');
+  };
+
+  const removeItemCustomList = (id: number) => {
+    setCustomList((prev) => prev.filter((item) => item.id !== id));
+  };
+
+  const handleCustomInputMask = (data: { name: string; options: any }) => {
+    setInputMaskOption(data.options);
+    setCustomInputMaskName(data.name);
+    closeCustomInputMask();
+  };
+
+  const removeInputMask = () => {
+    setInputMaskOption(null);
+    setCustomInputMaskName(null);
+    setIsCustomInputMaskOpen(false);
+  };
+
+  const openCustomInputMask = () => {
+    if (selectedType === 'select' || selectedType === 'custom-list') return;
+    setIsCustomInputMaskOpen(true);
+  };
+
+  const closeCustomInputMask = () => {
+    setIsCustomInputMaskOpen(false);
+  };
+
   const loadFields = async () => {
     await queryClient.invalidateQueries({ queryKey: [Documents.Fields] });
   };
@@ -437,7 +514,15 @@ export const CreateField = () => {
   };
 
   const dismiss = (e: CustomEvent): void => {
-    if (e) resetForm();
+    // console.log(e);
+    // if (e) {
+    //   return resetForm();
+    // }
+
+    if (isCustomInputMaskOpen) {
+      event.preventDefault();
+      return;
+    }
   };
 
   const resetForm = () => {
@@ -446,6 +531,9 @@ export const CreateField = () => {
     setIsOptions(false);
     setDisplayOptions(null);
     setAllOptions(false);
+    setSelectedOptions([]);
+    setCustomList([]);
+    setInputMaskOption(null);
   };
 
   return (
@@ -526,7 +614,11 @@ export const CreateField = () => {
 
       {/* Dialog para adicionar Arquivo */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="max-w-5xl" onInteractOutside={(event) => dismiss(event)}>
+        <DialogContent
+          forceMount
+          className="max-w-5xl"
+          onInteractOutside={(event) => dismiss(event)}
+        >
           <form onSubmit={handleSubmit(onSubmit)}>
             <DialogHeader>
               <DialogTitle>Criar Campo</DialogTitle>
@@ -597,7 +689,8 @@ export const CreateField = () => {
                 )}
               </div>
 
-              {isCollectionData && (
+              {/* Tipo Lista */}
+              {selectedType === 'select' && (
                 <div className="space-y-2">
                   {/* <Label htmlFor="collectionData">Dados da opção do tipo select</Label> */}
                   <Label htmlFor="collectionData">Coleção de Dados</Label>
@@ -625,6 +718,74 @@ export const CreateField = () => {
                   )} */}
                 </div>
               )}
+
+              {/* Tipo Lista Customizável */}
+              {selectedType === 'custom-list' && (
+                <div className="space-y-2">
+                  <Label htmlFor="optionsRef">Lista Customizável</Label>
+                  <Popover>
+                    <PopoverTrigger className="w-full flex items-center justify-between gap-2 px-3 py-2 border rounded-md  cursor-pointer">
+                      <span className="text-sm">Criar lista</span>
+                      <ChevronDown className="w-4 h-4 opacity-50" />
+                    </PopoverTrigger>
+                    <PopoverContent className="min-w-[475px]">
+                      <div className="flex flex-col gap-3">
+                        <div className="space-y-2">
+                          <h4 className="leading-none font-medium">Lista Customizável</h4>
+                          <p className="text-muted-foreground text-sm">
+                            Adicione itens à sua lista customizável.
+                          </p>
+                        </div>
+
+                        {/* input + botão de adicionar */}
+                        <div className="flex gap-2">
+                          <Input
+                            placeholder="Digite um nome"
+                            value={customName}
+                            onChange={(e) => setCustomName(e.target.value)}
+                            className="h-9 outline-none"
+                          />
+                          <Button
+                            className="h-9 bg-blue-100 hover:bg-blue-200"
+                            type="button"
+                            variant="secondary"
+                            size="icon"
+                            onClick={addItemCustomList}
+                          >
+                            <Plus className="text-blue-500" />
+                          </Button>
+                        </div>
+
+                        {/* lista renderizada */}
+                        <ScrollArea className="h-36 w-full rounded-md border">
+                          <div className="flex flex-col gap-2 my-4">
+                            {customList.map((item) => (
+                              <div
+                                key={item.id}
+                                className="flex items-center justify-between gap-2 group"
+                              >
+                                <div className="w-full px-3 py-1 border-b ">
+                                  <span className="text-sm">{item.name}</span>
+                                </div>
+                                <Button
+                                  className="h-7 bg-transparent group-hover:bg-gray-50"
+                                  type="button"
+                                  variant="destructive"
+                                  size="icon"
+                                  onClick={() => removeItemCustomList(item.id)}
+                                >
+                                  <Trash2 className="text-red-500 group-hover:text-slate-950" />
+                                </Button>
+                              </div>
+                            ))}
+                          </div>
+                        </ScrollArea>
+                      </div>
+                    </PopoverContent>
+                  </Popover>
+                </div>
+              )}
+
               {isOptions && (
                 <div className="space-y-2">
                   <Label htmlFor="optionsRef">Dados da opção do tipo select</Label>
@@ -699,6 +860,47 @@ export const CreateField = () => {
                 )}
               </div>
 
+              {/* Máscara Customizável */}
+              <div className="space-y-2 relative">
+                <Label htmlFor="inputMask">Máscara Customizável</Label>
+                <div
+                  className={`
+                    w-full flex items-center justify-between gap-2 px-3 py-2 border rounded-md  cursor-pointer
+                    ${
+                      selectedType === 'select' || selectedType === 'custom-list'
+                        ? 'cursor-not-allowed'
+                        : ''
+                    }
+                  `}
+                  onClick={openCustomInputMask}
+                >
+                  <span
+                    className={`text-sm 
+                      ${
+                        selectedType === 'select' || selectedType === 'custom-list'
+                          ? 'opacity-50'
+                          : ''
+                      }
+                    `}
+                  >
+                    {!inputMaskOptions ? 'Escolha ou personalize a máscara' : customInputMaskName}
+                  </span>
+                  {inputMaskOptions && customInputMaskName ? (
+                    <div
+                      className="w-8 h-8 flex items-center justify-center z-10 absolute right-1 cursor-pointer"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        removeInputMask();
+                      }}
+                    >
+                      <X className="w-4 h-4 opacity-50" />
+                    </div>
+                  ) : (
+                    <Settings2Icon className="w-4 h-4 opacity-50" />
+                  )}
+                </div>
+              </div>
+
               {/* Bloco de Campos */}
               <div className="space-y-2">
                 <Label htmlFor="fieldBlockRef">Bloco de Campos</Label>
@@ -711,7 +913,7 @@ export const CreateField = () => {
                       <SelectTrigger>
                         <SelectValue
                           placeholder={
-                            fieldsBlockIsloading ? 'Carregando...' : 'Selecione um fundo'
+                            fieldsBlockIsloading ? 'Carregando...' : 'Selecione o bloco de campos'
                           }
                         />
                       </SelectTrigger>
@@ -840,6 +1042,19 @@ export const CreateField = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Máscara de Input */}
+      <Sheet open={isCustomInputMaskOpen} onOpenChange={setIsCustomInputMaskOpen}>
+        <SheetContent className="w-[500px] sm:max-w-[540px]">
+          <SheetHeader className="mb-3">
+            <SheetTitle>Máscara Customizável</SheetTitle>
+            <SheetDescription>
+              Crie uma máscara personalizada ou selecione uma pronta.
+            </SheetDescription>
+          </SheetHeader>
+          <CustomInputMask onSave={handleCustomInputMask} close={closeCustomInputMask} />
+        </SheetContent>
+      </Sheet>
     </div>
   );
 };
