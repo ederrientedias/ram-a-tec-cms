@@ -8,7 +8,15 @@ import {
   IInstrumentsGroup,
   ISelectOption,
 } from '@/models/instrumentsRegistration.model';
-import { collection, doc, DocumentData, Firestore, getDoc, setDoc } from 'firebase/firestore';
+import {
+  collection,
+  doc,
+  DocumentData,
+  Firestore,
+  getDoc,
+  getDocs,
+  setDoc,
+} from 'firebase/firestore';
 import { Collection, Documents } from '@/enums/firestoreIntranet.enum';
 import { firestoreIntranet } from '@/config/firebase.config';
 
@@ -102,6 +110,21 @@ class FirestoreIntranetRepository {
     return formsMap ?? [];
   }
 
+  public async getAllRegistredAssets(): Promise<any> {
+    const assetsRef = collection(
+      this.firestore,
+      Collection.InstrumentRegistration,
+      Documents.RegistredAssets,
+      'assets'
+    );
+
+    const querySnapshot = await getDocs(assetsRef);
+
+    const assetsData = querySnapshot.docs.map((doc) => ({ ...doc.data().data }));
+
+    return assetsData;
+  }
+
   public async setFields(fields: IField[]): Promise<boolean> {
     try {
       const docRef = doc(this.development, Documents.Fields);
@@ -174,6 +197,19 @@ class FirestoreIntranetRepository {
     try {
       const docRef = doc(this.development, Documents.Forms);
       await setDoc(docRef, { formsMap: data }, { merge: true });
+      return true;
+    } catch (error) {
+      console.error('Erro ao salvar documento:', error);
+      return false;
+    }
+  }
+
+  public async setRegistredAssets(data: { id: string; [key: string]: any }): Promise<boolean> {
+    try {
+      const docRef = doc(this.development, Documents.RegistredAssets);
+      const collectionRef = collection(docRef, 'assets');
+      const docRefAsset = doc(collectionRef, data.id);
+      await setDoc(docRefAsset, { data }, { merge: true });
       return true;
     } catch (error) {
       console.error('Erro ao salvar documento:', error);
