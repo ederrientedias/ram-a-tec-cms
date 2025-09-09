@@ -67,6 +67,10 @@ class FirestoreService {
     return await firestoreRepository.getFormsMap();
   }
 
+  public async getAllRegistredAssets(): Promise<any> {
+    return await firestoreRepository.getAllRegistredAssets();
+  }
+
   /* SET */
   public async setField(field: IField): Promise<boolean> {
     console.log('setField', field);
@@ -175,14 +179,12 @@ class FirestoreService {
     }
   }
 
-  // /instrument_registration/forms/LFT/form
   public async setForm(form: IForm): Promise<boolean> {
     return await firestoreRepository.setForm(form);
   }
 
   public async setFormMap(formMap: IFormsMap): Promise<boolean> {
     const formsMap: IFormsMap[] = await firestoreRepository.getFormsMap();
-    console.log('formsMap:', formsMap);
     const exists = formsMap?.findIndex((f) => f.nickname === formMap.nickname);
 
     if (formsMap.length > 0 && exists !== -1) {
@@ -206,6 +208,34 @@ class FirestoreService {
       const mergedFormsMap = [...formsMap, formMap];
       return await firestoreRepository.setFormsMap(mergedFormsMap);
     }
+  }
+
+  public async setRegistredAsset(data: { id: string; [key: string]: any }): Promise<boolean> {
+    return await firestoreRepository.setRegistredAssets(data);
+    // const formsMap: IFormsMap[] = await firestoreRepository.getFormsMap();
+    // const exists = formsMap?.findIndex((f) => f.nickname === formMap.nickname);
+
+    // if (formsMap.length > 0 && exists !== -1) {
+    //   toast.info(`O formulário de cadastro para "${formMap.nickname}" já existe.`);
+    //   return false;
+    // }
+
+    // if (Array.isArray(formsMap) && formsMap.length === 0) {
+    //   return await firestoreRepository.setFormsMap([formMap]);
+    // }
+
+    // if (Array.isArray(formsMap) && formsMap.length > 0) {
+    //   const exists = formsMap.some((e: IFormsMap) => e.formId === formMap.formId);
+    //   const index = formsMap.findIndex((e: IFormsMap) => e.formId === formMap.formId);
+
+    //   if (exists && index !== -1) {
+    //     formsMap[index] = formMap;
+    //     return await firestoreRepository.setFormsMap(formsMap);
+    //   }
+
+    //   const mergedFormsMap = [...formsMap, formMap];
+    //   return await firestoreRepository.setFormsMap(mergedFormsMap);
+    // }
   }
 
   /* DELETE */
