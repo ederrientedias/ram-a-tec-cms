@@ -1,21 +1,17 @@
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, } from '@/components/ui/select';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { useSelectOptions } from '@/hooks/firestore-intranet/use-select-options';
 import { IField } from '@/models/instrumentsRegistration.model';
 import { Controller, useFormContext } from 'react-hook-form';
 import { sanitizeString } from '@/utils/format-string';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Calendar } from '@/components/ui/calendar';
 import { Button } from '@/components/ui/button';
 import { ChevronDownIcon } from 'lucide-react';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import CleaveInput from 'cleave.js/react';
+
 
 export const Form = ({ fields }) => {
   const { data: selectOptins } = useSelectOptions();
@@ -61,7 +57,6 @@ export const Form = ({ fields }) => {
                       <CleaveInput
                         {...field}
                         key={item.id}
-                        type="text"
                         className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
                         placeholder={item.placeholder}
                         options={item.inputMaskOptions}
@@ -88,7 +83,6 @@ export const Form = ({ fields }) => {
                       <CleaveInput
                         {...field}
                         key={item.id}
-                        type="number"
                         className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
                         placeholder={item.placeholder}
                         options={item.inputMaskOptions}
@@ -170,6 +164,21 @@ export const Form = ({ fields }) => {
                     </Popover>
                   )}
                 />
+              </div>
+            )}
+
+            {/* Tipo Checkbox */}
+            {item.type === 'checkbox' && (
+              <div className="flex flex-col gap-2">
+                <Label className="text-transparent">{item.label}</Label>
+                <Label className="w-full h-10 flex items-center gap-2 rounded-md border bg-background px-3 py-2 text-base disabled:cursor-not-allowed disabled:opacity-50 md:text-sm has-[[aria-checked=true]]:border-blue-600 has-[[aria-checked=true]]:bg-blue-50 hover:bg-accent/50 cursor-pointer ">
+                  <Checkbox
+                    id="toggle-2"
+                    defaultChecked
+                    className="data-[state=checked]:border-blue-600 data-[state=checked]:bg-blue-600 data-[state=checked]:text-white data-[state=unchecked]:border-input"
+                  />
+                  {item.label}
+                </Label>
               </div>
             )}
 
