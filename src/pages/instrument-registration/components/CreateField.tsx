@@ -1,56 +1,10 @@
-import {
-  AlertDialog,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
-import {
-  createFieldDefaultValues,
-  CreateFieldSchema,
-  createfieldSchema,
-} from '@/schemas/instrument-registration/createField.schema';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
-import {
-  ChevronDown,
-  Pencil,
-  Plus,
-  Search,
-  ServerCrash,
-  Settings2Icon,
-  Trash2,
-  X,
-} from 'lucide-react';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
-import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-} from '@/components/ui/sheet';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
+import { AlertDialog, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, } from '@/components/ui/alert-dialog';
+import { createFieldDefaultValues, CreateFieldSchema, createfieldSchema, } from '@/schemas/instrument-registration/createField.schema';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, } from '@/components/ui/dialog';
+import { ChevronDown, Pencil, Plus, Search, ServerCrash, Settings2Icon, Trash2, X, } from 'lucide-react';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow, } from '@/components/ui/table';
+import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, } from '@/components/ui/sheet';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, } from '@/components/ui/select';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import firestoreService from '@/services/firestore-intranet/firestore.service';
 import { IField, ISelectOption } from '@/models/instrumentsRegistration.model';
@@ -73,6 +27,7 @@ import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
 
 import { CustomInputMask } from './CustomInputMask';
+
 
 const types = [
   {
@@ -274,19 +229,20 @@ export const CreateField = () => {
 
   useEffect(() => {
     if (!selectedType) return;
-    switch (selectedType) {
-      case 'select':
+
+    const selectedTypes = {
+      select: () => {
         setCustomList([]);
         setCustomName('');
-        break;
-      case 'custom-list':
+      },
+      'custom-list': () => {
         setOptions([]);
         setIsOptions(false);
         setValue('collectionData', '');
-        break;
-      default:
-        break;
-    }
+      },
+    };
+
+    selectedTypes[selectedType]?.();
   }, [selectedType, setValue]);
 
   useEffect(() => {
@@ -491,7 +447,6 @@ export const CreateField = () => {
   };
 
   const openCustomInputMask = () => {
-    if (selectedType === 'select' || selectedType === 'custom-list') return;
     setIsCustomInputMaskOpen(true);
   };
 
@@ -842,64 +797,53 @@ export const CreateField = () => {
               )}
 
               {/* Placeholder */}
-              <div className="space-y-2">
-                <Label htmlFor="placeholder">Placeholder</Label>
-                <Controller
-                  name="placeholder"
-                  control={control}
-                  render={({ field }) => (
-                    <Input
-                      type="text"
-                      placeholder="Texto que auxilia o preenchimento do campo"
-                      {...field}
-                    />
-                  )}
-                />
-                {errors.placeholder && touchedFields.placeholder && (
-                  <small className="text-red-400">{errors.placeholder.message}</small>
-                )}
-              </div>
-
-              {/* Máscara Customizável */}
-              <div className="space-y-2 relative">
-                <Label htmlFor="inputMask">Máscara Customizável</Label>
-                <div
-                  className={`
-                    w-full flex items-center justify-between gap-2 px-3 py-2 border rounded-md  cursor-pointer
-                    ${
-                      selectedType === 'select' || selectedType === 'custom-list'
-                        ? 'cursor-not-allowed'
-                        : ''
-                    }
-                  `}
-                  onClick={openCustomInputMask}
-                >
-                  <span
-                    className={`text-sm 
-                      ${
-                        selectedType === 'select' || selectedType === 'custom-list'
-                          ? 'opacity-50'
-                          : ''
-                      }
-                    `}
-                  >
-                    {!inputMaskOptions ? 'Escolha ou personalize a máscara' : customInputMaskName}
-                  </span>
-                  {inputMaskOptions && customInputMaskName ? (
-                    <div
-                      className="w-8 h-8 flex items-center justify-center z-10 absolute right-1 cursor-pointer"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        removeInputMask();
-                      }}
-                    >
-                      <X className="w-4 h-4 opacity-50" />
-                    </div>
-                  ) : (
-                    <Settings2Icon className="w-4 h-4 opacity-50" />
+              {selectedType !== 'checkbox' && (
+                <div className="space-y-2">
+                  <Label htmlFor="placeholder">Placeholder</Label>
+                  <Controller
+                    name="placeholder"
+                    control={control}
+                    render={({ field }) => (
+                      <Input
+                        type="text"
+                        placeholder="Texto que auxilia o preenchimento do campo"
+                        {...field}
+                      />
+                    )}
+                  />
+                  {errors.placeholder && touchedFields.placeholder && (
+                    <small className="text-red-400">{errors.placeholder.message}</small>
                   )}
                 </div>
-              </div>
+              )}
+
+              {/* Máscara Customizável */}
+              {(selectedType === 'text' || selectedType === 'number') && (
+                <div className="space-y-2 relative">
+                  <Label htmlFor="inputMask">Máscara Customizável</Label>
+                  <div
+                    className="w-full flex items-center justify-between gap-2 px-3 py-2 border rounded-md cursor-pointer"
+                    onClick={openCustomInputMask}
+                  >
+                    <span className="text-sm">
+                      {!inputMaskOptions ? 'Escolha ou personalize a máscara' : customInputMaskName}
+                    </span>
+                    {inputMaskOptions && customInputMaskName ? (
+                      <div
+                        className="w-8 h-8 flex items-center justify-center z-10 absolute right-1 cursor-pointer"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          removeInputMask();
+                        }}
+                      >
+                        <X className="w-4 h-4 opacity-50" />
+                      </div>
+                    ) : (
+                      <Settings2Icon className="w-4 h-4 opacity-50" />
+                    )}
+                  </div>
+                </div>
+              )}
 
               {/* Bloco de Campos */}
               <div className="space-y-2">
