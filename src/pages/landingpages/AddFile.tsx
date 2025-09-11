@@ -7,6 +7,7 @@ import { ICollectionMap, IDocumentProps, IFileMetadata } from '@/models/landingp
 import { useLandingPageFunds } from '@/hooks/firestore/funds/use-landingpage';
 import { FileText, FileUp, Pencil, Plus, Trash2 } from 'lucide-react';
 import landingPageService from '@/services/landingpage.service';
+import landinpageService from '@/services/landingpage.service';
 import { useCallback, useEffect, useState } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Controller, useForm } from 'react-hook-form';
@@ -168,17 +169,17 @@ const AddFile = () => {
 
   const onSubmit = async (data: any) => {
     setIsUploading(true);
-    await addFile(data);
+    await createFileMetadata(data);
   };
 
   const createFileMetadata = async (data: UpdateFileMetadataSchema | CreateFileMetadataSchema) => {
-    let fileUrl: string | null = null;
-    if (!fileRef) {
-      fileUrl = fileMetadataRef.file;
-    } else {
-      const { url } = await handleFileUpload();
-      fileUrl = url;
-    }
+    // let fileUrl: string | null = null;
+    // if (!fileRef) {
+    //   fileUrl = fileMetadataRef.file;
+    // } else {
+    //   const { url } = await handleFileUpload();
+    //   fileUrl = url;
+    // }
 
     const fileId =
       fileMetadataRef?.id ?? (fileMetadata.length > 0 ? Number(fileMetadata.at(-1).id) + 1 : 0);
@@ -188,14 +189,14 @@ const AddFile = () => {
       name: data.filename,
       month: String(new Date().getMonth() + 1),
       downloadName: selectedFileName,
-      file: fileUrl,
+      file: 'fileUrl',
     };
 
-    return metadata;
+    await addFile(metadata);
   };
 
-  const addFile = async (data: UpdateFileMetadataSchema | CreateFileMetadataSchema) => {
-    const fileMetadata: IFileMetadata = await createFileMetadata(data);
+  const addFile = async (fileMetadata: IFileMetadata) => {
+    await handleCollectionMa();
 
     await landingPageService.setFile(documentPropsRef, fileMetadata).finally(() => {
       setIsUploading(false);
@@ -203,6 +204,19 @@ const AddFile = () => {
       loadFilesMetadatas();
       closeDialog();
     });
+  };
+
+  const handleCollectionMa = async () => {
+    const collectionMap = await landinpageService.getCollectionMap(selectedFund);
+    const selectedCollectionMap: ICollectionMap = collectionMap.find(
+      (c: any) => c.collectionName === selectedTab
+    );
+
+    selectedCollectionMap.years = selectedCollectionMap.years.includes(selectedYear)
+      ? selectedCollectionMap.years
+      : [...selectedCollectionMap.years, String(selectedYear)];
+
+    await landingPageService.setCollectionMap(selectedFund, selectedCollectionMap);
   };
 
   const handleDeleteFile = async () => {
