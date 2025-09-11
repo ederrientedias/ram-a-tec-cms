@@ -64,23 +64,48 @@ const AddFile = () => {
     setCollectionMap(collectionMap);
   }, [selectedFund]);
 
-  const loadYears = useCallback(async () => {
-    if (!selectedTab) return;
+  const generateYearRange = useCallback((years: string[]): string[] => {
+    const currentYear = new Date().getFullYear();
 
-    const currentYear = new Date().getFullYear().toString();
-
-    const years = collectionMap
-      .filter((c) => c.collectionName === selectedTab)
-      .flatMap((c) => c.years)
-      .map(String)
-      .sort((a, b) => Number(a) - Number(b));
-
-    if (!years.includes(currentYear)) {
-      years.push(currentYear);
+    if (!years || years.length === 0) {
+      return [String(currentYear - 1), String(currentYear), String(currentYear + 1)];
     }
 
+    const numYears = [...new Set(years.map((y) => parseInt(y, 10)))].sort((a, b) => a - b);
+
+    if (numYears.length === 1) {
+      const singleYear = numYears[0];
+      const start = Math.min(singleYear - 1, currentYear - 1);
+      const end = Math.max(singleYear + 1, currentYear + 1);
+
+      const result: number[] = [];
+      for (let y = start; y <= end; y++) {
+        result.push(y);
+      }
+      return result.map(String);
+    }
+
+    const minYear = Math.min(...numYears);
+    const maxYear = Math.max(...numYears);
+
+    const start = Math.min(minYear - 1, currentYear - 1);
+    const end = Math.max(maxYear + 1, currentYear + 1);
+
+    const result: number[] = [];
+
+    for (let y = start; y <= end; y++) {
+      result.push(y);
+    }
+
+    return [...new Set(result)].sort((a, b) => a - b).map(String);
+  }, []);
+
+  const loadYears = useCallback(async () => {
+    if (!selectedTab) return;
+    const selectedCollectionMap = collectionMap.find((c) => c.collectionName === selectedTab);
+    const years = generateYearRange(selectedCollectionMap.years);
     setYears(years);
-  }, [collectionMap, selectedTab]);
+  }, [collectionMap, selectedTab, generateYearRange]);
 
   const handleFilesMetadatas = useCallback(async () => {
     const props: IDocumentProps = {
