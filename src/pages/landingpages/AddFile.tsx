@@ -173,13 +173,13 @@ const AddFile = () => {
   };
 
   const createFileMetadata = async (data: UpdateFileMetadataSchema | CreateFileMetadataSchema) => {
-    // let fileUrl: string | null = null;
-    // if (!fileRef) {
-    //   fileUrl = fileMetadataRef.file;
-    // } else {
-    //   const { url } = await handleFileUpload();
-    //   fileUrl = url;
-    // }
+    let fileUrl: string | null = null;
+    if (!fileRef) {
+      fileUrl = fileMetadataRef.file;
+    } else {
+      const { url } = await handleFileUpload();
+      fileUrl = url;
+    }
 
     const fileId =
       fileMetadataRef?.id ?? (fileMetadata.length > 0 ? Number(fileMetadata.at(-1).id) + 1 : 0);
@@ -189,7 +189,7 @@ const AddFile = () => {
       name: data.filename,
       month: String(new Date().getMonth() + 1),
       downloadName: selectedFileName,
-      file: 'fileUrl',
+      file: fileUrl,
     };
 
     await addFile(metadata);
