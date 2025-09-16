@@ -1,8 +1,39 @@
-import { AlertDialog, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, } from '@/components/ui/alert-dialog';
-import { CreateFieldsBlockSchema, createFieldsBlockDefaultValues, createfieldsBlockSchema, } from '@/schemas/instrument-registration/createFieldsBlock.schema';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, } from '@/components/ui/dialog';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow, } from '@/components/ui/table';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, } from '@/components/ui/select';
+import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import {
+  CreateFieldsBlockSchema,
+  createFieldsBlockDefaultValues,
+  createfieldsBlockSchema,
+} from '@/schemas/instrument-registration/createFieldsBlock.schema';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import firestoreService from '@/services/firestore-intranet/firestore.service';
 import { useFieldsBlock } from '@/hooks/firestore-intranet/use-fields-block';
 import { Pencil, Plus, Search, ServerCrash, Trash2 } from 'lucide-react';
@@ -18,7 +49,6 @@ import { Input } from '@/components/ui/input';
 import { groups } from '@/utils/groups';
 import { useState } from 'react';
 import { toast } from 'sonner';
-
 
 export const CreateFieldBLock = () => {
   const queryClient = useQueryClient();
@@ -170,7 +200,7 @@ export const CreateFieldBLock = () => {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>ID</TableHead>
+                  {/* <TableHead>ID</TableHead> */}
                   <TableHead>Nome do Campo</TableHead>
                   <TableHead>Bloco</TableHead>
                   <TableHead>Ações</TableHead>
@@ -192,16 +222,15 @@ export const CreateFieldBLock = () => {
                 ) : (
                   filteredFieldsBlock?.map((field: IFieldsBlock) => (
                     <TableRow key={field.id}>
-                      <TableCell className="font-medium">{field.id}</TableCell>
+                      {/* <TableCell className="font-medium">{field.id}</TableCell> */}
                       <TableCell>{field.name}</TableCell>
                       <TableCell>{field.group.toUpperCase()}</TableCell>
                       <TableCell>
                         <div className="flex items-center gap-2">
-                          {/* onClick={() => openDialog(field)} */}
                           <Button variant="ghost" size="icon" onClick={() => openDialog(field)}>
                             <Pencil className="h-4 w-4" />
                           </Button>
-                          {/* onClick={() => openAlert(field)} */}
+
                           <Button
                             variant="ghost"
                             size="icon"
