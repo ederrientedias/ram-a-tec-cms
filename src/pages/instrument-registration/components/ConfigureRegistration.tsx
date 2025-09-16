@@ -6,6 +6,14 @@ import {
   IInstrument,
 } from '@/models/instrumentsRegistration.model';
 import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import {
   Select,
   SelectContent,
   SelectItem,
@@ -23,19 +31,32 @@ import { useInstrumentsGroup } from '@/hooks/firestore-intranet/use-instruments-
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import firestoreService from '@/services/firestore-intranet/firestore.service';
-import { ChevronDown, Check, CircleAlert } from 'lucide-react';
+import { ChevronDown, Check, CircleAlert, Pencil, Trash2 } from 'lucide-react';
+import { useFormsMap } from '@/hooks/firestore-intranet/use-forms-map';
 import { useCallback, useEffect, useState } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Toggle } from '@/components/ui/toggle';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 
-type selectedItem = { id: string; name: string; fields: IField[] };
+type SelectedItem = {
+  id: string;
+  name: string;
+  fields: IField[];
+};
+
+type IFormRef = {
+  id: string;
+  name: string;
+  fields: { id: string; fieldBlockRef: string }[];
+};
 export const ConfigureRegistration = () => {
+  const queryClient = useQueryClient();
   const [instruments, setInstruments] = useState<IInstrument[]>([]);
   const [fieldsBlock, setFieldsBlock] = useState<IFieldsBlock[]>([]);
-  const [data, setData] = useState<selectedItem[]>([]);
+  const [data, setData] = useState<SelectedItem[]>([]);
   const [selectedOptions, setSelectedOptions] = useState<IFieldsBlock[]>([]);
   const [seletectedInstrumentGroup, setSelectedInstrumentGroup] = useState<string | null>(null);
   const [seletectedInstrument, setSelectedInstrument] = useState<string | null>(null);
@@ -44,7 +65,7 @@ export const ConfigureRegistration = () => {
   >(null);
   const [groupRef, setGroupRef] = useState<string | null>(null);
   const [instrumentRef, setInstrumentRef] = useState<IInstrument | null>(null);
-  const [forms, setForms] = useState<selectedItem[]>([]);
+  const [forms, setForms] = useState<IFormRef[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
   const {
@@ -52,6 +73,7 @@ export const ConfigureRegistration = () => {
     error: instrumentGroupErro,
     isLoading: InstrumentsGroupLoading,
   } = useInstrumentsGroup();
+  const { data: formsMap, isLoading: formsMapLoading } = useFormsMap();
 
   const loadInstruments = useCallback(async () => {
     setFieldsBlock([]);
@@ -172,17 +194,37 @@ export const ConfigureRegistration = () => {
         });
       }
 
-      return prev.map((p) => (p.id === itemId ? { ...p, fields: [...p.fields, field] } : p));
+      return prev.map((p) =>
+        p.id === itemId
+          ? {
+              ...p,
+              fields: [
+                ...p.fields,
+                {
+                  id: field.id,
+                  fieldBlockRef: field.fieldBlockRef,
+                },
+              ],
+            }
+          : p
+      );
     });
   };
 
-  const handleSelectedAll = (item: selectedItem, checked: boolean | 'indeterminate') => {
+  const handleSelectedAll = (item: SelectedItem, checked: boolean | 'indeterminate') => {
     const isChecked = checked;
     setForms((prev) =>
-      prev.map((p) => (p.id === item.id ? { ...p, fields: isChecked ? item.fields : [] } : p))
+      prev.map((p) =>
+        p.id === item.id
+          ? {
+              ...p,
+              fields: isChecked
+                ? item.fields.map((f) => ({ id: f.id, fieldBlockRef: f.fieldBlockRef }))
+                : [],
+            }
+          : p
+      )
     );
-
-    console.log(forms);
   };
 
   const handleEmptyValues = () => {
@@ -261,6 +303,11 @@ export const ConfigureRegistration = () => {
     setForms([]);
     setInstruments([]);
     setInstrumentRef(null);
+    loadFormsMap();
+  };
+
+  const loadFormsMap = async () => {
+    await queryClient.invalidateQueries({ queryKey: ['formsMap'] });
   };
 
   const clearConfig = () => {
@@ -300,7 +347,7 @@ export const ConfigureRegistration = () => {
         </div>
         <div className="w-[300px] min-w-72 space-y-2">
           <Label htmlFor="fund">Instrumento</Label>
-          <Select onValueChange={handleInstrumentChange}>
+          <Select onValueChange={handleInstrumentChange} disabled={!seletectedInstrumentGroup}>
             <SelectTrigger>
               <SelectValue
                 placeholder={!instruments ? 'Carregando...' : 'Selecione um instrumento'}
@@ -330,7 +377,14 @@ export const ConfigureRegistration = () => {
             </Tooltip>
           </Label>
           <Popover>
-            <PopoverTrigger className="w-full h-10 border rounded-lg py-2 px-3 bg-background">
+            <PopoverTrigger
+              className={`${
+                !seletectedInstrument
+                  ? 'w-full h-10 bg-background border rounded-lg py-2 px-3 cursor-not-allowed opacity-50'
+                  : 'w-full h-10 bg-background border rounded-lg py-2 px-3'
+              }`}
+              disabled={!seletectedInstrument}
+            >
               <div className="flex items-center justify-between">
                 <span className="text-sm">Selecione o bloco de campo</span>
                 <ChevronDown className="h-4 w-4" />
@@ -360,13 +414,51 @@ export const ConfigureRegistration = () => {
 
       <div className="flex flex-col gap-4 mt-7">
         <div className="flex items-center gap-2">
-          <h1 className="font-medium">Configuração do Cadastro</h1>
-          {instrumentRef && (
+          {seletectedInstrumentGroup && seletectedInstrument ? (
             <>
+              <h1 className="font-medium">Configuração do Cadastro</h1>
               <h1>
-                - {instrumentRef?.nickname} ({instrumentRef?.name})
+                {' '}
+                - {instrumentRef?.nickname} ({instrumentRef?.name}){' '}
               </h1>
             </>
+          ) : (
+            <div className="w-full flex flex-col rounded-md border">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    {/* <TableHead>ID</TableHead> */}
+                    <TableHead>Nickname</TableHead>
+                    <TableHead>Nome Completo</TableHead>
+                    <TableHead>Grupo</TableHead>
+                    <TableHead>Ações</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {formsMap?.map((form) => {
+                    return (
+                      <TableRow key={form.formId}>
+                        <TableCell>{form.nickname}</TableCell>
+                        <TableCell>{form.name}</TableCell>
+                        <TableCell>{form.instrumentGroupRef.group}</TableCell>
+                        <TableCell>
+                          <div className="flex items-center gap-2">
+                            {/* onClick={() => openDialog(field)} */}
+                            <Button variant="ghost" size="icon">
+                              <Pencil className="h-4 w-4" />
+                            </Button>
+                            {/* onClick={() => openAlert(field)} */}
+                            <Button variant="ghost" size="icon" className="text-red-500">
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
+                </TableBody>
+              </Table>
+            </div>
           )}
         </div>
         {selectedOptions && (
@@ -387,7 +479,7 @@ export const ConfigureRegistration = () => {
                             id={item.id}
                             checked={data[i].fields.length === forms[i]?.fields.length}
                             onCheckedChange={(checked) => handleSelectedAll(item, checked)}
-                            className="data-[state=checked]:border-blue-600 data-[state=checked]:bg-blue-600 data-[state=checked]:text-white"
+                            className="data-[state=checked]:border-blue-600 data-[state=unchecked]:border-gray-300 data-[state=checked]:bg-blue-600 data-[state=checked]:text-white"
                           />
                           <div className="grid gap-1.5 font-normal">
                             <p className="text-sm leading-none font-medium">Todos</p>
@@ -404,7 +496,7 @@ export const ConfigureRegistration = () => {
                               onCheckedChange={(checked) =>
                                 handleSelectedField(item.id, field, checked)
                               }
-                              className="data-[state=checked]:border-blue-600 data-[state=checked]:bg-blue-600 data-[state=checked]:text-white"
+                              className="data-[state=checked]:border-blue-600 data-[state=unchecked]:border-gray-300 data-[state=checked]:bg-blue-600 data-[state=checked]:text-white"
                             />
                             <div className="grid gap-1.5 font-normal">
                               <p className="text-sm leading-none font-medium">{field.label}</p>
