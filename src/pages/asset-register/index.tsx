@@ -5,9 +5,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { IField, IFieldRef, IFormsMap } from '@/models/instrumentsRegistration.model';
 import { useFormsMap } from '@/hooks/firestore-intranet/use-forms-map';
-import { IFormsMap } from '@/models/instrumentsRegistration.model';
 import { useFormStepper } from '@/hooks/stepper/use-form-stepper';
+import { useFields } from '@/hooks/firestore-intranet/use-fields';
 import { useCallback, useEffect, useState } from 'react';
 import { Label } from '@/components/ui/label';
 
@@ -18,7 +19,7 @@ export const AssetRegister = () => {
   const [selectedForm, setSelectedForm] = useState<string | null>(null);
   const [formMapRef, setFormMapRef] = useState<IFormsMap | null>(null);
   const [forms, setForms] = useState([]);
-
+  const { data: fieldsData, isLoading: fieldsLoading, error: fieldsError } = useFields();
   const {
     customSteps,
     isLoading: formLoading,
@@ -26,10 +27,18 @@ export const AssetRegister = () => {
     formData,
   } = useFormStepper(selectedForm);
 
+  const loadFields = useCallback(
+    (fields: IFieldRef[]) => {
+      return fields.map((field) => ({ ...fieldsData.filter((f) => f.id === field.id)[0] }));
+    },
+    [fieldsData]
+  );
+
   const loadForm = useCallback(async () => {
     if (!selectedForm) return;
-    setForms(formData);
-  }, [selectedForm, formData]);
+    const data = formData?.map((f) => ({ ...f, fields: loadFields(f.fields) }));
+    setForms(data);
+  }, [selectedForm, formData, loadFields]);
 
   useEffect(() => {
     loadForm();
