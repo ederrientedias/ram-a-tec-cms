@@ -5,7 +5,7 @@ import { Documents } from '@/enums/firestoreIntranet.enum';
 
 export const useFormsMap = (): UseQueryResult<IFormsMap[], Error> => {
   return useQuery({
-    queryKey: [Documents.Forms],
+    queryKey: ['formsMap'],
     queryFn: async (): Promise<IFormsMap[]> => await firestoreService.getFormsMap(),
     refetchOnWindowFocus: false,
     staleTime: Infinity,
