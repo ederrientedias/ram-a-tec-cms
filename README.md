@@ -1,73 +1,104 @@
-# Welcome to your Lovable project
+# 📦 CMS RIZA
 
-## Project info
+Um projeto **React + TypeScript** usando **Vite**, **TailwindCSS**, **shadcn/ui**, **Radix UI** e integrado ao **Firebase Hosting**.  
+Inclui ferramentas modernas para autenticação (MSAL), gerenciamento de formulários, queries, animações e deploy simplificado.
 
-**URL**: https://lovable.dev/projects/40cd00b9-e850-467a-8540-0d3afd90fb23
+---
 
-## How can I edit this code?
+## 🚀 Tecnologias principais
 
-There are several ways of editing your application.
+- [Vite](https://vitejs.dev/) – Build rápido e leve
+- [React 18](https://react.dev/) + [React Router](https://reactrouter.com/) – SPA moderna
+- [TypeScript](https://www.typescriptlang.org/) – Tipagem estática
+- [TailwindCSS](https://tailwindcss.com/) + [shadcn/ui](https://ui.shadcn.com/) + [Radix UI](https://www.radix-ui.com/) – Estilização e componentes acessíveis
+- [Firebase Hosting](https://firebase.google.com/docs/hosting) – Deploy e hospedagem
+- [React Query](https://tanstack.com/query) – Data fetching e cache
+- [React Hook Form](https://react-hook-form.com/) + [Zod](https://zod.dev/) – Forms e validação
+- [Axios](https://axios-http.com/) – Requisições HTTP
+- [Lucide Icons](https://lucide.dev/) – Ícones otimizados
 
-**Use Lovable**
+---
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/40cd00b9-e850-467a-8540-0d3afd90fb23) and start prompting.
+## 📂 Estrutura esperada
 
-Changes made via Lovable will be committed automatically to this repo.
+```bash
+cms-riza/
+├── src/              # Código fonte
+│   ├── components/   # Componentes reutilizáveis
+│   ├── pages/        # Páginas da aplicação
+│   ├── hooks/        # Custom hooks
+│   ├── lib/
+│   ├── models/
+│   ├── repositories/
+│   ├── schemas/
+│   ├── services/
+│   ├── styles/
+│   ├── utils/        # Funções utilitárias
+│   └── ...
+├── public/           # Arquivos estáticos
+├── package.json
+├── tsconfig.json
+└── vite.config.ts
+```
 
-**Use your preferred IDE**
+---
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+## 🔧 Scripts disponíveis
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+```bash
+# Desenvolvimento
+npm run dev
 
-Follow these steps:
+# Build para produção
+npm run build
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+# Build em modo desenvolvimento
+npm run build:dev
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+# Deploy no Firebase
+npm run deploy:production      # Produção
+npm run deploy:development     # Desenvolvimento
+npm run deploy:web-staff-portal # Portal específico
 
-# Step 3: Install the necessary dependencies.
-npm i
+# Lint do código
+npm run lint
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
+# Preview do build
+npm run preview
+```
+
+---
+
+## 📦 Instalação
+
+```bash
+# Instalar dependências
+npm install
+
+# Rodar localmente
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+---
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+## 🌐 Deploy
 
-**Use GitHub Codespaces**
+O deploy é feito diretamente no **Firebase Hosting**:
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+```bash
+# Produção
+npm run deploy:production
 
-## What technologies are used for this project?
+# Desenvolvimento
+npm run deploy:development
+```
 
-This project is built with:
+---
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+## 🛠️ Padrões e Qualidade
 
-## How can I deploy this project?
+- **ESLint** configurado para boas práticas (`eslint . --ext .ts,.tsx,.js,.jsx`)
+- Uso de **TypeScript** para evitar erros em tempo de execução
+- **TailwindCSS** + **tailwind-merge** para consistência nos estilos
 
-Simply open [Lovable](https://lovable.dev/projects/40cd00b9-e850-467a-8540-0d3afd90fb23) and click on Share -> Publish.
-
-## Can I connect a custom domain to my Lovable project?
-
-Yes it is!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+---
