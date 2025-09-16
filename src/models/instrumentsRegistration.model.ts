@@ -22,6 +22,11 @@ export interface IField {
   inputMaskOptions: any | null;
 }
 
+export interface IFieldRef {
+  id: string;
+  fieldBlockRef: string;
+}
+
 export interface IInstrumentsGroup {
   id: string;
   group: string;
@@ -59,5 +64,5 @@ export interface IForm {
 export interface ICollectionFields {
   id: string;
   name: string;
-  fields: IField[];
+  fields: IFieldRef[];
 }
