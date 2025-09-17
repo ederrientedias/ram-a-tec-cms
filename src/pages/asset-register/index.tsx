@@ -78,7 +78,7 @@ export const AssetRegister = () => {
         </div>
       </div>
       <div className="bg-white p-6 rounded-lg shadow">
-        {!formLoading && formMapRef ? (
+        {!formLoading && formMapRef && forms ? (
           <Stepper customSteps={customSteps} forms={forms} formMapRef={formMapRef} />
         ) : formLoading ? (
           <LoadingFindDataAnimation />
