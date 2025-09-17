@@ -5,12 +5,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { IField, IFieldRef, IFormsMap } from '@/models/instrumentsRegistration.model';
+import LoadingFindDataAnimation from '@/components/animations/loadingFinddata';
+import { IFieldRef, IFormsMap } from '@/models/instrumentsRegistration.model';
 import { useFormsMap } from '@/hooks/firestore-intranet/use-forms-map';
 import { useFormStepper } from '@/hooks/stepper/use-form-stepper';
 import { useFields } from '@/hooks/firestore-intranet/use-fields';
 import { useCallback, useEffect, useState } from 'react';
-import { Label } from '@/components/ui/label';
 
 import { Stepper } from './components/stepper';
 
@@ -19,7 +19,7 @@ export const AssetRegister = () => {
   const [selectedForm, setSelectedForm] = useState<string | null>(null);
   const [formMapRef, setFormMapRef] = useState<IFormsMap | null>(null);
   const [forms, setForms] = useState([]);
-  const { data: fieldsData, isLoading: fieldsLoading, error: fieldsError } = useFields();
+  const { data: fieldsData } = useFields();
   const {
     customSteps,
     isLoading: formLoading,
@@ -29,7 +29,12 @@ export const AssetRegister = () => {
 
   const loadFields = useCallback(
     (fields: IFieldRef[]) => {
-      return fields.map((field) => ({ ...fieldsData.filter((f) => f.id === field.id)[0] }));
+      return fields
+        .map((field) => {
+          const f = fieldsData.find((fd) => fd.id === field.id);
+          return f ? { ...f } : null;
+        })
+        .filter(Boolean);
     },
     [fieldsData]
   );
@@ -73,8 +78,10 @@ export const AssetRegister = () => {
         </div>
       </div>
       <div className="bg-white p-6 rounded-lg shadow">
-        {customSteps && forms && formMapRef ? (
+        {!formLoading && formMapRef ? (
           <Stepper customSteps={customSteps} forms={forms} formMapRef={formMapRef} />
+        ) : formLoading ? (
+          <LoadingFindDataAnimation />
         ) : (
           <div className="w-full h-[400px] flex flex-col items-center justify-center">
             {formsMapError ? (
