@@ -1,8 +1,39 @@
-import { AlertDialog, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, } from '@/components/ui/alert-dialog';
-import { createInstrumentGroupSchema, CreateInstrumentGroupSchema, defaultValues, } from '@/schemas/instrument-registration/createInstrumentsGroup.schema';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, } from '@/components/ui/dialog';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow, } from '@/components/ui/table';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, } from '@/components/ui/select';
+import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import {
+  createInstrumentGroupSchema,
+  CreateInstrumentGroupSchema,
+  defaultValues,
+} from '@/schemas/instrument-registration/createInstrumentsGroup.schema';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
 import { useInstrumentsGroup } from '@/hooks/firestore-intranet/use-instruments-group';
 import firestoreService from '@/services/firestore-intranet/firestore.service';
 import { IInstrumentsGroup } from '@/models/instrumentsRegistration.model';
@@ -19,7 +50,6 @@ import { Input } from '@/components/ui/input';
 import { groups } from '@/utils/groups';
 import { useState } from 'react';
 import { toast } from 'sonner';
-
 
 export const CreateInstrumentGroup = () => {
   const queryClient = useQueryClient();
@@ -291,7 +321,7 @@ export const CreateInstrumentGroup = () => {
 
               {/* Grupo */}
               <div className="space-y-2">
-                <Label htmlFor="group">Bloco de Campos</Label>
+                <Label htmlFor="group">Grupo</Label>
                 <Controller
                   name="group"
                   control={control}
