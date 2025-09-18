@@ -26,7 +26,10 @@ class FirestoreService {
     const fieldsBlock: IFieldsBlock[] = await firestoreRepository.getFieldsBlock();
     if (fieldsBlock.length === 0) return [];
 
-    const data = fieldsBlock.filter((field) => field.group === group);
+    const data = fieldsBlock.filter((field) => {
+      if (Array.isArray(field.group)) return field.group.includes(group);
+      return field.group === group;
+    });
 
     return data;
   }
