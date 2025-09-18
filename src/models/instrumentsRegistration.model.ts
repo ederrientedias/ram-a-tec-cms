@@ -1,7 +1,7 @@
 export interface IFieldsBlock {
   id: string;
   name: string;
-  group: string;
+  group: string[];
 }
 
 export interface ISelectOption {
