@@ -27,26 +27,21 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
+import { useInstrumentsGroup } from '@/hooks/firestore-intranet/use-instruments-group';
+import { ChevronDown, Pencil, Plus, Search, ServerCrash, Trash2 } from 'lucide-react';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import firestoreService from '@/services/firestore-intranet/firestore.service';
 import { useFieldsBlock } from '@/hooks/firestore-intranet/use-fields-block';
-import { Pencil, Plus, Search, ServerCrash, Trash2 } from 'lucide-react';
 import { IFieldsBlock } from '@/models/instrumentsRegistration.model';
 import { Documents } from '@/enums/firestoreIntranet.enum';
 import { useQueryClient } from '@tanstack/react-query';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Controller, useForm } from 'react-hook-form';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
-import { groups } from '@/utils/groups';
 import { useState } from 'react';
 import { toast } from 'sonner';
 
@@ -58,6 +53,7 @@ export const CreateFieldBLock = () => {
   const [alertOpen, setAlertOpen] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const { data: fieldsBlock, error, isLoading: fieldsBlockLoading } = useFieldsBlock();
+  const { data: instrumentGroup, isLoading: instrumentGroupLoading } = useInstrumentsGroup();
 
   const {
     handleSubmit,
@@ -126,7 +122,7 @@ export const CreateFieldBLock = () => {
     setFieldBlockRef(fieldBlock);
 
     setValue('name', fieldBlock.name);
-    setValue('group', fieldBlock.group);
+    setValue('group', [...fieldBlock.group]);
   };
 
   const handleDeleteFieldBlock = async () => {
@@ -224,7 +220,22 @@ export const CreateFieldBLock = () => {
                     <TableRow key={field.id}>
                       {/* <TableCell className="font-medium">{field.id}</TableCell> */}
                       <TableCell>{field.name}</TableCell>
-                      <TableCell>{field.group.toUpperCase()}</TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-1">
+                          {Array.isArray(field.group) && field.group.length > 0 ? (
+                            field.group.map((g) => (
+                              <span
+                                key={g}
+                                className="bg-slate-100 text-xs font-medium px-2 py-1 rounded-md"
+                              >
+                                {g}
+                              </span>
+                            ))
+                          ) : (
+                            <span>{field.group}</span>
+                          )}
+                        </div>
+                      </TableCell>
                       <TableCell>
                         <div className="flex items-center gap-2">
                           <Button variant="ghost" size="icon" onClick={() => openDialog(field)}>
@@ -281,22 +292,54 @@ export const CreateFieldBLock = () => {
                 <Controller
                   name="group"
                   control={control}
-                  defaultValue=""
+                  defaultValue={[]}
                   render={({ field }) => (
-                    <Select onValueChange={field.onChange} value={field.value || ''}>
-                      <SelectTrigger>
-                        <SelectValue
-                          placeholder={!groups.length ? 'Carregando...' : 'Selecione um grupo'}
-                        />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {groups.map((group) => (
-                          <SelectItem key={group.id} value={group.code}>
-                            {group.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                    <Popover>
+                      <PopoverTrigger className="w-full h-10 bg-background border rounded-lg py-2 px-3">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-1">
+                            {field.value.length > 0
+                              ? field.value.map((g: string) => (
+                                  <span
+                                    key={g}
+                                    className="bg-slate-100 text-xs font-medium px-2 py-1 rounded-md"
+                                  >
+                                    {g}
+                                  </span>
+                                ))
+                              : 'Selecione o bloco de campo'}
+                          </div>
+                          <ChevronDown className="h-4 w-4" />
+                        </div>
+                      </PopoverTrigger>
+                      <PopoverContent className="min-w-[475px]">
+                        <div className="flex flex-col gap-2 max-h-60 overflow-y-auto">
+                          {instrumentGroup?.map((g) => {
+                            const checked = field.value.includes(g.group);
+                            return (
+                              <div
+                                key={g.id}
+                                className="flex items-center gap-2 text-zinc-900 text-sm font-medium"
+                              >
+                                <Checkbox
+                                  checked={checked}
+                                  onCheckedChange={(isChecked) => {
+                                    if (isChecked) {
+                                      field.onChange([...field.value, g.group]);
+                                    } else {
+                                      field.onChange(
+                                        field.value.filter((val: string) => val !== g.group)
+                                      );
+                                    }
+                                  }}
+                                />
+                                {`Grupo ${g.group}`}
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </PopoverContent>
+                    </Popover>
                   )}
                 />
                 {errors.group && touchedFields.group && (
