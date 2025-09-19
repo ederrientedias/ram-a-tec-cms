@@ -1,10 +1,56 @@
-import { AlertDialog, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, } from '@/components/ui/alert-dialog';
-import { createFieldDefaultValues, CreateFieldSchema, createfieldSchema, } from '@/schemas/instrument-registration/createField.schema';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, } from '@/components/ui/dialog';
-import { ChevronDown, Pencil, Plus, Search, ServerCrash, Settings2Icon, Trash2, X, } from 'lucide-react';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow, } from '@/components/ui/table';
-import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, } from '@/components/ui/sheet';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, } from '@/components/ui/select';
+import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import {
+  createFieldDefaultValues,
+  CreateFieldSchema,
+  createfieldSchema,
+} from '@/schemas/instrument-registration/createField.schema';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import {
+  ChevronDown,
+  Pencil,
+  Plus,
+  Search,
+  ServerCrash,
+  Settings2Icon,
+  Trash2,
+  X,
+} from 'lucide-react';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+} from '@/components/ui/sheet';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import firestoreService from '@/services/firestore-intranet/firestore.service';
 import { IField, ISelectOption } from '@/models/instrumentsRegistration.model';
@@ -27,7 +73,6 @@ import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
 
 import { CustomInputMask } from './CustomInputMask';
-
 
 const types = [
   {
@@ -294,7 +339,7 @@ export const CreateField = () => {
       label: data.label,
       type: data.type,
       placeholder: data.placeholder ?? null,
-      collectionData: data.collectionData.length > 0 ? data.collectionData : null,
+      collectionData: data.collectionData ?? null,
       fieldBlockRef: fieldBlockId,
       optionsRef: selectedCollectionData || selectedType === 'custom-list' ? options.id : null,
       isRequire: data.isRequire ?? false,
