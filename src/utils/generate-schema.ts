@@ -23,7 +23,7 @@ export const generateSchema = (fields: IField[]) => {
         validator = z.string();
         break;
       case 'date':
-        validator = z.date();
+        validator = z.string();
         break;
       case 'checkbox':
         validator = z.boolean();
@@ -35,7 +35,7 @@ export const generateSchema = (fields: IField[]) => {
         message: `${field.label} é obrigatório`,
       });
     } else {
-      validator = validator.optional();
+      validator = validator.nullish().transform((val) => (val === undefined ? null : val));
     }
 
     shape[sanitizeString(field.fieldName)] = validator;
