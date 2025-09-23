@@ -5,9 +5,11 @@ import { Calendar } from '@/components/ui/calendar';
 import { Button } from '@/components/ui/button';
 import { CalendarIcon } from 'lucide-react';
 import CleaveInput from 'cleave.js/react';
+import { ptBR } from 'date-fns/locale';
 
 export const DatePicker = ({ field }) => {
   const [month, setMonth] = useState<Date | null>(new Date());
+  const [inputValue, setInputValue] = useState<string | null>(null);
 
   const formatDateBr = (dataString: string): Date | undefined => {
     if (!dataString || typeof dataString !== 'string') return undefined;
@@ -53,7 +55,9 @@ export const DatePicker = ({ field }) => {
           delimiter: '/',
           datePattern: ['d', 'm', 'Y'],
         }}
-        onChange={(e: any) => field.onChange(e.target.value)}
+        onChange={(e: any) => {
+          field.onChange(e.target.value);
+        }}
       />
       <Popover>
         <PopoverTrigger asChild>
@@ -68,6 +72,7 @@ export const DatePicker = ({ field }) => {
         </PopoverTrigger>
         <PopoverContent className="w-auto overflow-hidden p-0" align="center">
           <Calendar
+            locale={ptBR}
             mode="single"
             captionLayout="dropdown"
             month={month}
