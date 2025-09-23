@@ -190,7 +190,11 @@ export const Stepper = ({ customSteps, forms, formMapRef, isComplete }) => {
                                       >
                                         Voltar
                                       </Button>
-                                      <Button type="submit" onClick={() => handleNext(item.name)}>
+                                      <Button
+                                        type="submit"
+                                        disabled={!methods.formState.isValid}
+                                        onClick={() => handleNext(item.name)}
+                                      >
                                         Continuar
                                       </Button>
                                     </div>
