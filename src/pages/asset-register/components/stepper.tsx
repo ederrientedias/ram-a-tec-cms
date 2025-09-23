@@ -37,7 +37,6 @@ export const Stepper = ({ customSteps, forms, formMapRef, isComplete }) => {
     }
 
     handleSaveStepData(fields, formName);
-
     stepper.next();
   };
 
@@ -95,7 +94,7 @@ export const Stepper = ({ customSteps, forms, formMapRef, isComplete }) => {
   };
 
   return (
-    <div className="space-y-6 p-6  w-full">
+    <div className="space-y-6 w-full">
       <div className="flex justify-between">
         <h2 className="text-lg font-medium">
           Cadastro de{' '}
@@ -117,10 +116,10 @@ export const Stepper = ({ customSteps, forms, formMapRef, isComplete }) => {
       <FormProvider {...methods}>
         <form onSubmit={methods.handleSubmit(handleSubmit)}>
           <nav aria-label="Cadastro de Ativo" className="group my-4">
-            <ol className="flex flex-col gap-2" aria-orientation="vertical">
+            <ol className="flex items-center  gap-2" aria-orientation="horizontal">
               {stepper.all.map((step, index, array) => (
                 <div key={step.id}>
-                  <li className="flex items-center gap-4 flex-shrink-0">
+                  <li className="flex items-center gap-2 flex-shrink-0">
                     <Button
                       type="button"
                       role="tab"
@@ -150,66 +149,65 @@ export const Stepper = ({ customSteps, forms, formMapRef, isComplete }) => {
                         index + 1
                       )}
                     </Button>
-                    <span className="text-base font-normal">{step.title}</span>
-                  </li>
-                  <div className="flex gap-4">
-                    {index < array.length - 1 && (
-                      <div className="flex justify-center ps-5">
-                        <Separator
-                          orientation="vertical"
-                          className={`w-[1px] h-full
-                                ${
-                                  index < currentIndex
-                                    ? 'bg-green-100'
-                                    : index === currentIndex
-                                    ? 'bg-blue-100'
-                                    : 'bg-muted'
-                                }
-                            `}
-                        />
-                      </div>
+                    {stepper.current.id === step.id ? (
+                      <span className="text-base font-normal animate-in duration-300 slide-in-from-left-2 whitespace-nowrap">
+                        {step.title}
+                      </span>
+                    ) : (
+                      index < array.length - 1 && (
+                        <div className="animate-out fade-out-0 zoom-out-95 duration-300">
+                          <Separator
+                            orientation="horizontal"
+                            className={`min-w-[50px] h-[1px] transition-colors duration-300 ${
+                              index < currentIndex
+                                ? 'bg-green-100'
+                                : index === currentIndex
+                                ? 'bg-blue-100'
+                                : 'bg-muted'
+                            }`}
+                          />
+                        </div>
+                      )
                     )}
-
-                    {/* Conteudo do Step */}
-                    <div className="flex-1 my-4">
-                      {forms.length > 0 &&
-                        stepper.current.id === step.id &&
-                        stepper.switch(
-                          Object.fromEntries(
-                            forms.map((item: ICollectionFields) => [
-                              item.id,
-                              () => (
-                                <div className="w-full h-auto flex flex-col gap-3 ">
-                                  <Form key={item.id} fields={item.fields} />
-                                  {!stepper.isLast && (
-                                    <div className="flex items-center gap-2 justify-end p-4">
-                                      <Button
-                                        variant="secondary"
-                                        onClick={stepper.prev}
-                                        disabled={stepper.isFirst}
-                                      >
-                                        Voltar
-                                      </Button>
-                                      <Button
-                                        type="submit"
-                                        disabled={!methods.formState.isValid}
-                                        onClick={() => handleNext(item.name)}
-                                      >
-                                        Continuar
-                                      </Button>
-                                    </div>
-                                  )}
-                                </div>
-                              ),
-                            ])
-                          )
-                        )}
-                    </div>
-                  </div>
+                  </li>
                 </div>
               ))}
             </ol>
           </nav>
+          {/* Conteudo do Step */}
+          <div className="flex-1 mx-0 mt-14 mb-12">
+            {forms.length > 0 &&
+              stepper.switch(
+                Object.fromEntries(
+                  forms.map((item: ICollectionFields) => [
+                    item.id,
+                    () => (
+                      <div className="w-full h-auto flex flex-col gap-3  animate-in  duration-500 slide-in-from-top-2 ">
+                        <Form key={item.id} fields={item.fields} />
+                        {!stepper.isLast && (
+                          <div className="flex items-center gap-2 justify-end p-4">
+                            <Button
+                              variant="secondary"
+                              onClick={stepper.prev}
+                              disabled={stepper.isFirst}
+                            >
+                              Voltar
+                            </Button>
+                            <Button
+                              type="submit"
+                              disabled={!methods.formState.isValid}
+                              onClick={() => handleNext(item.name)}
+                            >
+                              Continuar
+                            </Button>
+                          </div>
+                        )}
+                      </div>
+                    ),
+                  ])
+                )
+              )}
+          </div>
           <div className="space-y-4">
             {stepper.isLast && (
               <div className="flex items-center justify-between">
