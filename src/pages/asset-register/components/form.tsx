@@ -27,7 +27,7 @@ export const Form = ({ fields }) => {
   };
 
   return (
-    <div className="grid grid-cols-3 gap-y-5 gap-x-2">
+    <div className="w-full grid grid-cols-3 gap-y-5 gap-x-2">
       {fields?.map((item: IField) => {
         const fieldName = sanitizeString(item.fieldName);
         return (
