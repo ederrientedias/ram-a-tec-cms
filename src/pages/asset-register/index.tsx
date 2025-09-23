@@ -11,6 +11,7 @@ import { useFormsMap } from '@/hooks/firestore-intranet/use-forms-map';
 import { useFormStepper } from '@/hooks/stepper/use-form-stepper';
 import { useFields } from '@/hooks/firestore-intranet/use-fields';
 import { useCallback, useEffect, useState } from 'react';
+import { Label } from '@/components/ui/label';
 
 import { Stepper } from './components/stepper';
 
@@ -55,16 +56,26 @@ export const AssetRegister = () => {
     setSelectedForm(id);
   };
 
+  const handleCompleteForm = (isComplete: boolean) => {
+    if (isComplete) {
+      setSelectedForm(null);
+      setForms([]);
+      requestAnimationFrame(() => requestAnimationFrame(() => setSelectedForm(formMapRef.formId)));
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">Cadastro de Ativo</h1>
         <div className="w-[300px] min-w-72 space-y-2">
-          {/* <Label htmlFor="fund">Formulário de instrumento</Label> */}
+          <Label htmlFor="fund">Formulário de instrumento</Label>
           <Select onValueChange={(value) => handleFormMapChange(value)}>
             <SelectTrigger>
               <SelectValue
-                placeholder={formsMapLoading ? 'Carregando...' : 'Selecione um instrumento'}
+                placeholder={
+                  formsMapLoading ? 'Carregando...' : 'Selecione o formulário do instrumento'
+                }
               />
             </SelectTrigger>
             <SelectContent>
@@ -79,7 +90,12 @@ export const AssetRegister = () => {
       </div>
       <div className="bg-white p-6 rounded-lg shadow">
         {!formLoading && formMapRef && forms ? (
-          <Stepper customSteps={customSteps} forms={forms} formMapRef={formMapRef} />
+          <Stepper
+            customSteps={customSteps}
+            forms={forms}
+            formMapRef={formMapRef}
+            isComplete={handleCompleteForm}
+          />
         ) : formLoading ? (
           <LoadingFindDataAnimation />
         ) : (
