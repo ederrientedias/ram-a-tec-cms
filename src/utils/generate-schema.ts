@@ -11,31 +11,61 @@ export const generateSchema = (fields: IField[]) => {
 
     switch (field.type) {
       case 'text':
-        validator = z.string().min(1, { message: `${field.label} é obrigatório` });
+        validator = field.isRequire
+          ? z.string().min(1, { message: `${field.label} é obrigatório` })
+          : z.string().optional().nullable();
         break;
       case 'number':
         validator = z.preprocess(
           (val) => (val === '' ? undefined : Number(val)),
-          z.number().optional()
+          field.isRequire
+            ? z.number({ message: `${field.label} é obrigatório` })
+            : z.number().optional().nullable()
         );
         break;
       case 'select':
-        validator = z.string();
+        validator = field.isRequire
+          ? z.string().min(1, { message: `${field.label} é obrigatório` })
+          : z.string().optional().nullable();
         break;
       case 'date':
-        validator = z.string();
+        validator = field.isRequire
+          ? z
+              .string()
+              .min(1, { message: `${field.label} é obrigatório` })
+              .refine(
+                (val) => {
+                  const regex = /^\d{2}\/\d{2}\/\d{4}$/;
+                  return regex.test(val);
+                },
+                {
+                  message: `${field.label} deve estar no formato completo DD/MM/AAAA`,
+                }
+              )
+          : z
+              .string()
+              .optional()
+              .nullable()
+              .refine(
+                (val) => {
+                  if (!val) return true;
+                  const regex = /^\d{2}\/\d{2}\/\d{4}$/;
+                  return regex.test(val);
+                },
+                {
+                  message: `${field.label} deve estar no formato completo DD/MM/AAAA`,
+                }
+              );
         break;
       case 'checkbox':
-        validator = z.boolean();
+        validator = field.isRequire
+          ? z.boolean({ message: `${field.label} é obrigatório` })
+          : z.boolean().optional().nullable();
         break;
-    }
-
-    if (field.isRequire) {
-      validator = validator.refine((val) => val !== undefined && val !== '', {
-        message: `${field.label} é obrigatório`,
-      });
-    } else {
-      validator = validator.nullish().transform((val) => (val === undefined ? null : val));
+      default:
+        validator = field.isRequire
+          ? z.string().min(1, { message: `${field.label} é obrigatório` })
+          : z.string().optional().nullable();
     }
 
     shape[sanitizeString(field.fieldName)] = validator;
