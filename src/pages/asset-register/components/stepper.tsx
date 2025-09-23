@@ -13,7 +13,7 @@ import { toast } from 'sonner';
 
 import { Form } from './form';
 
-export const Stepper = ({ customSteps, forms, formMapRef }) => {
+export const Stepper = ({ customSteps, forms, formMapRef, isComplete }) => {
   const { useStepper, steps, utils } = defineStepper(...customSteps);
   const stepper = useStepper();
   const currentIndex = utils.getIndex(stepper?.current?.id);
@@ -41,18 +41,16 @@ export const Stepper = ({ customSteps, forms, formMapRef }) => {
     stepper.next();
   };
 
-  const handleSaveStepData = (fields: any, formName: string) => {
+  const handleSaveStepData = (fields: string[], formName: string) => {
     const currentValues = methods.getValues(fields);
 
-    const data = fields.reduce((acc: any, field: any, index: number) => {
-      return {
-        ...acc,
-        [sanitizeString(field)]:
-          currentValues[index] instanceof Date
-            ? new Date(currentValues[index]).getTime()
-            : currentValues[index],
-      };
-    }, {});
+    const data = fields.reduce((acc, field, index) => {
+      const key = sanitizeString(field);
+      const value = currentValues[index];
+
+      acc[key] = value instanceof Date ? value.getTime() : value ?? null;
+      return acc;
+    }, {} as Record<string, any>);
 
     setFormData((prev: any) => ({
       ...prev,
@@ -85,11 +83,14 @@ export const Stepper = ({ customSteps, forms, formMapRef }) => {
       }
 
       toast.success('O Ativo foi salvo com sucesso.');
+      isComplete(methods.formState.isValid);
     } catch (error) {
       console.log('Catch error:', error);
       toast.error('Erro ao salvar o ativo. Tente novamente.');
+      isComplete(false);
     } finally {
       setIsLoading(false);
+      isComplete(false);
     }
   };
 
@@ -211,7 +212,11 @@ export const Stepper = ({ customSteps, forms, formMapRef }) => {
                 <Button variant="secondary" onClick={stepper.prev} disabled={stepper.isFirst}>
                   Voltar
                 </Button>
-                <Button type="button" onClick={handleSubmit} disabled={!methods.formState.isValid}>
+                <Button
+                  type="button"
+                  onClick={handleSubmit}
+                  disabled={!methods.formState.isValid && stepper.current.id === 'complete'}
+                >
                   {isLoading ? (
                     <span className="flex items-center gap-2">
                       <svg
