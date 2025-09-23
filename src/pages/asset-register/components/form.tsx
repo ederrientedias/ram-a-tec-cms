@@ -1,17 +1,19 @@
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, } from '@/components/ui/select';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { useSelectOptions } from '@/hooks/firestore-intranet/use-select-options';
 import { IField } from '@/models/instrumentsRegistration.model';
 import { Controller, useFormContext } from 'react-hook-form';
+import { DatePicker } from '@/components/ui/date-picker';
 import { sanitizeString } from '@/utils/format-string';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Calendar } from '@/components/ui/calendar';
-import { Button } from '@/components/ui/button';
-import { ChevronDownIcon } from 'lucide-react';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import CleaveInput from 'cleave.js/react';
-
 
 export const Form = ({ fields }) => {
   const { data: selectOptins } = useSelectOptions();
@@ -22,10 +24,6 @@ export const Form = ({ fields }) => {
 
   const fecthSelectOptions = (optionRef: string) => {
     return selectOptins?.find((option) => option.id === optionRef)?.options ?? [];
-  };
-
-  const dateFormat = (date: Date) => {
-    return date.toLocaleDateString('pt-BR').toString();
   };
 
   return (
@@ -137,32 +135,7 @@ export const Form = ({ fields }) => {
                 <Controller
                   name={fieldName}
                   control={control}
-                  render={({ field }) => (
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <Button
-                          variant="outline"
-                          id="date"
-                          className="w-full justify-between font-normal"
-                        >
-                          {field.value
-                            ? dateFormat(field.value)
-                            : item.placeholder
-                            ? item.placeholder
-                            : 'Selecione a data'}
-                          <ChevronDownIcon />
-                        </Button>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-auto overflow-hidden p-0" align="center">
-                        <Calendar
-                          mode="single"
-                          selected={field.value}
-                          captionLayout="dropdown"
-                          onSelect={(date) => field.onChange(date)}
-                        />
-                      </PopoverContent>
-                    </Popover>
-                  )}
+                  render={({ field }) => <DatePicker field={field} />}
                 />
               </div>
             )}
@@ -182,7 +155,7 @@ export const Form = ({ fields }) => {
               </div>
             )}
 
-            {errors[fieldName] && touchedFields[fieldName] && (
+            {item.isRequire && errors[fieldName] && touchedFields[fieldName] && (
               <small className="text-red-500">{errors[fieldName]?.message?.toString()}</small>
             )}
           </div>
