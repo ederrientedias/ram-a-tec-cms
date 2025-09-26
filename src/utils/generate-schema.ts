@@ -1,7 +1,5 @@
-import { IField } from '@/models/instrumentsRegistration.model';
+import { IField } from '@/models/instruments-registration.model';
 import { z } from 'zod';
-
-import { sanitizeString } from './format-string';
 
 export const generateSchema = (fields: IField[]) => {
   const shape: Record<string, any> = {};
@@ -11,25 +9,25 @@ export const generateSchema = (fields: IField[]) => {
 
     switch (field.type) {
       case 'text':
-        validator = field.isRequire
+        validator = field.isRequired
           ? z.string().min(1, { message: `${field.label} é obrigatório` })
           : z.string().optional().nullable();
         break;
       case 'number':
         validator = z.preprocess(
           (val) => (val === '' ? undefined : Number(val)),
-          field.isRequire
+          field.isRequired
             ? z.number({ message: `${field.label} é obrigatório` })
             : z.number().optional().nullable()
         );
         break;
       case 'select':
-        validator = field.isRequire
+        validator = field.isRequired
           ? z.string().min(1, { message: `${field.label} é obrigatório` })
           : z.string().optional().nullable();
         break;
       case 'date':
-        validator = field.isRequire
+        validator = field.isRequired
           ? z
               .string()
               .min(1, { message: `${field.label} é obrigatório` })
@@ -58,17 +56,17 @@ export const generateSchema = (fields: IField[]) => {
               );
         break;
       case 'checkbox':
-        validator = field.isRequire
+        validator = field.isRequired
           ? z.boolean({ message: `${field.label} é obrigatório` })
           : z.boolean().optional().nullable();
         break;
       default:
-        validator = field.isRequire
+        validator = field.isRequired
           ? z.string().min(1, { message: `${field.label} é obrigatório` })
           : z.string().optional().nullable();
     }
 
-    shape[sanitizeString(field.fieldName)] = validator;
+    shape[field.idName] = validator;
   });
 
   return z.object(shape);
