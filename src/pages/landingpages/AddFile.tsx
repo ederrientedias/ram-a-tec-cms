@@ -247,8 +247,8 @@ const AddFile = () => {
       downloadName: selectedFileName,
       file: fileUrl,
     };
-    console.log(metadata);
-    // await addFile(metadata);
+
+    await addFile(metadata);
   };
 
   const addFile = async (fileMetadata: IFileMetadata) => {
