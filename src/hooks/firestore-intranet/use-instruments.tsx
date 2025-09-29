@@ -1,13 +1,13 @@
 import firestoreService from '@/services/firestore-intranet/firestore.service';
-import { IInstrument } from '@/models/instrumentsRegistration.model';
+import { Documents, SubCollection } from '@/enums/firestoreIntranet.enum';
+import { IInstrument } from '@/models/instruments-registration.model';
 import { useQuery, UseQueryResult } from '@tanstack/react-query';
-import { Documents } from '@/enums/firestoreIntranet.enum';
-
 
 export const useInstruments = (): UseQueryResult<IInstrument[], Error> => {
   return useQuery({
     queryKey: [Documents.Instruments],
-    queryFn: async (): Promise<IInstrument[]> => await firestoreService.getInstruments(),
+    queryFn: async (): Promise<IInstrument[]> =>
+      await firestoreService.getInstrumentsOrGroups<IInstrument>(SubCollection.Instruments),
     refetchOnWindowFocus: false,
     staleTime: Infinity,
     enabled: true,
