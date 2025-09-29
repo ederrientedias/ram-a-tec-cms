@@ -1,8 +1,41 @@
-import { createfileMetadataSchema, CreateFileMetadataSchema, fileMetadataDefaultValues, updatefileMetadataSchema, UpdateFileMetadataSchema, } from '@/schemas/landing-page.schema';
-import { AlertDialog, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, } from '@/components/ui/alert-dialog';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, } from '@/components/ui/dialog';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow, } from '@/components/ui/table';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, } from '@/components/ui/select';
+import {
+  createfileMetadataSchema,
+  CreateFileMetadataSchema,
+  fileMetadataDefaultValues,
+  updatefileMetadataSchema,
+  UpdateFileMetadataSchema,
+} from '@/schemas/landing-page.schema';
+import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { ICollectionMap, IDocumentProps, IFileMetadata } from '@/models/landingpage.model';
 import { useLandingPageFunds } from '@/hooks/firestore/funds/use-landingpage';
 import { FileText, FileUp, Pencil, Plus, Trash2 } from 'lucide-react';
@@ -18,7 +51,6 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { IFund } from '@/models/funds.model';
 import { toast } from 'sonner';
-
 
 const AddFile = () => {
   const [selectedFund, setSelectedFund] = useState<string | null>(null);
@@ -206,8 +238,7 @@ const AddFile = () => {
       fileUrl = url;
     }
 
-    const fileId =
-      fileMetadataRef?.id ?? (fileMetadata.length > 0 ? Number(fileMetadata.at(-1).id) + 1 : 0);
+    const fileId = fileMetadataRef?.id ?? crypto.randomUUID();
 
     const metadata: IFileMetadata = {
       id: fileId,
@@ -216,8 +247,8 @@ const AddFile = () => {
       downloadName: selectedFileName,
       file: fileUrl,
     };
-
-    await addFile(metadata);
+    console.log(metadata);
+    // await addFile(metadata);
   };
 
   const addFile = async (fileMetadata: IFileMetadata) => {
