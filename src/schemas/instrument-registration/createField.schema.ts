@@ -1,6 +1,5 @@
 import { z } from 'zod';
 
-
 /**
  * Schema - Formulário para criar campo
  */
@@ -12,7 +11,7 @@ export const createfieldSchema = z.object({
   fieldBlockRef: z.string().min(1, 'O Bloco de Campos é obrigatório'),
   optionsRef: z.string().nullable(),
   collectionData: z.string().nullable(),
-  isRequire: z.boolean(),
+  isRequired: z.boolean(),
 });
 
 export type CreateFieldSchema = z.infer<typeof createfieldSchema>;
@@ -24,5 +23,5 @@ export const createFieldDefaultValues: CreateFieldSchema = {
   fieldBlockRef: '',
   optionsRef: '',
   collectionData: '',
-  isRequire: false,
+  isRequired: false,
 };
