@@ -1,12 +1,14 @@
 import firestoreService from '@/services/firestore-intranet/firestore.service';
-import { IFieldsBlock } from '@/models/instrumentsRegistration.model';
 import { useQuery, UseQueryResult } from '@tanstack/react-query';
+import { IBlock } from '@/models/instruments-registration.model';
+import { SubCollection } from '@/enums/firestoreIntranet.enum';
 import { Documents } from '@/enums/firestoreIntranet.enum';
 
-export const useFieldsBlock = (): UseQueryResult<IFieldsBlock[], Error> => {
+export const useFieldsBlock = (): UseQueryResult<IBlock[], Error> => {
   return useQuery({
     queryKey: [Documents.FieldsBlock],
-    queryFn: async (): Promise<IFieldsBlock[]> => await firestoreService.getFieldsBlock(),
+    queryFn: async (): Promise<IBlock[]> =>
+      await firestoreService.getFieldsOrBlocks<IBlock>(SubCollection.Blocks),
     refetchOnWindowFocus: false,
     staleTime: Infinity,
     enabled: true,
