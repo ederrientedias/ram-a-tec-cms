@@ -4,7 +4,7 @@ import {
   IForm,
   IFormsMap,
   IInstrument,
-} from '@/models/instrumentsRegistration.model';
+} from '@/models/instruments-registration.model';
 import {
   Table,
   TableBody,
@@ -27,12 +27,12 @@ import {
   AccordionTrigger,
 } from '@/components/ui/accordion';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { useInstrumentsGroup } from '@/hooks/firestore-intranet/use-instruments-group';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import firestoreService from '@/services/firestore-intranet/firestore.service';
 import { ChevronDown, Check, CircleAlert, Pencil, Trash2 } from 'lucide-react';
 import { useFormsMap } from '@/hooks/firestore-intranet/use-forms-map';
+import { useGroups } from '@/hooks/firestore-intranet/use-groups';
 import { useCallback, useEffect, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -72,7 +72,7 @@ export const ConfigureRegistration = () => {
     data: instrumentsGroup,
     error: instrumentGroupErro,
     isLoading: InstrumentsGroupLoading,
-  } = useInstrumentsGroup();
+  } = useGroups();
   const { data: formsMap, isLoading: formsMapLoading } = useFormsMap();
 
   const loadInstruments = useCallback(async () => {
