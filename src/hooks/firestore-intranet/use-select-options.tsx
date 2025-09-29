@@ -1,12 +1,13 @@
 import firestoreService from '@/services/firestore-intranet/firestore.service';
-import { ISelectOption } from '@/models/instrumentsRegistration.model';
+import { Documents, SubCollection } from '@/enums/firestoreIntranet.enum';
+import { IOption } from '@/models/instruments-registration.model';
 import { useQuery, UseQueryResult } from '@tanstack/react-query';
-import { Documents } from '@/enums/firestoreIntranet.enum';
 
-export const useSelectOptions = (): UseQueryResult<ISelectOption[], Error> => {
+export const useSelectOptions = (): UseQueryResult<IOption[], Error> => {
   return useQuery({
     queryKey: [Documents.SelectOption],
-    queryFn: async (): Promise<ISelectOption[]> => await firestoreService.getSelectOptions(),
+    queryFn: async (): Promise<IOption[]> =>
+      await firestoreService.getSelectOptions<IOption>(SubCollection.Options),
     refetchOnWindowFocus: false,
     staleTime: Infinity,
     enabled: true,
