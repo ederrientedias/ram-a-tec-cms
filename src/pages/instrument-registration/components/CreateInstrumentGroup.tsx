@@ -1,43 +1,13 @@
-import {
-  AlertDialog,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
-import {
-  createInstrumentGroupSchema,
-  CreateInstrumentGroupSchema,
-  defaultValues,
-} from '@/schemas/instrument-registration/createInstrumentsGroup.schema';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
-import { useInstrumentsGroup } from '@/hooks/firestore-intranet/use-instruments-group';
+import { AlertDialog, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, } from '@/components/ui/alert-dialog';
+import { createInstrumentGroupSchema, CreateInstrumentGroupSchema, defaultValues, } from '@/schemas/instrument-registration/createInstrumentsGroup.schema';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, } from '@/components/ui/dialog';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow, } from '@/components/ui/table';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, } from '@/components/ui/select';
 import firestoreService from '@/services/firestore-intranet/firestore.service';
-import { IInstrumentsGroup } from '@/models/instrumentsRegistration.model';
+import { IInstrumentsGroup } from '@/models/instruments-registration.model';
 import { Pencil, Plus, Search, ServerCrash, Trash2 } from 'lucide-react';
+import { useGroups } from '@/hooks/firestore-intranet/use-groups';
+import { SubCollection } from '@/enums/firestoreIntranet.enum';
 import { Documents } from '@/enums/firestoreIntranet.enum';
 import { useQueryClient } from '@tanstack/react-query';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -51,6 +21,7 @@ import { groups } from '@/utils/groups';
 import { useState } from 'react';
 import { toast } from 'sonner';
 
+
 export const CreateInstrumentGroup = () => {
   const queryClient = useQueryClient();
   const [instrumentGroupRef, setInstrumentGroupRef] = useState<IInstrumentsGroup | null>(null);
@@ -59,11 +30,7 @@ export const CreateInstrumentGroup = () => {
   const [alertOpen, setAlertOpen] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
-  const {
-    data: instrumentsGroup,
-    error,
-    isLoading: instrumentsGroupLoading,
-  } = useInstrumentsGroup();
+  const { data: instrumentsGroup, error, isLoading: instrumentsGroupLoading } = useGroups();
 
   const {
     handleSubmit,
@@ -116,14 +83,12 @@ export const CreateInstrumentGroup = () => {
       group: data.group,
       description: data.description,
     };
-
-    console.log(instrumentGroup);
     await addInstrumentGroup(instrumentGroup);
   };
 
   const addInstrumentGroup = async (instrumentGroup: IInstrumentsGroup) => {
     const isGroupCreated = await firestoreService
-      .setInstrumentGroup(instrumentGroup)
+      .setInstrumentOrGroup(SubCollection.Groups, instrumentGroup)
       .finally(() => {
         setIsLoading(false);
         resetForm();
@@ -154,7 +119,7 @@ export const CreateInstrumentGroup = () => {
     }
 
     const isGroupDeleted = await firestoreService
-      .deleteIntrumentGroup(instrumentGroupRef.id)
+      .deleteInstrumentOrGroup(SubCollection.Groups, instrumentGroupRef.id)
       .finally(() => {
         loadInstrumentGroup();
         setIsLoading(false);
@@ -228,9 +193,8 @@ export const CreateInstrumentGroup = () => {
             <Table>
               <TableHeader>
                 <TableRow>
-                  {/* <TableHead>ID</TableHead> */}
-                  <TableHead>Grupo</TableHead>
                   <TableHead>Nome Completo</TableHead>
+                  <TableHead>Grupo</TableHead>
                   <TableHead>Ações</TableHead>
                 </TableRow>
               </TableHeader>
@@ -251,8 +215,12 @@ export const CreateInstrumentGroup = () => {
                   filteredInstrumentsGroup?.map((item: IInstrumentsGroup) => (
                     <TableRow key={item.id}>
                       {/* <TableCell className="font-medium">{item.id}</TableCell> */}
-                      <TableCell>{item.group}</TableCell>
                       <TableCell>{item.name}</TableCell>
+                      <TableCell>
+                        <span className="bg-slate-100 text-xs font-medium px-2 py-1 rounded-md">
+                          {item.group}
+                        </span>
+                      </TableCell>
                       <TableCell>
                         <div className="flex items-center gap-2">
                           <Button variant="ghost" size="icon" onClick={() => openDialog(item)}>
