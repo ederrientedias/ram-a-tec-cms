@@ -1,45 +1,25 @@
-import {
-  IField,
-  IFieldsBlock,
-  IForm,
-  IFormsMap,
-  IInstrument,
-} from '@/models/instruments-registration.model';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from '@/components/ui/accordion';
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList, } from '@/components/ui/command';
+import { IField, IFieldsBlock, IForm, IFormsMap, IInstrument, } from '@/models/instruments-registration.model';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow, } from '@/components/ui/table';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, } from '@/components/ui/select';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger, } from '@/components/ui/accordion';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { ChevronDown, Check, CircleAlert, Pencil, Trash2, ChevronsUpDown } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import firestoreService from '@/services/firestore-intranet/firestore.service';
-import { ChevronDown, Check, CircleAlert, Pencil, Trash2 } from 'lucide-react';
 import { useFormsMap } from '@/hooks/firestore-intranet/use-forms-map';
 import { useGroups } from '@/hooks/firestore-intranet/use-groups';
+import { SubCollection } from '@/enums/firestoreIntranet.enum';
 import { useCallback, useEffect, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Toggle } from '@/components/ui/toggle';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
+import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
+
 
 type SelectedItem = {
   id: string;
@@ -52,6 +32,7 @@ type IFormRef = {
   name: string;
   fields: { id: string; fieldBlockRef: string }[];
 };
+
 export const ConfigureRegistration = () => {
   const queryClient = useQueryClient();
   const [instruments, setInstruments] = useState<IInstrument[]>([]);
@@ -67,6 +48,8 @@ export const ConfigureRegistration = () => {
   const [instrumentRef, setInstrumentRef] = useState<IInstrument | null>(null);
   const [forms, setForms] = useState<IFormRef[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [groupName, setGroupName] = useState('');
+  const [instrumentName, setInstrumentName] = useState('');
 
   const {
     data: instrumentsGroup,
@@ -123,26 +106,29 @@ export const ConfigureRegistration = () => {
   }, [loadFields]);
 
   const handleInstrumentGroupChange = (value: string) => {
-    setSelectedInstrumentGroup(value);
-    handleGroupRef(value);
+    setGroupName(value);
+    updateGroupState(value);
   };
 
-  const handleGroupRef = (id: string) => {
-    const data = instrumentsGroup.find((inst) => inst.id === id);
-    setGroupRef(data.group);
+  const updateGroupState = (value: string) => {
+    const group = instrumentsGroup?.find((group) => group.name === value);
+    setSelectedInstrumentGroup(group.id);
+    setGroupRef(group.group);
+    setInstrumentName('');
   };
 
   const handleInstrumentChange = (value: string) => {
-    setSelectedInstrument(value);
-    setData([]);
-    setSelectedOptions([]);
-    handleInstrumentRef(value);
+    setInstrumentName(value);
+    updateInstrumentState(value);
   };
 
-  const handleInstrumentRef = (id: string) => {
+  const updateInstrumentState = (value: string) => {
     if (instruments.length === 0) return;
-    const itemRef = instruments?.find((item) => item.id === id);
-    setInstrumentRef(itemRef);
+    const instrument = instruments?.find((item) => item.name === value);
+    setSelectedInstrument(instrument.id);
+    setInstrumentRef(instrument);
+    setData([]);
+    setSelectedOptions([]);
   };
 
   const handleOptionSelect = (selectedItem: IFieldsBlock, checked: boolean | 'indeterminate') => {
@@ -277,9 +263,9 @@ export const ConfigureRegistration = () => {
         return;
       }
 
-      const setFormResponse = await firestoreService.setForm(form);
+      const isSetForm = await firestoreService.setRegisteredForm(SubCollection.Forms, form);
 
-      if (!setFormResponse) {
+      if (!isSetForm) {
         toast.error('Não foi possível criar o formulário de cadastro.');
         return;
       }
@@ -294,15 +280,25 @@ export const ConfigureRegistration = () => {
     }
   };
 
+  const editForm = async (formMap: IFormsMap) => {
+    console.log(formMap);
+    // const form = await firestoreService.getRegisteredFormById('forms', formMap.formId);
+    // console.log(form);
+  };
+
   const resetFormConfig = () => {
-    setSelectedOptions([]);
     setSelectedInstrumentGroup(null);
+    setSelectedInstrument(null);
+    setInstrumentRef(null);
     setGroupRef(null);
+    setGroupName('');
+    setInstrumentName('');
     setEmptyFields([]);
     setFieldsBlock([]);
     setForms([]);
     setInstruments([]);
-    setInstrumentRef(null);
+    setSelectedOptions([]);
+    setData([]);
     loadFormsMap();
   };
 
@@ -322,47 +318,96 @@ export const ConfigureRegistration = () => {
   return (
     <div className="flex flex-col gap-4 mt-12">
       <div className="flex items-end gap-2">
-        <div className="w-[300px] min-w-72 space-y-2">
-          <Label htmlFor="fund">Grupo de Instrumentos</Label>
-          <Select onValueChange={handleInstrumentGroupChange}>
-            <SelectTrigger>
-              {instrumentGroupErro ? (
-                <SelectValue placeholder="Não foi possível carregar os dados." />
-              ) : (
-                <SelectValue
-                  placeholder={
-                    InstrumentsGroupLoading ? 'Carregando...' : 'Selecione um grupo de instrumento'
-                  }
-                />
-              )}
-            </SelectTrigger>
-            <SelectContent>
-              {instrumentsGroup?.map((item) => (
-                <SelectItem key={item.id} value={item.id}>
-                  {item.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+        <div className="w-full min-w-72 space-y-2">
+          <Label htmlFor="group">Grupo de Instrumentos</Label>
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button variant="outline" role="combobox" className="w-full justify-between">
+                <span className="text-ellipsis truncate max-w-[300px]">
+                  {groupName
+                    ? instrumentsGroup?.find((group) => group.name === groupName)?.name
+                    : InstrumentsGroupLoading
+                    ? 'carregando...'
+                    : 'Selecione o grupo de instrumento'}
+                </span>
+                <ChevronsUpDown className="opacity-50" />
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-full p-0">
+              <Command>
+                <CommandInput placeholder="Buscar..." className="h-9" />
+                <CommandList>
+                  <CommandEmpty>Nenhum resultado encontrado.</CommandEmpty>
+                  <CommandGroup>
+                    {instrumentsGroup?.map((group) => (
+                      <CommandItem
+                        key={group.id}
+                        value={group.name}
+                        onSelect={handleInstrumentGroupChange}
+                      >
+                        {group.name}
+                        <Check
+                          className={cn(
+                            'ml-auto',
+                            groupName === group.name ? 'opacity-100' : 'opacity-0'
+                          )}
+                        />
+                      </CommandItem>
+                    ))}
+                  </CommandGroup>
+                </CommandList>
+              </Command>
+            </PopoverContent>
+          </Popover>
         </div>
-        <div className="w-[300px] min-w-72 space-y-2">
-          <Label htmlFor="fund">Instrumento</Label>
-          <Select onValueChange={handleInstrumentChange} disabled={!seletectedInstrumentGroup}>
-            <SelectTrigger>
-              <SelectValue
-                placeholder={!instruments ? 'Carregando...' : 'Selecione um instrumento'}
-              />
-            </SelectTrigger>
-            <SelectContent>
-              {instruments?.map((item) => (
-                <SelectItem key={item.id} value={item.id}>
-                  {item.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+        <div className="w-full min-w-72 space-y-2">
+          <Label htmlFor="fund">Instrumentos</Label>
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button
+                variant="outline"
+                role="combobox"
+                className="w-full justify-between"
+                disabled={!seletectedInstrumentGroup}
+              >
+                <span className="text-ellipsis truncate max-w-[300px]">
+                  {instrumentName
+                    ? instruments?.find((group) => group.name === instrumentName)?.name
+                    : !instruments
+                    ? 'carregando...'
+                    : 'Selecione o instrumento'}
+                </span>
+                <ChevronsUpDown className="opacity-50" />
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-full p-0">
+              <Command>
+                <CommandInput placeholder="Buscar..." className="h-9" />
+                <CommandList>
+                  <CommandEmpty>Nenhum resultado encontrado.</CommandEmpty>
+                  <CommandGroup>
+                    {instruments?.map((instrument) => (
+                      <CommandItem
+                        key={instrument.id}
+                        value={instrument.name}
+                        onSelect={handleInstrumentChange}
+                      >
+                        {instrument.name}
+                        <Check
+                          className={cn(
+                            'ml-auto',
+                            instrumentName === instrument.name ? 'opacity-100' : 'opacity-0'
+                          )}
+                        />
+                      </CommandItem>
+                    ))}
+                  </CommandGroup>
+                </CommandList>
+              </Command>
+            </PopoverContent>
+          </Popover>
         </div>
-        <div className="w-[300px] min-w-72 space-y-2">
+        <div className="w-full min-w-72 space-y-2">
           <Label className="flex items-center justify-between" htmlFor="optionsRef">
             Bloco de Campos
             <Tooltip>
@@ -414,7 +459,7 @@ export const ConfigureRegistration = () => {
 
       <div className="flex flex-col gap-4 mt-7">
         <div className="flex items-center gap-2">
-          {seletectedInstrumentGroup && seletectedInstrument ? (
+          {groupName && instrumentName ? (
             <>
               <h1 className="font-medium">Configuração do Cadastro</h1>
               <h1>
@@ -444,7 +489,7 @@ export const ConfigureRegistration = () => {
                         <TableCell>
                           <div className="flex items-center gap-2">
                             {/* onClick={() => openDialog(field)} */}
-                            <Button variant="ghost" size="icon">
+                            <Button variant="ghost" size="icon" onClick={() => editForm(form)}>
                               <Pencil className="h-4 w-4" />
                             </Button>
                             {/* onClick={() => openAlert(field)} */}
@@ -464,7 +509,7 @@ export const ConfigureRegistration = () => {
         {selectedOptions && (
           <div className="flex flex-col items-start">
             {/* <h2>Blocos de Campos</h2> */}
-            {data.map((item: any, i: number) => {
+            {data?.map((item: any, i: number) => {
               return (
                 <Accordion key={item.id} type="single" collapsible className="w-full">
                   <AccordionItem value={item.id}>
