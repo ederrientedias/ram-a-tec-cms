@@ -1,78 +1,37 @@
-import {
-  AlertDialog,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
-import {
-  createFieldDefaultValues,
-  CreateFieldSchema,
-  createfieldSchema,
-} from '@/schemas/instrument-registration/createField.schema';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
-import {
-  ChevronDown,
-  Pencil,
-  Plus,
-  Search,
-  ServerCrash,
-  Settings2Icon,
-  Trash2,
-  X,
-} from 'lucide-react';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
-import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-} from '@/components/ui/sheet';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
+import { Check, ChevronDown, ChevronsUpDown, MousePointerClick, Pencil, Plus, Search, ServerCrash, Settings2Icon, Trash2, X, } from 'lucide-react';
+import { AlertDialog, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, } from '@/components/ui/alert-dialog';
+import { createFieldDefaultValues, CreateFieldSchema, createfieldSchema, } from '@/schemas/instrument-registration/createField.schema';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, } from '@/components/ui/dialog';
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList, } from '@/components/ui/command';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow, } from '@/components/ui/table';
+import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, } from '@/components/ui/sheet';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, } from '@/components/ui/select';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { IField, ISelectOption } from '@/models/instruments-registration.model';
 import firestoreService from '@/services/firestore-intranet/firestore.service';
-import { IField, ISelectOption } from '@/models/instrumentsRegistration.model';
 import { useFieldsBlock } from '@/hooks/firestore-intranet/use-fields-block';
 import firestoreAssetManagement from '@/services/firestoreAssetManagement';
+import { normalizeText, sanitizeString } from '@/utils/format-string';
 import { useFields } from '@/hooks/firestore-intranet/use-fields';
 import { Controller, useForm, useWatch } from 'react-hook-form';
-import { Documents } from '@/enums/firestoreIntranet.enum';
+import { SubCollection } from '@/enums/firestoreIntranet.enum';
 import { useCallback, useEffect, useState } from 'react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { CheckedState } from '@radix-ui/react-checkbox';
 import { useQueryClient } from '@tanstack/react-query';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { formatTimestamp } from '@/utils/format-date';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Switch } from '@/components/ui/switch';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
+import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 
 import { CustomInputMask } from './CustomInputMask';
+
 
 const types = [
   {
@@ -227,19 +186,25 @@ export const CreateField = () => {
   const [allOptions, setAllOptions] = useState<CheckedState | null>(null);
   const [displayOptions, setDisplayOptions] = useState<string | null>(null);
   const [fieldRef, setFieldRef] = useState<IField | null>(null);
+  const [selectedBlockId, setSelectedBlockId] = useState<string | null>(null);
+  const [selectedFields, setSelectedFields] = useState<IField[] | []>([]);
   const [searchTerm, setSearchTerm] = useState('');
-  const [dialogOpen, setDialogOpen] = useState<boolean>(false);
-  const [alertOpen, setAlertOpen] = useState<boolean>(false);
-  const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [isOptions, setIsOptions] = useState<boolean>(false);
-  const [isCollectionData, setIsCollectionData] = useState<boolean>(false);
-  const { data: fieldsBlock, error, isLoading: fieldsBlockIsloading } = useFieldsBlock();
-  const { data: fields, error: fieldsError, isLoading: fieldsLoading } = useFields();
   const [customList, setCustomList] = useState([]);
   const [customName, setCustomName] = useState('');
   const [customInputMaskName, setCustomInputMaskName] = useState(null);
   const [isCustomInputMaskOpen, setIsCustomInputMaskOpen] = useState(false);
   const [inputMaskOptions, setInputMaskOption] = useState(null);
+  const [dialogOpen, setDialogOpen] = useState<boolean>(false);
+  const [alertOpen, setAlertOpen] = useState<boolean>(false);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [isOptions, setIsOptions] = useState<boolean>(false);
+  const [isEditField, setIsEditField] = useState<boolean>(false);
+  const [isCollectionData, setIsCollectionData] = useState<boolean>(false);
+  const [open, setOpen] = useState<boolean>(false);
+  const [blockName, setBlockName] = useState('');
+
+  const { data: fieldsBlock, error, isLoading: fieldsBlockIsloading } = useFieldsBlock();
+  const { data: fields, error: fieldsError, isLoading: fieldsLoading } = useFields();
 
   const {
     handleSubmit,
@@ -272,6 +237,12 @@ export const CreateField = () => {
     setOptions(options);
   }, [selectedCollectionData]);
 
+  const loadFields = useCallback(async () => {
+    if (!selectedBlockId) return;
+    const filteredFields = fields.filter((f) => f.fieldBlockRef === selectedBlockId);
+    setSelectedFields(filteredFields);
+  }, [selectedBlockId, fields]);
+
   useEffect(() => {
     if (!selectedType) return;
 
@@ -294,8 +265,12 @@ export const CreateField = () => {
     loadOptions();
   }, [loadOptions]);
 
-  const filteredFields = fields?.filter((f) =>
-    f.label.toLowerCase().includes(searchTerm.toLowerCase())
+  useEffect(() => {
+    loadFields();
+  }, [loadFields]);
+
+  const filteredFields = selectedFields?.filter((f: IField) =>
+    normalizeText(f.label).includes(normalizeText(searchTerm))
   );
 
   const openDialog = (field?: IField) => {
@@ -303,7 +278,7 @@ export const CreateField = () => {
       editField(field);
       return;
     }
-
+    setIsEditField(false);
     initializeNewField();
   };
 
@@ -326,8 +301,6 @@ export const CreateField = () => {
   };
 
   const createField = async (data: CreateFieldSchema) => {
-    const fieldBlockId = fieldsBlock.find((e) => e.name === data.fieldBlockRef).id;
-
     const options: ISelectOption = {
       id: fieldRef ? fieldRef.optionsRef : crypto.randomUUID(),
       options: selectedType === 'custom-list' ? customList : selectedOptions,
@@ -335,32 +308,48 @@ export const CreateField = () => {
 
     const field: IField = {
       id: fieldRef ? fieldRef.id : crypto.randomUUID(),
+      idName: sanitizeString(data.fieldName),
       fieldName: data.fieldName,
       label: data.label,
       type: data.type,
       placeholder: data.placeholder ?? null,
       collectionData: data.collectionData ?? null,
-      fieldBlockRef: fieldBlockId,
+      fieldBlockRef: selectedBlockId,
       optionsRef: selectedCollectionData || selectedType === 'custom-list' ? options.id : null,
-      isRequire: data.isRequire ?? false,
+      isRequired: data.isRequired ?? false,
       inputMaskOptions: inputMaskOptions ?? null,
+      createdAt: fieldRef ? fieldRef.createdAt : Date.now(),
+      updatedAt: Date.now(),
     };
 
     await addField({ options, field });
   };
 
   const addField = async ({ options, field }): Promise<void> => {
+    const isListType = ['custom-list', 'select'].includes(selectedType);
+
     try {
-      const isFieldCreated = await firestoreService.setField(field);
+      const exists = selectedFields.some((item: IField) => item.fieldName === field.fieldName);
+
+      if (exists && !isEditField) {
+        toast.error('Já existe um campo com esse nome.');
+        return;
+      }
+
+      const isFieldCreated = await firestoreService.setFieldOrBlock(SubCollection.Fields, field);
 
       if (!isFieldCreated) {
         toast.error('Não foi possível criar o campo.');
         return;
       }
 
-      toast.success('O campo foi criado com sucesso.');
+      toast.success(
+        `${
+          !isEditField ? 'O campo foi criado com sucesso.' : 'O campo foi atualizado com sucesso.'
+        }`
+      );
 
-      if (selectedCollectionData && options.options.length > 0) {
+      if (isListType) {
         await addOption(options);
       }
     } catch (error) {
@@ -369,12 +358,16 @@ export const CreateField = () => {
     } finally {
       setIsLoading(false);
       closeDialog();
-      loadFields();
+      updateFields();
+      handleBlockChange(blockName);
     }
   };
 
   const addOption = async (options: ISelectOption) => {
-    const isSelectOptionCreated = await firestoreService.setSelectOption(options);
+    const isSelectOptionCreated = await firestoreService.setSelectOption(
+      SubCollection.Options,
+      options
+    );
 
     if (!isSelectOptionCreated) {
       toast.error('Não foi possível criar as opções.');
@@ -391,30 +384,32 @@ export const CreateField = () => {
 
   const editField = async (field: IField) => {
     setDialogOpen(true);
+    setIsEditField(true);
     setFieldRef(field);
 
-    const fieldBlockName = fieldsBlock.find((e) => e.id === field.fieldBlockRef).name;
     setValue('fieldName', field.fieldName);
     setValue('label', field.label);
     setValue('type', field.type);
     setValue('collectionData', field.collectionData);
-    setValue('fieldBlockRef', fieldBlockName);
-    setValue('isRequire', field.isRequire);
+    setValue('placeholder', field.placeholder);
+    setValue('isRequired', field.isRequired);
 
     if (field.type === 'select') {
       setIsOptions(true);
       const option = await getOptions(field.optionsRef);
-      setOptions(option.options);
+      setOptions(option?.options);
     }
   };
 
   const handleDeleteField = async () => {
     setIsLoading(true);
-    const response = await firestoreService.deleteField(fieldRef).finally(() => {
-      setIsLoading(false);
-      closeAlert();
-      loadFields();
-    });
+    const response = await firestoreService
+      .deleteFieldOrBlock(SubCollection.Fields, fieldRef.id)
+      .finally(() => {
+        setIsLoading(false);
+        closeAlert();
+        updateFields();
+      });
 
     if (!response) {
       toast.error('Não foi possível excluir o Campo');
@@ -499,13 +494,20 @@ export const CreateField = () => {
     setIsCustomInputMaskOpen(false);
   };
 
-  const loadFields = async () => {
-    await queryClient.invalidateQueries({ queryKey: [Documents.Fields] });
+  const handleBlockChange = (value: string) => {
+    setBlockName(value);
+    const blockId = fieldsBlock?.find((block) => block.name === value)?.id;
+    setSelectedBlockId(blockId);
+    setOpen(false);
+  };
+
+  const updateFields = async () => {
+    await queryClient.invalidateQueries({ queryKey: [SubCollection.Fields] });
   };
 
   const closeDialog = () => {
-    setDialogOpen(false);
     resetForm();
+    setDialogOpen(false);
   };
 
   const closeAlert = () => {
@@ -534,25 +536,81 @@ export const CreateField = () => {
     setSelectedOptions([]);
     setCustomList([]);
     setInputMaskOption(null);
+    setIsEditField(false);
   };
 
   return (
     <div className="flex flex-col gap-4 mt-12">
-      <div className="flex items-center justify-between">
-        <div className="relative w-full max-w-sm">
-          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
-          <Input
-            type="search"
-            placeholder="Buscar Campo..."
-            className="pl-8"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
+      <div
+        className={cn(
+          'flex items-end',
+          blockName && selectedBlockId ? 'justify-between' : 'justify-end'
+        )}
+      >
+        {blockName && selectedBlockId && (
+          <div className="relative w-full max-w-sm">
+            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
+            <Input
+              type="search"
+              placeholder="Buscar Campo..."
+              className="pl-8"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              disabled={!selectedBlockId}
+            />
+          </div>
+        )}
+        <div className="flex items-end gap-2">
+          <div className="w-[300px] min-w-72 space-y-2">
+            <Label htmlFor="fund">Bloco de campo</Label>
+            <Popover open={open} onOpenChange={setOpen}>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  role="combobox"
+                  aria-expanded={open}
+                  className="w-full justify-between"
+                >
+                  {blockName
+                    ? fieldsBlock?.find((block) => block.name === blockName)?.name
+                    : fieldsBlockIsloading
+                    ? 'carregando...'
+                    : 'Selecione o bloco de campo'}
+                  <ChevronsUpDown className="opacity-50" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-full p-0">
+                <Command>
+                  <CommandInput placeholder="Buscar..." className="h-9" />
+                  <CommandList>
+                    <CommandEmpty>Nenhum bloco de campo</CommandEmpty>
+                    <CommandGroup>
+                      {fieldsBlock?.map((block) => (
+                        <CommandItem
+                          key={block.id}
+                          value={block.name}
+                          onSelect={(currentValue) => handleBlockChange(currentValue)}
+                        >
+                          {block.name}
+                          <Check
+                            className={cn(
+                              'ml-auto',
+                              blockName === block.name ? 'opacity-100' : 'opacity-0'
+                            )}
+                          />
+                        </CommandItem>
+                      ))}
+                    </CommandGroup>
+                  </CommandList>
+                </Command>
+              </PopoverContent>
+            </Popover>
+          </div>
+          <Button onClick={() => openDialog()} disabled={!selectedBlockId}>
+            <Plus className="mr-2 h-4 w-4" />
+            Novo Campo
+          </Button>
         </div>
-        <Button onClick={() => openDialog()}>
-          <Plus className="mr-2 h-4 w-4" />
-          Novo Campo
-        </Button>
       </div>
       <div className="flex flex-col">
         <div className="rounded-md border overflow-hidden">
@@ -561,12 +619,21 @@ export const CreateField = () => {
               <ServerCrash className="h-4 w-4" size={32} />
               <span className="font-medium">Ops! Tivemos um problema ao buscar os dados.</span>
             </div>
+          ) : !blockName && !selectedBlockId ? (
+            <div className="w-full flex items-center justify-center gap-2 p-5">
+              <MousePointerClick className="h-4 w-4" size={32} />
+              <span className="font-medium">
+                Antes de criar um novo campo, selecione o bloco em que ele será adicionado.
+              </span>
+            </div>
           ) : (
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>ID</TableHead>
                   <TableHead>Nome do Campo</TableHead>
+                  <TableHead>Tipo do Campo</TableHead>
+                  <TableHead>Criado em</TableHead>
+                  <TableHead>Ultima Atualização</TableHead>
                   <TableHead>Ações</TableHead>
                 </TableRow>
               </TableHeader>
@@ -577,7 +644,7 @@ export const CreateField = () => {
                       <Skeleton className="h-[50px] w-full" />
                     </TableCell>
                   </TableRow>
-                ) : !fields || fields.length === 0 ? (
+                ) : !filteredFields || filteredFields.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={6} className="text-center py-10 text-muted-foreground">
                       Ainda não há dados cadastrados.
@@ -586,8 +653,13 @@ export const CreateField = () => {
                 ) : (
                   filteredFields?.map((field: IField) => (
                     <TableRow key={field.id}>
-                      <TableCell className="font-medium">{field.id}</TableCell>
-                      <TableCell>{field.label}</TableCell>
+                      <TableCell className="font-medium">{field.label}</TableCell>
+                      <TableCell>{`${
+                        field.type.charAt(0).toUpperCase() + field.type.slice(1)
+                      }`}</TableCell>
+                      <TableCell>{formatTimestamp(field.createdAt)}</TableCell>
+                      <TableCell>{formatTimestamp(field.updatedAt)}</TableCell>
+                      {/* Ações */}
                       <TableCell>
                         <div className="flex items-center gap-2">
                           <Button variant="ghost" size="icon" onClick={() => openDialog(field)}>
@@ -621,9 +693,11 @@ export const CreateField = () => {
         >
           <form onSubmit={handleSubmit(onSubmit)}>
             <DialogHeader>
-              <DialogTitle>Criar Campo</DialogTitle>
+              <DialogTitle>{!isEditField ? 'Criar Campo' : 'Editar Campo'}</DialogTitle>
               <DialogDescription>
-                Permite criar um novo campo dentro de um bloco de campos.
+                {!isEditField
+                  ? 'Permite criar um novo campo dentro de um bloco de campos.'
+                  : 'Permite alterar as informações de um campo existente dentro de um bloco de campos.'}
               </DialogDescription>
             </DialogHeader>
 
@@ -890,43 +964,12 @@ export const CreateField = () => {
                 </div>
               )}
 
-              {/* Bloco de Campos */}
-              <div className="space-y-2">
-                <Label htmlFor="fieldBlockRef">Bloco de Campos</Label>
-                <Controller
-                  name="fieldBlockRef"
-                  control={control}
-                  defaultValue=""
-                  render={({ field }) => (
-                    <Select onValueChange={field.onChange} value={field.value || ''}>
-                      <SelectTrigger>
-                        <SelectValue
-                          placeholder={
-                            fieldsBlockIsloading ? 'Carregando...' : 'Selecione o bloco de campos'
-                          }
-                        />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {fieldsBlock.map((item) => (
-                          <SelectItem key={item.id} value={item.name}>
-                            {item.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  )}
-                />
-                {errors.fieldBlockRef && touchedFields.fieldBlockRef && (
-                  <small className="text-red-400">{errors.fieldBlockRef.message}</small>
-                )}
-              </div>
-
               {/* É Obrigatório */}
               <div className="flex flex-col items-start justify-end space-y-2">
                 <div className="flex items-center gap-2">
                   <Label htmlFor="isRequire">Este campo é obrigatório?</Label>
                   <Controller
-                    name="isRequire"
+                    name="isRequired"
                     control={control}
                     render={({ field }) => (
                       <Switch
@@ -938,8 +981,8 @@ export const CreateField = () => {
                   />
                 </div>
 
-                {errors.isRequire && touchedFields.isRequire ? (
-                  <small className="text-red-400">{errors.isRequire.message}</small>
+                {errors.isRequired && touchedFields.isRequired ? (
+                  <small className="text-red-400">{errors.isRequired.message}</small>
                 ) : (
                   <small className="text-xs text-muted-foreground">
                     Se ativado, o campo será de preenchimento obrigatório.
