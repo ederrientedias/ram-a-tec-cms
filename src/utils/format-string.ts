@@ -24,3 +24,10 @@ export const sanitizeString = (str: string): string => {
     .replace(/[^a-zA-Z0-9]/g, '')
     .toLowerCase();
 };
+
+export const normalizeText = (text: string) => {
+  return text
+    ?.normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase();
+};
