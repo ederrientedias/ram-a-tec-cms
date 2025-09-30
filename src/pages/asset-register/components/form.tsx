@@ -1,19 +1,13 @@
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, } from '@/components/ui/select';
 import { useSelectOptions } from '@/hooks/firestore-intranet/use-select-options';
-import { IField } from '@/models/instrumentsRegistration.model';
+import { IField } from '@/models/instruments-registration.model';
 import { Controller, useFormContext } from 'react-hook-form';
 import { DatePicker } from '@/components/ui/date-picker';
-import { sanitizeString } from '@/utils/format-string';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import CleaveInput from 'cleave.js/react';
+
 
 export const Form = ({ fields }) => {
   const { data: selectOptins } = useSelectOptions();
@@ -29,7 +23,6 @@ export const Form = ({ fields }) => {
   return (
     <div className="w-full grid grid-cols-3 gap-y-5 gap-x-2">
       {fields?.map((item: IField) => {
-        const fieldName = sanitizeString(item.fieldName);
         return (
           <div key={item.id}>
             {/* Tipo texto */}
@@ -37,7 +30,7 @@ export const Form = ({ fields }) => {
               <div className="flex flex-col gap-2">
                 <Label className={!item.label ? 'text-transparent' : null}>{item.label}</Label>
                 <Controller
-                  name={fieldName}
+                  name={item.idName}
                   control={control}
                   render={({ field }) => {
                     if (!item.inputMaskOptions) {
@@ -71,7 +64,7 @@ export const Form = ({ fields }) => {
               <div className="flex flex-col gap-2">
                 <Label className={!item.label ? 'text-transparent' : null}>{item.label}</Label>
                 <Controller
-                  name={fieldName}
+                  name={item.idName}
                   control={control}
                   render={({ field }) => {
                     if (!item.inputMaskOptions) {
@@ -93,13 +86,13 @@ export const Form = ({ fields }) => {
             )}
 
             {/* tipo lista */}
-            {item.type === 'select' && (
+            {(item.type === 'select' || item.type === 'custom-list') && (
               <div className="flex flex-col gap-2">
                 <Label className={!item.label ? 'text-transparent' : null}>
                   {item.label ?? 'empty'}
                 </Label>
                 <Controller
-                  name={fieldName}
+                  name={item.idName}
                   control={control}
                   render={({ field }) => (
                     <Select value={field.value ?? ''} onValueChange={field.onChange}>
@@ -133,7 +126,7 @@ export const Form = ({ fields }) => {
                   {item.label ?? 'empty'}
                 </Label>
                 <Controller
-                  name={fieldName}
+                  name={item.idName}
                   control={control}
                   render={({ field }) => <DatePicker field={field} />}
                 />
@@ -155,8 +148,8 @@ export const Form = ({ fields }) => {
               </div>
             )}
 
-            {item.isRequire && errors[fieldName] && touchedFields[fieldName] && (
-              <small className="text-red-500">{errors[fieldName]?.message?.toString()}</small>
+            {item.isRequired && errors[item.idName] && touchedFields[item.idName] && (
+              <small className="text-red-500">{errors[item.idName]?.message?.toString()}</small>
             )}
           </div>
         );
