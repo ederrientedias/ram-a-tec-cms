@@ -3,13 +3,12 @@ import { createInstrumentSchema, CreateInstrumentSchema, defaultValues, } from '
 import { DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, } from '@/components/ui/dialog';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow, } from '@/components/ui/table';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, } from '@/components/ui/select';
-import { useInstrumentsGroup } from '@/hooks/firestore-intranet/use-instruments-group';
 import firestoreService from '@/services/firestore-intranet/firestore.service';
-import { name } from 'node_modules/@azure/msal-browser/dist/packageMetadata';
 import { useInstruments } from '@/hooks/firestore-intranet/use-instruments';
+import { Documents, SubCollection } from '@/enums/firestoreIntranet.enum';
 import { Pencil, Plus, Search, ServerCrash, Trash2 } from 'lucide-react';
-import { IInstrument } from '@/models/instrumentsRegistration.model';
-import { Documents } from '@/enums/firestoreIntranet.enum';
+import { IInstrument } from '@/models/instruments-registration.model';
+import { useGroups } from '@/hooks/firestore-intranet/use-groups';
 import { useQueryClient } from '@tanstack/react-query';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Controller, useForm } from 'react-hook-form';
@@ -30,7 +29,7 @@ export const CreateInstrument = () => {
   const [alertOpen, setAlertOpen] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const { data: instruments, error, isLoading: instrumentsLoading } = useInstruments();
-  const { data: instrumentsGroup, isLoading: instrumentsGroupLoading } = useInstrumentsGroup();
+  const { data: instrumentsGroup, isLoading: instrumentsGroupLoading } = useGroups();
 
   const {
     handleSubmit,
@@ -69,7 +68,6 @@ export const CreateInstrument = () => {
   };
 
   const onSubmit = async (data: CreateInstrumentSchema) => {
-    console.log(data);
     setIsLoading(true);
     await createInstrument(data);
   };
@@ -89,7 +87,10 @@ export const CreateInstrument = () => {
 
   const addInstrument = async (instrument: IInstrument) => {
     try {
-      const isInstrumentCreated = await firestoreService.setInstrument(instrument);
+      const isInstrumentCreated = await firestoreService.setInstrumentOrGroup(
+        SubCollection.Instruments,
+        instrument
+      );
 
       if (!isInstrumentCreated) {
         toast.error('Não foi possível criar o Instrumento.');
@@ -122,7 +123,10 @@ export const CreateInstrument = () => {
       return;
     }
     try {
-      const isDeleted = await firestoreService.deleteIntrument(instrumentRef.id);
+      const isDeleted = await firestoreService.deleteInstrumentOrGroup(
+        SubCollection.Instruments,
+        instrumentRef.id
+      );
       if (!isDeleted) {
         toast.error('Não foi possível excluir o instrumento.');
         return;
