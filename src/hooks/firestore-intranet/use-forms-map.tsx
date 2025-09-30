@@ -1,7 +1,7 @@
 import firestoreService from '@/services/firestore-intranet/firestore.service';
-import { IFormsMap } from '@/models/instrumentsRegistration.model';
+import { IFormsMap } from '@/models/instruments-registration.model';
 import { useQuery, UseQueryResult } from '@tanstack/react-query';
-import { Documents } from '@/enums/firestoreIntranet.enum';
+
 
 export const useFormsMap = (): UseQueryResult<IFormsMap[], Error> => {
   return useQuery({
