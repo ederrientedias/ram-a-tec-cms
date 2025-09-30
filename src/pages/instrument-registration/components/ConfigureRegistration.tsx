@@ -1,10 +1,8 @@
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList, } from '@/components/ui/command';
-import { IField, IFieldsBlock, IForm, IFormsMap, IInstrument, } from '@/models/instruments-registration.model';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow, } from '@/components/ui/table';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, } from '@/components/ui/select';
+import { IBlock, IField, IForm, IFormsMap, IInstrument, } from '@/models/instruments-registration.model';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger, } from '@/components/ui/accordion';
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { ChevronDown, Check, CircleAlert, Pencil, Trash2, ChevronsUpDown } from 'lucide-react';
+import { Check, ChevronDown, ChevronsUpDown, CircleAlert, Pencil, Trash2 } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import firestoreService from '@/services/firestore-intranet/firestore.service';
@@ -14,7 +12,6 @@ import { SubCollection } from '@/enums/firestoreIntranet.enum';
 import { useCallback, useEffect, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Toggle } from '@/components/ui/toggle';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { cn } from '@/lib/utils';
@@ -33,43 +30,44 @@ type IFormRef = {
   fields: { id: string; fieldBlockRef: string }[];
 };
 
+type EmptyFields = { id: string; name: string; index: number; isEmpty: boolean };
+
 export const ConfigureRegistration = () => {
   const queryClient = useQueryClient();
   const [instruments, setInstruments] = useState<IInstrument[]>([]);
-  const [fieldsBlock, setFieldsBlock] = useState<IFieldsBlock[]>([]);
+  const [fieldsBlock, setFieldsBlock] = useState<IBlock[]>([]);
   const [data, setData] = useState<SelectedItem[]>([]);
-  const [selectedOptions, setSelectedOptions] = useState<IFieldsBlock[]>([]);
+  const [selectedOptions, setSelectedOptions] = useState<IBlock[]>([]);
+  const [forms, setForms] = useState<IFormRef[]>([]);
   const [seletectedInstrumentGroup, setSelectedInstrumentGroup] = useState<string | null>(null);
   const [seletectedInstrument, setSelectedInstrument] = useState<string | null>(null);
-  const [emptyFields, setEmptyFields] = useState<
-    { id: string; name: string; index: number; isEmpty: boolean }[] | null
-  >(null);
   const [groupRef, setGroupRef] = useState<string | null>(null);
+  const [emptyFields, setEmptyFields] = useState<EmptyFields[] | null>(null);
   const [instrumentRef, setInstrumentRef] = useState<IInstrument | null>(null);
-  const [forms, setForms] = useState<IFormRef[]>([]);
-  const [isLoading, setIsLoading] = useState<boolean>(false);
   const [groupName, setGroupName] = useState('');
   const [instrumentName, setInstrumentName] = useState('');
+  const [isLoading, setIsLoading] = useState<boolean>(false);
 
-  const {
-    data: instrumentsGroup,
-    error: instrumentGroupErro,
-    isLoading: InstrumentsGroupLoading,
-  } = useGroups();
-  const { data: formsMap, isLoading: formsMapLoading } = useFormsMap();
+  const { data: instrumentsGroup, isLoading: InstrumentsGroupLoading } = useGroups();
+  const { data: formsMap } = useFormsMap();
 
   const loadInstruments = useCallback(async () => {
     setFieldsBlock([]);
     if (!seletectedInstrumentGroup) return;
-    const instruments = await firestoreService.getInstrumentsById(seletectedInstrumentGroup);
+    const ref = { key: 'instrumentGroupRef', id: seletectedInstrumentGroup };
+    const instruments = await firestoreService.getAllInstrumentsOrGroupsById<IInstrument>(
+      SubCollection.Instruments,
+      ref
+    );
+
     setInstruments(instruments);
   }, [seletectedInstrumentGroup]);
 
   const loadFieldsBlock = useCallback(async () => {
     if (!seletectedInstrument && !groupRef) return;
 
-    const fieldsBlock = await firestoreService.getFieldsBlockByGroup(groupRef);
-    setFieldsBlock(fieldsBlock);
+    const blocks = await firestoreService.getBlockByGroup(groupRef);
+    setFieldsBlock(blocks);
   }, [seletectedInstrument, groupRef]);
 
   const handleFields = useCallback(
@@ -89,7 +87,7 @@ export const ConfigureRegistration = () => {
 
   const loadFields = useCallback(async () => {
     if (!seletectedInstrument) return;
-    const fields = await firestoreService.getFields();
+    const fields = await firestoreService.getFieldsOrBlocks<IField>('fields');
     handleFields(fields);
   }, [seletectedInstrument, handleFields]);
 
@@ -131,7 +129,7 @@ export const ConfigureRegistration = () => {
     setSelectedOptions([]);
   };
 
-  const handleOptionSelect = (selectedItem: IFieldsBlock, checked: boolean | 'indeterminate') => {
+  const handleOptionSelect = (selectedItem: IBlock, checked: boolean | 'indeterminate') => {
     const isChecked = checked;
     setSelectedOptions((prev) => {
       const exists = prev.some((item) => item.id === selectedItem.id);
@@ -307,12 +305,7 @@ export const ConfigureRegistration = () => {
   };
 
   const clearConfig = () => {
-    setSelectedInstrumentGroup(null);
-    loadInstruments();
-    setData([]);
-    setForms([]);
-    setSelectedOptions([]);
-    setInstrumentRef(null);
+    resetFormConfig();
   };
 
   return (
