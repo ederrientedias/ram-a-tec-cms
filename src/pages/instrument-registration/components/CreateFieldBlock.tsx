@@ -1,41 +1,17 @@
-import {
-  AlertDialog,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
-import {
-  CreateFieldsBlockSchema,
-  createFieldsBlockDefaultValues,
-  createfieldsBlockSchema,
-} from '@/schemas/instrument-registration/createFieldsBlock.schema';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
-import { useInstrumentsGroup } from '@/hooks/firestore-intranet/use-instruments-group';
+import { AlertDialog, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, } from '@/components/ui/alert-dialog';
+import { CreateFieldsBlockSchema, createFieldsBlockDefaultValues, createfieldsBlockSchema, } from '@/schemas/instrument-registration/createFieldsBlock.schema';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, } from '@/components/ui/dialog';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow, } from '@/components/ui/table';
 import { ChevronDown, Pencil, Plus, Search, ServerCrash, Trash2 } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import firestoreService from '@/services/firestore-intranet/firestore.service';
 import { useFieldsBlock } from '@/hooks/firestore-intranet/use-fields-block';
-import { IFieldsBlock } from '@/models/instrumentsRegistration.model';
+import { IFieldsBlock } from '@/models/instruments-registration.model';
+import { useGroups } from '@/hooks/firestore-intranet/use-groups';
 import { Documents } from '@/enums/firestoreIntranet.enum';
 import { useQueryClient } from '@tanstack/react-query';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { normalizeText } from '@/utils/format-string';
 import { Controller, useForm } from 'react-hook-form';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -45,6 +21,7 @@ import { Input } from '@/components/ui/input';
 import { useState } from 'react';
 import { toast } from 'sonner';
 
+
 export const CreateFieldBLock = () => {
   const queryClient = useQueryClient();
   const [searchTerm, setSearchTerm] = useState('');
@@ -53,7 +30,7 @@ export const CreateFieldBLock = () => {
   const [alertOpen, setAlertOpen] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const { data: fieldsBlock, error, isLoading: fieldsBlockLoading } = useFieldsBlock();
-  const { data: instrumentGroup, isLoading: instrumentGroupLoading } = useInstrumentsGroup();
+  const { data: instrumentGroup, isLoading: instrumentGroupLoading } = useGroups();
 
   const {
     handleSubmit,
@@ -67,7 +44,7 @@ export const CreateFieldBLock = () => {
   });
 
   const filteredFieldsBlock = fieldsBlock?.filter((f) =>
-    f.name.toLowerCase().includes(searchTerm.toLowerCase())
+    normalizeText(f.name)?.includes(normalizeText(searchTerm))
   );
 
   const openDialog = (fieldBlock?: IFieldsBlock) => {
@@ -232,7 +209,9 @@ export const CreateFieldBLock = () => {
                               </span>
                             ))
                           ) : (
-                            <span>{field.group}</span>
+                            <span className="bg-slate-100 text-xs font-medium px-2 py-1 rounded-md">
+                              {field.group}
+                            </span>
                           )}
                         </div>
                       </TableCell>
