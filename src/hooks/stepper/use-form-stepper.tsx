@@ -1,6 +1,8 @@
 import firestoreService from '@/services/firestore-intranet/firestore.service';
-import { ICollectionFields } from '@/models/instrumentsRegistration.model';
+import { ICollectionFields } from '@/models/instruments-registration.model';
+import { SubCollection } from '@/enums/firestoreIntranet.enum';
 import { useState, useEffect, useCallback } from 'react';
+
 
 interface StepConfig {
   id: string;
@@ -31,8 +33,8 @@ export const useFormStepper = (formId: string | null): UseFormStepsReturn => {
     setError(null);
 
     try {
-      const forms = await firestoreService.getFormById(formId);
-      setFormData(forms);
+      const forms = await firestoreService.getRegisteredFormById<any>(SubCollection.Forms, formId);
+      setFormData(forms.forms);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erro ao carregar formulário');
       setFormData(null);
