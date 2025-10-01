@@ -6,8 +6,8 @@ import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, Command
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow, } from '@/components/ui/table';
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, } from '@/components/ui/sheet';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, } from '@/components/ui/select';
+import { IField, IOption, ISelectOption } from '@/models/instruments-registration.model';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { IField, ISelectOption } from '@/models/instruments-registration.model';
 import firestoreService from '@/services/firestore-intranet/firestore.service';
 import { useFieldsBlock } from '@/hooks/firestore-intranet/use-fields-block';
 import firestoreAssetManagement from '@/services/firestoreAssetManagement';
@@ -181,7 +181,7 @@ const collectionsMap = [
 
 export const CreateField = () => {
   const queryClient = useQueryClient();
-  const [options, setOptions] = useState([]);
+  const [options, setOptions] = useState<any>([]);
   const [selectedOptions, setSelectedOptions] = useState([]);
   const [allOptions, setAllOptions] = useState<CheckedState | null>(null);
   const [displayOptions, setDisplayOptions] = useState<string | null>(null);
@@ -378,8 +378,11 @@ export const CreateField = () => {
   };
 
   const getOptions = async (optionRef: string) => {
-    const option = await firestoreService.getSelectOptionByID(optionRef);
-    return option;
+    const option = await firestoreService.getSelectOptionById<IOption>(
+      SubCollection.Options,
+      optionRef
+    );
+    return option as IOption;
   };
 
   const editField = async (field: IField) => {
@@ -423,7 +426,10 @@ export const CreateField = () => {
   const handleDeleteSelectOption = async () => {
     if (fieldRef.type !== 'select' && !fieldRef.optionsRef) return;
 
-    const response = await firestoreService.deleteSelectOptions(fieldRef.optionsRef);
+    const response = await firestoreService.deleteSelectOption(
+      SubCollection.Options,
+      fieldRef.optionsRef
+    );
     if (!response) {
       toast.error('Não foi possível excluir as Opções');
       return;
