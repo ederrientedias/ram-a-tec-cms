@@ -6,9 +6,9 @@ import { ChevronDown, Pencil, Plus, Search, ServerCrash, Trash2 } from 'lucide-r
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import firestoreService from '@/services/firestore-intranet/firestore.service';
 import { useFieldsBlock } from '@/hooks/firestore-intranet/use-fields-block';
+import { Documents, SubCollection } from '@/enums/firestoreIntranet.enum';
 import { IFieldsBlock } from '@/models/instruments-registration.model';
 import { useGroups } from '@/hooks/firestore-intranet/use-groups';
-import { Documents } from '@/enums/firestoreIntranet.enum';
 import { useQueryClient } from '@tanstack/react-query';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { normalizeText } from '@/utils/format-string';
@@ -83,7 +83,7 @@ export const CreateFieldBLock = () => {
 
   const addFieldBlock = async (fieldBlock: IFieldsBlock) => {
     const isFieldBlockCreated = await firestoreService
-      .setFieldsBlock(fieldBlock)
+      .setFieldOrBlock(SubCollection.Blocks, fieldBlock)
       .finally(() => finalize());
 
     if (!isFieldBlockCreated) {
@@ -105,10 +105,12 @@ export const CreateFieldBLock = () => {
   const handleDeleteFieldBlock = async () => {
     if (!fieldBlockRef) return;
     setIsLoading(true);
-    const response = await firestoreService.deleteFieldBlock(fieldBlockRef.id).finally(() => {
-      finalize();
-      closeAlert();
-    });
+    const response = await firestoreService
+      .deleteFieldOrBlock(SubCollection.Blocks, fieldBlockRef.id)
+      .finally(() => {
+        finalize();
+        closeAlert();
+      });
 
     if (!response) {
       toast.error('Não foi possível excluir o bloco de campo');
