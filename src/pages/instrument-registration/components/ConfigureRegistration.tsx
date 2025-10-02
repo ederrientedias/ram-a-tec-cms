@@ -129,34 +129,41 @@ export const ConfigureRegistration = () => {
     setSelectedOptions([]);
   };
 
-  const handleOptionSelect = (selectedItem: IBlock, checked: boolean | 'indeterminate') => {
+  const handleOptionSelect = (selectedBlock: IBlock, checked: boolean | 'indeterminate') => {
     const isChecked = checked;
     setSelectedOptions((prev) => {
-      const exists = prev.some((item) => item.id === selectedItem.id);
+      const exists = prev.some((item) => item.id === selectedBlock.id);
 
       if (isChecked && !exists) {
-        setForms([
-          ...forms,
-          {
-            id: selectedItem.id,
-            name: selectedItem.name,
-            fields: [],
-          },
-        ]);
-
-        return [...prev, selectedItem];
+        handleAddFieldsBlock(selectedBlock);
+        return [...prev, selectedBlock];
       }
 
       if (!isChecked && exists) {
-        const filtered = data?.filter((d) => d.id !== selectedItem.id);
-        const emptys = emptyFields?.filter((e) => e.id !== selectedItem.id);
-        setEmptyFields(emptys);
-        setData(filtered);
-        return prev.filter((item) => item.id !== selectedItem.id);
+        handleRemoveFieldsBlock(selectedBlock);
+        return prev.filter((item) => item.id !== selectedBlock.id);
       }
 
       return prev;
     });
+  };
+
+  const handleAddFieldsBlock = (selectedBlock: IBlock) => {
+    setForms([
+      ...forms,
+      {
+        id: selectedBlock.id,
+        name: selectedBlock.name,
+        fields: [],
+      },
+    ]);
+  };
+
+  const handleRemoveFieldsBlock = (selectedBlock: IBlock) => {
+    const removeById = (arr: any) => arr.filter((e) => e.id !== selectedBlock.id);
+    setData(removeById(data));
+    setForms(removeById(forms));
+    setEmptyFields(removeById(emptyFields));
   };
 
   const handleSelectedField = (
@@ -212,14 +219,24 @@ export const ConfigureRegistration = () => {
   };
 
   const handleEmptyValues = () => {
-    const emptyFields = forms.map((item, index) => ({
-      id: item.id,
-      name: item.name,
-      index,
-      isEmpty: item.fields.length === 0,
-    }));
-    const allFilled = emptyFields.every((item) => item.isEmpty === false);
-    setEmptyFields(emptyFields);
+    const emptys = forms.reduce((acc, item, index) => {
+      const exists = acc.some((e) => e.id === item.id);
+      if (!exists) {
+        acc.push({
+          id: item.id,
+          name: item.name,
+          index,
+          isEmpty: item.fields.length === 0,
+        });
+      }
+
+      return acc;
+    }, []);
+
+    const allFilled = emptys.every((item) => !item.isEmpty);
+
+    setEmptyFields(emptys);
+
     return { allFilled };
   };
 
@@ -551,18 +568,19 @@ export const ConfigureRegistration = () => {
         )}
         <div className="flex items-center justify-end">
           <div className="w-full flex flex-col items-start gap-2">
-            {emptyFields?.map((e) => {
-              return (
-                e.isEmpty &&
-                forms[e.index].fields.length === 0 && (
-                  <small key={e.id} className="text-red-400 flex items-center gap-1">
-                    O bloco
-                    <span className="font-bold">{e.name}</span>
-                    deve conter ao menos um campo.
-                  </small>
-                )
-              );
-            })}
+            {emptyFields?.length > 0 &&
+              emptyFields?.map((e) => {
+                return (
+                  e.isEmpty &&
+                  forms[e.index]?.fields.length === 0 && (
+                    <small key={e.id} className="text-red-400 flex items-center gap-1">
+                      O bloco
+                      <span className="font-bold">{e.name}</span>
+                      deve conter ao menos um campo.
+                    </small>
+                  )
+                );
+              })}
           </div>
           {selectedOptions.length > 0 && (
             <div className="flex items-center gap-2">
