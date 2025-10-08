@@ -12,3 +12,13 @@ export const formatTimestamp = (timestamp: number): string => {
   const date = new Date(timestamp);
   return new Intl.DateTimeFormat('pt-BR').format(date);
 };
+
+export const dateTimeFormat = (timestamp: number) => {
+  const date = new Date(timestamp);
+  const dateFormated = new Intl.DateTimeFormat('pt-BR', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+  }).format(date);
+  return dateFormated;
+};
