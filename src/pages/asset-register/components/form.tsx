@@ -7,14 +7,21 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import CleaveInput from 'cleave.js/react';
+import { useEffect } from 'react';
 
 
-export const Form = ({ fields }) => {
+export const Form = ({ formFields, editingData }) => {
   const { data: selectOptins } = useSelectOptions();
   const {
     control,
+    reset,
     formState: { errors, touchedFields },
   } = useFormContext();
+
+  useEffect(() => {
+    if (!editingData) return;
+    reset(editingData);
+  }, [editingData, reset]);
 
   const fecthSelectOptions = (optionRef: string) => {
     return selectOptins?.find((option) => option.id === optionRef)?.options ?? [];
@@ -22,7 +29,7 @@ export const Form = ({ fields }) => {
 
   return (
     <div className="w-full grid grid-cols-3 gap-y-5 gap-x-2">
-      {fields?.map((item: IField) => {
+      {formFields?.map((item: IField) => {
         return (
           <div key={item.id}>
             {/* Tipo texto */}
@@ -104,14 +111,21 @@ export const Form = ({ fields }) => {
                         />
                       </SelectTrigger>
                       <SelectContent>
-                        {fecthSelectOptions(item.optionsRef).map((option) => (
-                          <SelectItem
-                            key={option['ID'].toString()}
-                            value={option['ID'].toString() ?? ''}
-                          >
-                            {option['NOME'] ?? option['CLASSE'] ?? option['COD'] ?? option['name']}
-                          </SelectItem>
-                        ))}
+                        {/* Ajustar a base de dados para ter chaves diferentes nos arrays */}
+                        {fecthSelectOptions(item.optionsRef).map((option) => {
+                          const id = option['ID']?.toString() ?? option.id;
+                          const name =
+                            option['NOME'] ??
+                            option['CLASSE'] ??
+                            option['COD'] ??
+                            option['name'] ??
+                            option['NICKNAME'];
+                          return (
+                            <SelectItem key={id} value={JSON.stringify(option) ?? ''}>
+                              {name}
+                            </SelectItem>
+                          );
+                        })}
                       </SelectContent>
                     </Select>
                   )}
@@ -148,8 +162,10 @@ export const Form = ({ fields }) => {
               </div>
             )}
 
-            {item.isRequired && errors[item.idName] && touchedFields[item.idName] && (
-              <small className="text-red-500">{errors[item.idName]?.message?.toString()}</small>
+            {item.isRequired && errors[item.idName] && (
+              <small role="alert" className="text-red-500">
+                {errors[item.idName]?.message?.toString()}
+              </small>
             )}
           </div>
         );
