@@ -1,193 +1,155 @@
-import {
-  ICollectionFields,
-  IField,
-  IFieldsBlock,
-  IForm,
-  IFormsMap,
-  IInstrument,
-  IInstrumentsGroup,
-  ISelectOption,
-} from '@/models/instrumentsRegistration.model';
+import { FieldsBlocksCollection, IBlock, IFormsMap, InstrumentsGroupsCollection, RegisteredAssetsCollection, RegisteredFormsCollection, SelectOptionsCollection, } from '@/models/instruments-registration.model';
 import firestoreRepository from '@/repositories/firestore-intranet/firestore.repository';
+import { Document, SubCollection } from '@/enums/firestoreIntranet.enum';
 import { toast } from 'sonner';
 
+
 class FirestoreService {
-  /* GET */
-  public async getFields(): Promise<any> {
-    const fields = await firestoreRepository.getFields();
-    return fields;
+  public async getInstrumentsOrGroups<T>(
+    collection: InstrumentsGroupsCollection
+  ): Promise<T[] | []> {
+    const data = await firestoreRepository.getAll<T>(Document.InstrumentsGroups, collection);
+    return (
+      data.sort((a: any, b: any) => {
+        if (!a.name || !b.name) return 0;
+        return a.name.localeCompare(b.name);
+      }) ?? []
+    );
   }
 
-  public async getFieldsBlock(): Promise<IFieldsBlock[] | []> {
-    return await firestoreRepository.getFieldsBlock();
+  public async getInstrumentOrGroupById<T>(
+    collection: InstrumentsGroupsCollection,
+    id: string
+  ): Promise<T | []> {
+    return await firestoreRepository.getById<T>(Document.InstrumentsGroups, collection, id);
   }
 
-  public async getFieldsBlockByGroup(group: string): Promise<IFieldsBlock[] | []> {
-    const fieldsBlock: IFieldsBlock[] = await firestoreRepository.getFieldsBlock();
-    if (fieldsBlock.length === 0) return [];
+  public async getAllInstrumentsOrGroupsById<T>(
+    collection: InstrumentsGroupsCollection,
+    ref: { key: string; id: string }
+  ): Promise<T[] | []> {
+    const docRef = await this.getInstrumentsOrGroups<T>(collection);
+    const data = docRef.filter((doc: any) => doc[ref.key] === ref.id);
+    return data ?? [];
+  }
 
-    const data = fieldsBlock.filter((field) => {
-      if (Array.isArray(field.group)) return field.group.includes(group);
-      return field.group === group;
+  public async setInstrumentOrGroup<T>(
+    collection: InstrumentsGroupsCollection,
+    data: T
+  ): Promise<boolean> {
+    if (Object.keys(data).length === 0) {
+      console.log('Campo data não pode ser vazio.');
+      return false;
+    }
+
+    return await firestoreRepository.set(Document.InstrumentsGroups, collection, data);
+  }
+
+  public async deleteInstrumentOrGroup(
+    collection: InstrumentsGroupsCollection,
+    idRef: string
+  ): Promise<any> {
+    return await firestoreRepository.delete(Document.InstrumentsGroups, collection, idRef);
+  }
+
+  public async getFieldsOrBlocks<T>(collection: FieldsBlocksCollection): Promise<T[] | []> {
+    const data = await firestoreRepository.getAll<T>(Document.FieldsBlocks, collection);
+    return (
+      data.sort((a: any, b: any) => {
+        if (!a.name || !b.name) return 0;
+        return a.name.localeCompare(b.name);
+      }) ?? []
+    );
+  }
+
+  public async getFieldOrBlockById<T>(
+    collection: FieldsBlocksCollection,
+    id: string
+  ): Promise<T | []> {
+    return await firestoreRepository.getById<T>(Document.FieldsBlocks, collection, id);
+  }
+
+  public async getBlockByGroup(group: string): Promise<IBlock[] | []> {
+    const blocks: IBlock[] = await this.getFieldsOrBlocks<IBlock>(SubCollection.Blocks);
+    const data = blocks.filter((block) => {
+      if (Array.isArray(block.group)) return block.group.includes(group);
+      return block.group === group;
     });
 
     return data;
   }
 
-  public async getSelectOptions(): Promise<ISelectOption[] | []> {
-    return await firestoreRepository.getSelectOptions();
+  public async setFieldOrBlock<T>(collection: FieldsBlocksCollection, data: T): Promise<boolean> {
+    if (Object.keys(data).length === 0) {
+      console.log('Campo data não pode ser vazio.');
+      return false;
+    }
+
+    return await firestoreRepository.set(Document.FieldsBlocks, collection, data);
   }
 
-  public async getSelectOptionByID(optionRef: string): Promise<ISelectOption> {
-    const response = await firestoreRepository.getSelectOptions();
-    const options = response?.find((option: ISelectOption) => option.id === optionRef);
-    return options;
+  public async deleteFieldOrBlock(collection: FieldsBlocksCollection, idRef: string): Promise<any> {
+    return await firestoreRepository.delete(Document.FieldsBlocks, collection, idRef);
   }
 
-  public async getInstrumentsGroup(): Promise<IInstrumentsGroup[] | []> {
-    return await firestoreRepository.getInstrumentsGroup();
+  public async getRegisteredAssets<T>(collection: RegisteredAssetsCollection): Promise<T[] | []> {
+    return await firestoreRepository.getAll<T>(Document.RegisteredAssets, collection);
   }
 
-  public async getInstrumentsById(id: string): Promise<IInstrument[] | []> {
-    const instrumentsGroup: IInstrument[] = await firestoreRepository.getInstruments();
-
-    if (instrumentsGroup.length === 0) return [];
-
-    const data = instrumentsGroup.filter((item) => item.instrumentGroupRef === id);
-
-    return data;
+  public async getRegisteredAssetById<T>(
+    collection: RegisteredAssetsCollection,
+    id: string
+  ): Promise<T | []> {
+    return await firestoreRepository.getById<T>(Document.RegisteredAssets, collection, id);
   }
 
-  public async getInstruments(): Promise<IInstrument[] | []> {
-    return await firestoreRepository.getInstruments();
+  public async setRegisteredAsset<T>(
+    collection: RegisteredAssetsCollection,
+    data: T
+  ): Promise<boolean> {
+    if (Object.keys(data).length === 0) {
+      console.log('Campo data não pode ser vazio.');
+      return false;
+    }
+
+    return await firestoreRepository.set(Document.RegisteredAssets, collection, data);
   }
 
-  public async getFormById(formId: string): Promise<ICollectionFields[] | []> {
-    return await firestoreRepository.getFormById(formId);
+  public async getRegisteredForms<T>(collection: RegisteredFormsCollection): Promise<T[] | []> {
+    return await firestoreRepository.getAll<T>(Document.RegisteredForms, collection);
   }
 
   public async getFormsMap(): Promise<IFormsMap[] | []> {
-    return await firestoreRepository.getFormsMap();
+    const data = await firestoreRepository.getDocumentFields<IFormsMap>(Document.RegisteredForms);
+    return (
+      data.sort((a: any, b: any) => {
+        if (!a.name || !b.name) return 0;
+        return a.name.localeCompare(b.name);
+      }) ?? []
+    );
   }
 
-  public async getAllRegistredAssets(): Promise<any> {
-    return await firestoreRepository.getAllRegistredAssets();
+  public async getRegisteredFormById<T>(
+    collection: RegisteredFormsCollection,
+    id: string
+  ): Promise<T | []> {
+    return await firestoreRepository.getById<T>(Document.RegisteredForms, collection, id);
   }
 
-  /* SET */
-  public async setField(field: IField): Promise<boolean> {
-    console.log('setField', field);
-    const fields = await firestoreRepository.getFields();
-    console.log('get', fields);
-
-    if (Array.isArray(fields) && fields.length === 0) {
-      return await firestoreRepository.setFields([field]);
+  public async setRegisteredForm<T>(
+    collection: RegisteredFormsCollection,
+    data: T
+  ): Promise<boolean> {
+    if (Object.keys(data).length === 0) {
+      console.log('Campo data não pode ser vazio.');
+      return false;
     }
 
-    if (Array.isArray(fields) && fields.length > 0) {
-      const exists = fields.some((f: IField) => f.id === field.id);
-      const index = fields.findIndex((f: IField) => f.id === field.id);
-
-      if (exists && index !== -1) {
-        fields[index] = field;
-        return await firestoreRepository.setFields(fields);
-      }
-
-      const mergedFields = [...fields, field];
-      return await firestoreRepository.setFields(mergedFields);
-    }
-  }
-
-  public async setFieldsBlock(data: IFieldsBlock): Promise<boolean> {
-    const fieldaBlock = await firestoreRepository.getFieldsBlock();
-
-    if (Array.isArray(fieldaBlock) && fieldaBlock.length === 0) {
-      return await firestoreRepository.setFieldsBlock([data]);
-    }
-
-    if (Array.isArray(fieldaBlock) && fieldaBlock.length > 0) {
-      const exists = fieldaBlock.some((f: IFieldsBlock) => f.id === data.id);
-      const index = fieldaBlock.findIndex((f: IFieldsBlock) => f.id === data.id);
-
-      if (exists && index !== -1) {
-        fieldaBlock[index] = data;
-        return await firestoreRepository.setFieldsBlock(fieldaBlock);
-      }
-
-      const mergedFieldaBlock = [...fieldaBlock, data];
-      return await firestoreRepository.setFieldsBlock(mergedFieldaBlock);
-    }
-  }
-
-  public async setSelectOption(data: ISelectOption): Promise<boolean> {
-    const selectOptions = await firestoreRepository.getSelectOptions();
-
-    if (Array.isArray(selectOptions) && selectOptions.length === 0) {
-      return await firestoreRepository.setSelectOptions([data]);
-    }
-
-    if (Array.isArray(selectOptions) && selectOptions.length > 0) {
-      const exists = selectOptions.some((s: ISelectOption) => s.id === data.id);
-      const index = selectOptions.findIndex((s: ISelectOption) => s.id === data.id);
-
-      if (exists && index !== -1) {
-        selectOptions[index] = data;
-        return await firestoreRepository.setSelectOptions(selectOptions);
-      }
-
-      const mergedSelectOptions = [...selectOptions, data];
-      return await firestoreRepository.setSelectOptions(mergedSelectOptions);
-    }
-  }
-
-  public async setInstrumentGroup(data: IInstrumentsGroup): Promise<boolean> {
-    const instrumentsGroup = await firestoreRepository.getInstrumentsGroup();
-
-    if (Array.isArray(instrumentsGroup) && instrumentsGroup.length === 0) {
-      return await firestoreRepository.setInstrumentGroup([data]);
-    }
-
-    if (Array.isArray(instrumentsGroup) && instrumentsGroup.length > 0) {
-      const exists = instrumentsGroup.some((e: IInstrumentsGroup) => e.id === data.id);
-      const index = instrumentsGroup.findIndex((e: IInstrumentsGroup) => e.id === data.id);
-
-      if (exists && index !== -1) {
-        instrumentsGroup[index] = data;
-        return await firestoreRepository.setInstrumentGroup(instrumentsGroup);
-      }
-
-      const mergedInstrumentGroup = [...instrumentsGroup, data];
-      return await firestoreRepository.setInstrumentGroup(mergedInstrumentGroup);
-    }
-  }
-
-  public async setInstrument(instrument: IInstrument): Promise<boolean> {
-    const instruments = await firestoreRepository.getInstruments();
-
-    if (Array.isArray(instruments) && instruments.length === 0) {
-      return await firestoreRepository.setInstruments([instrument]);
-    }
-
-    if (Array.isArray(instruments) && instruments.length > 0) {
-      const exists = instruments.some((e: IInstrument) => e.id === instrument.id);
-      const index = instruments.findIndex((e: IInstrument) => e.id === instrument.id);
-
-      if (exists && index !== -1) {
-        instruments[index] = instrument;
-        return await firestoreRepository.setInstruments(instruments);
-      }
-
-      const mergedInstruments = [...instruments, instrument];
-      return await firestoreRepository.setInstruments(mergedInstruments);
-    }
-  }
-
-  public async setForm(form: IForm): Promise<boolean> {
-    return await firestoreRepository.setForm(form);
+    return await firestoreRepository.set(Document.RegisteredForms, collection, data);
   }
 
   public async setFormMap(formMap: IFormsMap): Promise<boolean> {
-    const formsMap: IFormsMap[] = await firestoreRepository.getFormsMap();
+    const formsMap: IFormsMap[] = await this.getFormsMap();
     const exists = formsMap?.findIndex((f) => f.nickname === formMap.nickname);
 
     if (formsMap.length > 0 && exists !== -1) {
@@ -196,7 +158,7 @@ class FirestoreService {
     }
 
     if (Array.isArray(formsMap) && formsMap.length === 0) {
-      return await firestoreRepository.setFormsMap([formMap]);
+      return await firestoreRepository.setDocumentFields(Document.RegisteredForms, [formMap]);
     }
 
     if (Array.isArray(formsMap) && formsMap.length > 0) {
@@ -205,148 +167,39 @@ class FirestoreService {
 
       if (exists && index !== -1) {
         formsMap[index] = formMap;
-        return await firestoreRepository.setFormsMap(formsMap);
+        return await firestoreRepository.setDocumentFields(Document.RegisteredForms, formMap);
       }
 
       const mergedFormsMap = [...formsMap, formMap];
-      return await firestoreRepository.setFormsMap(mergedFormsMap);
+      return await firestoreRepository.setDocumentFields(Document.RegisteredForms, mergedFormsMap);
     }
   }
 
-  public async setRegistredAsset(data: { id: string; [key: string]: any }): Promise<boolean> {
-    return await firestoreRepository.setRegistredAssets(data);
-    // const formsMap: IFormsMap[] = await firestoreRepository.getFormsMap();
-    // const exists = formsMap?.findIndex((f) => f.nickname === formMap.nickname);
-
-    // if (formsMap.length > 0 && exists !== -1) {
-    //   toast.info(`O formulário de cadastro para "${formMap.nickname}" já existe.`);
-    //   return false;
-    // }
-
-    // if (Array.isArray(formsMap) && formsMap.length === 0) {
-    //   return await firestoreRepository.setFormsMap([formMap]);
-    // }
-
-    // if (Array.isArray(formsMap) && formsMap.length > 0) {
-    //   const exists = formsMap.some((e: IFormsMap) => e.formId === formMap.formId);
-    //   const index = formsMap.findIndex((e: IFormsMap) => e.formId === formMap.formId);
-
-    //   if (exists && index !== -1) {
-    //     formsMap[index] = formMap;
-    //     return await firestoreRepository.setFormsMap(formsMap);
-    //   }
-
-    //   const mergedFormsMap = [...formsMap, formMap];
-    //   return await firestoreRepository.setFormsMap(mergedFormsMap);
-    // }
+  public async getSelectOptions<T>(collection: SelectOptionsCollection): Promise<T[] | []> {
+    return await firestoreRepository.getAll<T>(Document.SelectOptions, collection);
   }
 
-  /* DELETE */
-  public async deleteField(field: IField): Promise<boolean> {
-    const fields = await firestoreRepository.getFields();
-    if (!Array.isArray(fields) || fields.length === 0) {
+  public async getSelectOptionById<T>(
+    collection: SelectOptionsCollection,
+    id: string
+  ): Promise<T | []> {
+    return await firestoreRepository.getById<T>(Document.SelectOptions, collection, id);
+  }
+
+  public async setSelectOption<T>(collection: SelectOptionsCollection, data: T): Promise<boolean> {
+    if (Object.keys(data).length === 0) {
+      console.log('Campo data não pode ser vazio.');
       return false;
     }
 
-    if (Array.isArray(fields) && fields.length > 0) {
-      const exists = fields.some((f: IField) => f.id === field.id);
-      const index = fields.findIndex((f: IField) => f.id === field.id);
-
-      if (!exists && index === -1) {
-        return false;
-      }
-
-      if (exists && index !== -1) {
-        fields.splice(index, 1);
-        return await firestoreRepository.setFields(fields);
-      }
-    }
+    return await firestoreRepository.set(Document.SelectOptions, collection, data);
   }
 
-  public async deleteSelectOptions(optionRef: string): Promise<boolean> {
-    const options = await firestoreRepository.getSelectOptions();
-    if (!Array.isArray(options) || options.length === 0) {
-      return false;
-    }
-
-    if (Array.isArray(options) && options.length > 0) {
-      const exists = options.some((s: ISelectOption) => s.id === optionRef);
-      const index = options.findIndex((s: ISelectOption) => s.id === optionRef);
-
-      if (!exists && index === -1) {
-        return false;
-      }
-
-      if (exists && index !== -1) {
-        options.splice(index, 1);
-        return await firestoreRepository.setSelectOptions(options);
-      }
-    }
-  }
-
-  public async deleteFieldBlock(fieldBlockId: string): Promise<boolean> {
-    const fieldsBlock = await firestoreRepository.getFieldsBlock();
-    if (!Array.isArray(fieldsBlock) || fieldsBlock.length === 0) {
-      return false;
-    }
-
-    if (Array.isArray(fieldsBlock) && fieldsBlock.length > 0) {
-      const exists = fieldsBlock.some((f: IFieldsBlock) => f.id === fieldBlockId);
-      const index = fieldsBlock.findIndex((f: IFieldsBlock) => f.id === fieldBlockId);
-
-      if (!exists && index === -1) {
-        return false;
-      }
-
-      if (exists && index !== -1) {
-        fieldsBlock.splice(index, 1);
-        return await firestoreRepository.setFieldsBlock(fieldsBlock);
-      }
-    }
-  }
-
-  public async deleteIntrumentGroup(id: string): Promise<boolean> {
-    const instrumentsGroup = await firestoreRepository.getInstrumentsGroup();
-
-    if (!Array.isArray(instrumentsGroup) || instrumentsGroup.length === 0) {
-      return false;
-    }
-
-    if (Array.isArray(instrumentsGroup) && instrumentsGroup.length > 0) {
-      const exists = instrumentsGroup.some((e: IInstrumentsGroup) => e.id === id);
-      const index = instrumentsGroup.findIndex((e: IInstrumentsGroup) => e.id === id);
-
-      if (!exists && index === -1) {
-        return false;
-      }
-
-      if (exists && index !== -1) {
-        instrumentsGroup.splice(index, 1);
-        return await firestoreRepository.setInstrumentGroup(instrumentsGroup);
-      }
-    }
-  }
-
-  public async deleteIntrument(id: string): Promise<boolean> {
-    const instruments = await firestoreRepository.getInstruments();
-
-    if (!Array.isArray(instruments) || instruments.length === 0) {
-      return false;
-    }
-
-    if (Array.isArray(instruments) && instruments.length > 0) {
-      const exists = instruments.some((e: IInstrument) => e.id === id);
-      const index = instruments.findIndex((e: IInstrument) => e.id === id);
-
-      if (!exists && index === -1) {
-        return false;
-      }
-
-      if (exists && index !== -1) {
-        instruments.splice(index, 1);
-        return await firestoreRepository.setInstruments(instruments);
-      }
-    }
+  public async deleteSelectOption(
+    collection: SelectOptionsCollection,
+    idRef: string
+  ): Promise<boolean> {
+    return await firestoreRepository.delete(Document.SelectOptions, collection, idRef);
   }
 }
 export default new FirestoreService();
