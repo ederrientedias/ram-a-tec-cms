@@ -1,11 +1,12 @@
 import firestoreService from '@/services/firestore-intranet/firestore.service';
-import { Documents, SubCollection } from '@/enums/firestoreIntranet.enum';
+import { Document, SubCollection } from '@/enums/firestoreIntranet.enum';
 import { useQuery, UseQueryResult } from '@tanstack/react-query';
 import { IGroup } from '@/models/instruments-registration.model';
 
+
 export const useGroups = (): UseQueryResult<IGroup[], Error> => {
   return useQuery({
-    queryKey: [Documents.InstrumentsGroup],
+    queryKey: [SubCollection.Groups],
     queryFn: async (): Promise<IGroup[]> =>
       await firestoreService.getInstrumentsOrGroups<IGroup>(SubCollection.Groups),
     refetchOnWindowFocus: false,

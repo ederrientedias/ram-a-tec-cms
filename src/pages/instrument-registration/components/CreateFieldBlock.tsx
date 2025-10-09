@@ -6,9 +6,9 @@ import { ChevronDown, Pencil, Plus, Search, ServerCrash, Trash2 } from 'lucide-r
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import firestoreService from '@/services/firestore-intranet/firestore.service';
 import { useFieldsBlock } from '@/hooks/firestore-intranet/use-fields-block';
-import { Documents, SubCollection } from '@/enums/firestoreIntranet.enum';
 import { IFieldsBlock } from '@/models/instruments-registration.model';
 import { useGroups } from '@/hooks/firestore-intranet/use-groups';
+import { SubCollection } from '@/enums/firestoreIntranet.enum';
 import { useQueryClient } from '@tanstack/react-query';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { normalizeText } from '@/utils/format-string';
@@ -120,7 +120,7 @@ export const CreateFieldBLock = () => {
   };
 
   const loadFieldsBlock = async () => {
-    await queryClient.invalidateQueries({ queryKey: [Documents.FieldsBlock] });
+    await queryClient.invalidateQueries({ queryKey: [SubCollection.Blocks] });
   };
 
   const finalize = () => {

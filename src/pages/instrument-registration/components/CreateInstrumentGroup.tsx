@@ -8,7 +8,6 @@ import { IInstrumentsGroup } from '@/models/instruments-registration.model';
 import { Pencil, Plus, Search, ServerCrash, Trash2 } from 'lucide-react';
 import { useGroups } from '@/hooks/firestore-intranet/use-groups';
 import { SubCollection } from '@/enums/firestoreIntranet.enum';
-import { Documents } from '@/enums/firestoreIntranet.enum';
 import { useQueryClient } from '@tanstack/react-query';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Controller, useForm } from 'react-hook-form';
@@ -135,7 +134,7 @@ export const CreateInstrumentGroup = () => {
   };
 
   const loadInstrumentGroup = async () => {
-    await queryClient.invalidateQueries({ queryKey: [Documents.InstrumentsGroup] });
+    await queryClient.invalidateQueries({ queryKey: [SubCollection.Groups] });
   };
 
   const closeDialog = () => {

@@ -5,10 +5,10 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow, } from '
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, } from '@/components/ui/select';
 import firestoreService from '@/services/firestore-intranet/firestore.service';
 import { useInstruments } from '@/hooks/firestore-intranet/use-instruments';
-import { Documents, SubCollection } from '@/enums/firestoreIntranet.enum';
 import { Pencil, Plus, Search, ServerCrash, Trash2 } from 'lucide-react';
 import { IInstrument } from '@/models/instruments-registration.model';
 import { useGroups } from '@/hooks/firestore-intranet/use-groups';
+import { SubCollection } from '@/enums/firestoreIntranet.enum';
 import { useQueryClient } from '@tanstack/react-query';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Controller, useForm } from 'react-hook-form';
@@ -143,7 +143,7 @@ export const CreateInstrument = () => {
   };
 
   const loadInstruments = async () => {
-    await queryClient.invalidateQueries({ queryKey: [Documents.Instruments] });
+    await queryClient.invalidateQueries({ queryKey: [SubCollection.Instruments] });
   };
 
   const closeDialog = () => {
