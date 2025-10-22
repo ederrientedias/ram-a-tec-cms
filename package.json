@@ -14,6 +14,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@atlaskit/pragmatic-drag-and-drop": "^1.7.7",
     "@azure/msal-browser": "^4.10.0",
     "@azure/msal-react": "^3.0.9",
     "@hookform/resolvers": "^3.10.0",
