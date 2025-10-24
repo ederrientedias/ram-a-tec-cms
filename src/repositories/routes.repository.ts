@@ -16,7 +16,7 @@ class RouteRepository {
   }
 
   public async getRoutes(): Promise<IRoute[] | []> {
-    const docRef = doc(this.development, 'routes');
+    const docRef = doc(this.production, 'routes');
     const field = await getDoc(docRef);
 
     if (!field.exists()) return [];
@@ -28,7 +28,7 @@ class RouteRepository {
 
   public async setRoutes(routes: IRoute[]): Promise<any> {
     try {
-      const docRef = doc(this.development, 'routes');
+      const docRef = doc(this.production, 'routes');
       await setDoc(docRef, { data: routes }, { merge: true });
       return true;
     } catch (error) {
