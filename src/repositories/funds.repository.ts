@@ -1,13 +1,19 @@
-import { DocumentData, Firestore, collection, doc, getDoc, setDoc } from 'firebase/firestore';
+import { DocumentData, Firestore, collection, deleteDoc, doc, getDoc, getDocs, setDoc, } from 'firebase/firestore';
 import { firestoreSite } from '@/config/firebase/firebase-site.config';
 import { FirestoreDocument } from '@/enums/firestore.enum';
 import { FirestoreCollection } from '@/enums/firestore';
 import { IFund } from '@/models/funds.model';
 
-interface DocumentProps {
+
+export interface DocumentProps {
   fundName: string;
   documentName: string;
   data: any;
+}
+
+export interface IMigrateCollection {
+  oldCollection: string;
+  newColletion: string;
 }
 
 class FundRepository {
@@ -87,6 +93,30 @@ class FundRepository {
       console.error('Erro ao salvar documento:', error);
       return false;
     }
+  }
+
+  public async migrateCollection(props: IMigrateCollection): Promise<void[]> {
+    const oldCollectionPath = `investment_funds/${props.oldCollection}`;
+    const newCollectionPath = `investment_funds/${props.newColletion}`;
+
+    const oldCollectionRef = collection(this.production, oldCollectionPath);
+    const newCollectionRef = collection(this.production, newCollectionPath);
+
+    const querySnapshot = await getDocs(oldCollectionRef);
+
+    const migrationPromises = querySnapshot.docs.map(async (oldDoc) => {
+      const data = oldDoc.data();
+      const newDocRef = doc(newCollectionRef, oldDoc.id);
+      await setDoc(newDocRef, data);
+    });
+
+    await Promise.all(migrationPromises);
+
+    const deletionPromises = querySnapshot.docs.map(async (oldDoc) => {
+      await deleteDoc(oldDoc.ref);
+    });
+
+    return await Promise.all(deletionPromises);
   }
 }
 
