@@ -36,3 +36,27 @@ export type CreateCollectionMapSchema = z.infer<typeof createCollectionMapSchema
 export const createCollectionMapDefaultValues: CreateCollectionMapSchema = {
   collectionName: '',
 };
+
+/* SCHEMA - Formulário para criar e atualizar Landing page */
+
+export const landingPageSchema = z
+  .object({
+    id: z.number().min(1, { message: 'ID é obrigatório.' }),
+    url: z.string().min(1, { message: 'URL é obrigatória.' }),
+    name: z.string().min(1, { message: 'Nome é obrigatório.' }),
+    corporateName: z.string(),
+    cnpj: z.string(),
+    ticker: z.string(),
+  })
+  .strict();
+
+export type FundFormValues = z.infer<typeof landingPageSchema>;
+
+export const defaultLandingPageValues: FundFormValues = {
+  id: 0,
+  url: '',
+  name: '',
+  corporateName: '',
+  cnpj: '',
+  ticker: '',
+};
