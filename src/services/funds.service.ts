@@ -1,5 +1,6 @@
+import fundsRepository, { DocumentProps, IMigrateCollection, } from '@/repositories/funds.repository';
 import { IFund, IFundsService, IGenericType } from '@/models/funds.model';
-import fundsRepository from '@/repositories/funds.repository';
+
 
 class FundsService implements IFundsService {
   public async getFunds(): Promise<IFund[]> {
@@ -43,11 +44,20 @@ class FundsService implements IFundsService {
     return await fundsRepository.set(funds);
   }
 
+  public async setDocument(props: DocumentProps): Promise<boolean> {
+    return await fundsRepository.setDocument(props);
+  }
+
+  public async migrateCollection(props: IMigrateCollection): Promise<any> {
+    return await fundsRepository.migrateCollection(props);
+  }
+
   private async mergePublications(newFund: IFund): Promise<any[]> {
     const funds = await this.getFunds();
-    const mergedFunds = [...funds, newFund];
-
-    return mergedFunds;
+    const existingFundIndex = funds.findIndex((f) => f.uuid === newFund.uuid);
+    return existingFundIndex === -1
+      ? [...funds, newFund]
+      : funds.map((fund, index) => (index === existingFundIndex ? { ...fund, ...newFund } : fund));
   }
 }
 
