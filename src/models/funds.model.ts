@@ -11,6 +11,7 @@ export interface IFundsService {
 }
 
 export interface IFund {
+  uuid?: string;
   id: number;
   redirectUrl: string;
   type: string;
