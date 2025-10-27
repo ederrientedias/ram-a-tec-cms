@@ -19,7 +19,7 @@ class PublicationRepository implements IPublicationRepsitory {
    * @returns | IPublication[] - Array de publicações
    */
   public async get(): Promise<IPublication[] | []> {
-    const docRef = doc(this.development, FirestoreDocument.PUBLICATIONS);
+    const docRef = doc(this.production, FirestoreDocument.PUBLICATIONS);
     const field = await getDoc(docRef);
 
     if (!field.exists) return [];
