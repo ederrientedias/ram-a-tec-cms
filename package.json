@@ -10,6 +10,7 @@
     "deploy:production": "npm run build && firebase deploy --only hosting:production",
     "deploy:development": "npm run build:dev && firebase deploy --only hosting:development",
     "deploy:web-staff-portal": "npm run build:dev && firebase deploy --only hosting:web-staff-portal",
+    "deploy:stg-intranet": "npm run build:dev && firebase deploy --only hosting:stg-intranet",
     "lint": "eslint . --ext .ts,.tsx,.js,.jsx",
     "preview": "vite preview"
   },

@@ -23,7 +23,7 @@
       ]
     },
     {
-      "target": "web-staff-portal",
+      "target": "stg-intranet",
       "public": "dist",
       "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
       "rewrites": [
