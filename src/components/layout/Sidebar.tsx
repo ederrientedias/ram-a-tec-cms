@@ -6,112 +6,20 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import {
-  ChevronLeft,
-  Database,
-  FileText,
-  Home,
-  LogOut,
-  Menu,
-  Newspaper,
-  Upload,
-  User,
-} from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { ChevronLeft, LogOut, Menu, User } from 'lucide-react';
 import { useUserPhoto } from '@/hooks/user/use-user-photo';
 import { useUserInfo } from '@/hooks/user/use-user-info';
+import { Logo } from '@/components/layout/Logo';
 import { Button } from '@/components/ui/button';
+import { useNavigate } from 'react-router-dom';
+import { navItems } from '@/data/routes';
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 
-interface NavItemProps {
-  icon: any;
-  label: string;
-  href: string;
-  isCollapsed: boolean;
-}
-
-const NavItem = ({ icon: Icon, label, href, isCollapsed }: NavItemProps) => {
-  const location = useLocation();
-  const isActive = location.pathname === href;
-
-  if (isCollapsed) {
-    return (
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <Link
-            to={href}
-            className={cn(
-              'flex items-center justify-center w-12 h-12 rounded-lg transition-colors',
-              isActive
-                ? 'bg-primary text-primary-foreground'
-                : 'hover:bg-slate-100 text-slate-600 hover:text-slate-900'
-            )}
-          >
-            <Icon size={22} />
-          </Link>
-        </TooltipTrigger>
-        <TooltipContent side="right">{label}</TooltipContent>
-      </Tooltip>
-    );
-  }
-
-  return (
-    <Link
-      to={href}
-      className={cn(
-        'flex items-center h-12 px-4 rounded-lg transition-colors',
-        isActive
-          ? 'bg-primary text-primary-foreground'
-          : 'hover:bg-slate-100 text-slate-600 hover:text-slate-900'
-      )}
-    >
-      <Icon size={20} className="mr-3" />
-      <span className="text-base font-normal">{label}</span>
-    </Link>
-  );
-};
-
-const navItems = [
-  {
-    icon: Home,
-    label: 'Dashboard',
-    href: '/dashboard',
-  },
-  // {
-  //   icon: Database,
-  //   label: 'Fundos',
-  //   href: '/fundos',
-  // },
-  {
-    icon: FileText,
-    label: 'Portfólios',
-    href: '/portfolios',
-  },
-  {
-    icon: Upload,
-    label: 'Compliance',
-    href: '/compliance',
-  },
-  {
-    icon: FileText,
-    label: 'Landing Page',
-    href: '/landing-page',
-  },
-  {
-    icon: Newspaper,
-    label: 'Publicações',
-    href: '/publicacoes',
-  },
-  {
-    icon: FileText,
-    label: 'Sumário',
-    href: '/sumario',
-  },
-];
+import { NavItem } from './NavItem';
 
 export const Sidebar = () => {
   const navigate = useNavigate();
@@ -149,29 +57,37 @@ export const Sidebar = () => {
       {/* Sidebar */}
       <aside
         className={cn(
-          'fixed inset-y-0 left-0 z-50 bg-white border-r border-slate-200 transition-all duration-300 flex flex-col',
+          'fixed inset-y-0 left-0 z-50 bg-rz-beige transition-all duration-300 flex flex-col',
           isCollapsed ? 'w-[78px]' : 'w-[250px]',
           isMobileOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'
         )}
       >
         <div
           className={cn(
-            'flex items-center h-16 px-4 border-b border-slate-200',
+            'flex items-center h-16 px-4',
             isCollapsed ? 'justify-center' : 'justify-between'
           )}
         >
-          {!isCollapsed && <div className="font-semibold text-base">Portal do Colaborador</div>}
+          {!isCollapsed && (
+            <div className="flex items-center gap-1">
+              <Logo /> | <span className="text-xl font-serif">CMS</span>
+            </div>
+          )}
           <Button
             variant="ghost"
             size="icon"
             onClick={() => setIsCollapsed(!isCollapsed)}
-            className={cn('hidden md:flex', isCollapsed && 'rotate-180')}
+            className={cn(
+              'hidden md:flex hover:bg-rz-white rounded-full',
+              isCollapsed && 'rotate-180'
+            )}
           >
             <ChevronLeft size={18} />
           </Button>
         </div>
 
-        <div className="flex-1 overflow-auto py-4 px-3">
+        {/* Navagação */}
+        <div className="flex-1 overflow-auto py-4 pl-3">
           <nav className="flex flex-col gap-2">
             {navItems.map((item) => (
               <NavItem
@@ -185,9 +101,10 @@ export const Sidebar = () => {
           </nav>
         </div>
 
+        {/* Avatar do Usuario */}
         <div
           className={cn(
-            'border-t border-slate-200 p-3',
+            'border-t border-rz-dark-beige p-3',
             isCollapsed ? 'flex justify-center py-4' : 'p-4'
           )}
         >
