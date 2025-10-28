@@ -1,11 +1,4 @@
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger, } from '@/components/ui/dropdown-menu';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { ChevronLeft, LogOut, Menu, User } from 'lucide-react';
@@ -20,6 +13,7 @@ import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 
 import { NavItem } from './NavItem';
+
 
 export const Sidebar = () => {
   const navigate = useNavigate();
@@ -78,7 +72,7 @@ export const Sidebar = () => {
             size="icon"
             onClick={() => setIsCollapsed(!isCollapsed)}
             className={cn(
-              'hidden md:flex hover:bg-rz-white rounded-full',
+              'hidden md:flex hover:bg-rz-smoke-beige rounded-full',
               isCollapsed && 'rotate-180'
             )}
           >
@@ -87,7 +81,7 @@ export const Sidebar = () => {
         </div>
 
         {/* Navagação */}
-        <div className="flex-1 overflow-auto py-4 pl-3">
+        <div className="flex-1 overflow-auto py-4 px-3">
           <nav className="flex flex-col gap-2">
             {navItems.map((item) => (
               <NavItem

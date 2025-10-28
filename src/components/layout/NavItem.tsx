@@ -2,6 +2,7 @@ import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip
 import { Link, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 
+
 interface NavItemProps {
   icon: any;
   label: string;
@@ -21,7 +22,9 @@ export const NavItem = ({ icon: Icon, label, href, isCollapsed }: NavItemProps) 
             to={href}
             className={cn(
               'flex items-center justify-center w-12 h-12 rounded-full transition-colors',
-              isActive ? 'bg-rz-white text-rz-orange' : 'hover:bg-rz-white text-rz-black'
+              isActive
+                ? 'bg-rz-smoke-beige text-rz-orange'
+                : 'hover:bg-rz-smoke-beige text-rz-black'
             )}
           >
             <Icon size={16} />
@@ -41,10 +44,10 @@ export const NavItem = ({ icon: Icon, label, href, isCollapsed }: NavItemProps) 
     <Link
       to={href}
       className={cn(
-        'flex items-center h-12 px-4 rounded-l-full transition-colors',
+        'flex items-center h-8 px-4 rounded-md transition-colors',
         isActive
-          ? 'bg-rz-white font-serif text-rz-orange font-medium'
-          : 'hover:bg-rz-white font-serif text-rz-black font-medium hover:text-slate-900'
+          ? 'bg-rz-smoke-beige font-sans text-rz-orange font-medium'
+          : 'hover:bg-rz-smoke-beige font-sans text-rz-black font-medium hover:text-slate-900'
       )}
     >
       <Icon size={16} className="mr-3" />
