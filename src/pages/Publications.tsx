@@ -1,52 +1,54 @@
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
-import {
-  convertToInputDateFormat,
-  defaultValues,
-  publicationSchema,
-  PublicationsSchema,
-} from '@/schemas/publication.schema';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
+import { Check, ChevronDownIcon, ChevronsUpDown, EllipsisVertical, Eye, EyeOff, ListPlus, Loader2, MoreHorizontalIcon, Pencil, Plus, Search, Trash2, } from 'lucide-react';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger, } from '@/components/ui/dropdown-menu';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, } from '@/components/ui/dialog';
+import { convertToInputDateFormat, defaultValues, publicationSchema, PublicationsSchema, } from '@/schemas/publication.schema';
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList, } from '@/components/ui/command';
+import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger, } from '@/components/ui/sheet';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow, } from '@/components/ui/table';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { usePublications } from '@/hooks/firestore/publications/use-publication';
+import { useMediaOutlet } from '@/hooks/firestore/publications/use-media-outlet';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Eye, EyeOff, Pencil, Plus, Search, Trash2 } from 'lucide-react';
+import { IMediaOutlet, IPublication } from '@/models/publication.model';
 import LoadingPageAnimation from '@/components/animations/loadingPage';
 import Loading404Animation from '@/components/animations/loading404';
-import { usePublications } from '@/hooks/firestore/use-publication';
 import publicationService from '@/services/publications.service';
 import { FirestoreDocument } from '@/enums/firestore.enum';
-import { IPublication } from '@/models/publication.model';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import { useQueryClient } from '@tanstack/react-query';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Controller, useForm } from 'react-hook-form';
 import { Textarea } from '@/components/ui/textarea';
+import { Calendar } from '@/components/ui/calendar';
 import { Switch } from '@/components/ui/switch';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
+
+import { AddMediaOutlet } from './publications/AddMediaOutlet';
+
 
 const Publications = (): JSX.Element => {
   const queryClient = useQueryClient();
   const { data, isLoading, error } = usePublications();
+  const { data: mediaOutlet, isLoading: mediaOutletLoading } = useMediaOutlet();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editPublication, setEditPublication] = useState<boolean>(false);
   const [publicationRef, setPublicationRef] = useState<IPublication | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [isloading, setLoading] = useState(false);
+  const [dateOpen, setDateOpen] = useState(false);
+  const [date, setDate] = useState<Date | undefined>(undefined);
+  const [sheetMediaOutletOpen, setSheetMediaOutletOpen] = useState<boolean>(false);
+  const [editData, setEditData] = useState<IMediaOutlet | null>(null);
+  const [open, setOpen] = useState(false);
+  const [selected, setSelected] = useState<string | null>(null);
+  const [query, setQuery] = useState('');
+  const [loading, setIsLoading] = useState(false);
 
   const {
     handleSubmit,
@@ -54,15 +56,26 @@ const Publications = (): JSX.Element => {
     reset,
     setValue,
     control,
+    watch,
     formState: { errors, isValid, touchedFields },
   } = useForm<PublicationsSchema>({
     resolver: zodResolver(publicationSchema),
     defaultValues: defaultValues,
   });
 
+  const selectedMediaOutlet = watch('mediaOutlet');
+
+  useEffect(() => {
+    if (selectedMediaOutlet) {
+      const data = mediaOutlet.find((m) => m.name === selectedMediaOutlet);
+      setEditData(data);
+    }
+  }, [selectedMediaOutlet, mediaOutlet]);
+
   const onSubmit = async (data: PublicationsSchema): Promise<void> => {
-    setLoading(true);
-    await handleSavePublication(data);
+    console.log(data);
+    // setLoading(true);
+    // await handleSavePublication(data);
   };
 
   const handleSavePublication = async (data: PublicationsSchema): Promise<void> => {
@@ -116,6 +129,11 @@ const Publications = (): JSX.Element => {
     }
     setEditPublication(false);
     setDialogOpen(true);
+  };
+
+  const openSheetMediaOutletOpen = (e: Event) => {
+    e.stopPropagation();
+    setSheetMediaOutletOpen(true);
   };
 
   const handleEditPublication = (publication: IPublication): void => {
@@ -197,11 +215,7 @@ const Publications = (): JSX.Element => {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Publicações e Materiais</h1>
-        <Button onClick={() => openDialog('new')}>
-          <Plus className="mr-2 h-4 w-4" />
-          Nova Publicação
-        </Button>
+        <h1 className="text-2xl font-medium font-serif text-rz-black">Publicações e Materiais</h1>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -248,10 +262,10 @@ const Publications = (): JSX.Element => {
         </Card>
       </div>
 
-      <div className="bg-white p-6 rounded-lg shadow">
+      <div className="bg-rz-white p-6">
         <div className="flex items-center justify-between mb-6">
-          <div className="relative w-full max-w-sm">
-            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
+          <div className="relative w-full max-w-sm flex items-center">
+            <Search className="absolute left-2.5 top-3 h-4 w-4 text-rz-black" />
             <Input
               type="search"
               placeholder="Buscar publicações..."
@@ -260,10 +274,14 @@ const Publications = (): JSX.Element => {
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
+          <Button onClick={() => openDialog('new')}>
+            <Plus className="mr-2 h-4 w-4" />
+            Nova Publicação
+          </Button>
         </div>
 
         {/* Tabela de Publicações */}
-        <div className="rounded-md border overflow-hidden">
+        <ScrollArea className="w-full h-[400px] whitespace-nowrap relative">
           <Table>
             <TableHeader>
               <TableRow>
@@ -341,7 +359,8 @@ const Publications = (): JSX.Element => {
               )}
             </TableBody>
           </Table>
-        </div>
+          <div className="absolute bottom-0 left-0 w-full h-32 pointer-events-none bg-linear-to-t from-white via-white/50 to-transparent"></div>
+        </ScrollArea>
       </div>
 
       {/* Dialog para adicionar/editar publicação */}
@@ -357,138 +376,175 @@ const Publications = (): JSX.Element => {
               </DialogDescription>
             </DialogHeader>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 py-4">
-              <div className="space-y-4">
-                {/* Tema */}
-                <div className="space-y-2">
-                  <Label htmlFor="theme">Tema</Label>
-                  <Input
-                    id="theme"
-                    name="theme"
-                    {...register('theme')}
-                    placeholder="Ex: Mercado Financeiro"
-                  />
-                  {errors.theme && touchedFields.theme && (
-                    <small className="text-red-400">{errors.theme.message}</small>
-                  )}
-                </div>
+            <div className="grid grid-cols-2 md:grid-cols-2 gap-6 py-6">
+              {/* Tema */}
+              <div className="flex flex-col gap-2">
+                <Label htmlFor="theme">Tema</Label>
+                <Input
+                  id="theme"
+                  name="theme"
+                  {...register('theme')}
+                  placeholder="Ex: Mercado Financeiro"
+                />
+                {errors.theme && touchedFields.theme && (
+                  <small className="text-red-400">{errors.theme.message}</small>
+                )}
+              </div>
 
-                {/* Produto */}
-                <div className="space-y-2">
-                  <Label htmlFor="product">Produto</Label>
-                  <Input
-                    id="product"
-                    name="product"
-                    {...register('product')}
-                    placeholder="Ex: Fundo Multimercado"
-                  />
-                  {errors.product && touchedFields.product && (
-                    <small className="text-red-400">{errors.product.message}</small>
-                  )}
-                </div>
+              {/* Tipo */}
+              <div className="flex flex-col gap-2">
+                <Label htmlFor="type">Tipo</Label>
+                <Input
+                  id="type"
+                  name="type"
+                  {...register('type')}
+                  placeholder="Ex: Entrevista, Artigo, Notícia"
+                />
+                {errors.type && touchedFields.type && (
+                  <small className="text-red-400">{errors.type.message}</small>
+                )}
+              </div>
 
-                {/* Tipo */}
-                <div className="space-y-2">
-                  <Label htmlFor="type">Tipo</Label>
-                  <Input
-                    id="type"
-                    name="type"
-                    {...register('type')}
-                    placeholder="Ex: Entrevista, Artigo, Notícia"
+              {/* Veiculo */}
+              <div className="flex items-end gap-2">
+                <div className="flex flex-1 flex-col gap-2">
+                  <Label htmlFor="mediaOutlet">Veículo</Label>
+                  <Controller
+                    name="mediaOutlet"
+                    control={control}
+                    render={({ field }) => (
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <Button
+                            variant="outline"
+                            role="combobox"
+                            aria-expanded={open}
+                            className="w-full flex items-center justify-between border border-rz-beige py-2 px-3 rounded-md font-sans text-sm font-regular"
+                          >
+                            {field.value
+                              ? mediaOutlet?.find((item) => item.name === field.value)?.name
+                              : 'Selecione um veiculo '}
+                            <ChevronsUpDown className="w-4 h-4" />
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-full p-0">
+                          <Command className="w-full">
+                            <CommandInput placeholder="Buscar Veiculo..." className="h-9" />
+                            <CommandList>
+                              <CommandEmpty>Nenhum veiculo encontrado</CommandEmpty>
+                              <CommandGroup>
+                                {mediaOutlet?.map((item) => (
+                                  <CommandItem
+                                    key={item.id}
+                                    value={item.name}
+                                    onSelect={(currentValue) => field.onChange(currentValue)}
+                                  >
+                                    {item.name}
+                                    <Check
+                                      className={cn(
+                                        'ml-auto w-4 h-4',
+                                        field.value === item.name ? 'opacity-100' : 'opacity-0'
+                                      )}
+                                    />
+                                  </CommandItem>
+                                ))}
+                              </CommandGroup>
+                            </CommandList>
+                          </Command>
+                        </PopoverContent>
+                      </Popover>
+                    )}
                   />
-                  {errors.type && touchedFields.type && (
-                    <small className="text-red-400">{errors.type.message}</small>
-                  )}
                 </div>
+                <DropdownMenu modal={false}>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      variant="outline"
+                      aria-label="Open menu"
+                      size="icon"
+                      className="rounded-md"
+                    >
+                      <MoreHorizontalIcon />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent className="w-40" align="end">
+                    <DropdownMenuLabel>Ações</DropdownMenuLabel>
+                    <DropdownMenuGroup>
+                      <DropdownMenuItem onSelect={(e: Event) => openSheetMediaOutletOpen(e)}>
+                        Criar Veículo
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        onSelect={(e: Event) => {
+                          e.preventDefault();
+                          if (!editData) {
+                            toast.info('Selecione um Veículo antes de editar');
+                            return;
+                          } else {
+                            openSheetMediaOutletOpen(e);
+                          }
+                        }}
+                      >
+                        Editar Veículo
+                      </DropdownMenuItem>
+                    </DropdownMenuGroup>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
 
-                {/* Categoria */}
-                <div className="space-y-2">
-                  <Label htmlFor="category">Categoria</Label>
-                  <Input
-                    id="category"
-                    name="category"
-                    {...register('category')}
-                    placeholder="Ex: Investimentos, Educação Financeira"
-                  />
-                  {errors.category && touchedFields.category && (
-                    <small className="text-red-400">{errors.category.message}</small>
-                  )}
-                </div>
+              {/* Link para a Matéria */}
+              <div className="flex flex-col gap-2">
+                <Label htmlFor="link">Link para a Matéria</Label>
+                <Input
+                  id="link"
+                  name="link"
+                  type="url"
+                  {...register('link')}
+                  placeholder="https://exemplo.com/materia"
+                />
+                {errors.link && touchedFields.link && (
+                  <small className="text-red-400">{errors.link.message}</small>
+                )}
+              </div>
 
-                {/* Data da Publicação */}
-                <div className="space-y-2">
-                  <Label htmlFor="publicationDate">Data da Publicação</Label>
-                  <Input
-                    id="publicationDate"
+              {/* Data da Publicação */}
+              <div className="flex flex-col justify-between">
+                <div className="flex flex-col gap-2">
+                  <Label htmlFor="date" className="px-1">
+                    Data da Publicação
+                  </Label>
+                  <Controller
                     name="publicationDate"
-                    type="date"
-                    {...register('publicationDate')}
+                    control={control}
+                    render={({ field }) => (
+                      <Popover open={dateOpen} onOpenChange={setDateOpen}>
+                        <PopoverTrigger asChild>
+                          <Button
+                            variant="outline"
+                            className="w-full flex items-center justify-between border border-rz-beige py-2 px-3 rounded-md font-sans text-sm font-regular"
+                            ref={field.ref}
+                          >
+                            {field.value
+                              ? new Date(field.value).toLocaleDateString()
+                              : 'Selecione uma data'}
+                            <ChevronDownIcon className="w-4 h-4 text-rz-black" />
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto overflow-hidden p-0" align="start">
+                          <Calendar
+                            mode="single"
+                            selected={field.value ? new Date(field.value) : undefined}
+                            captionLayout="dropdown"
+                            onSelect={(selectedDate) => {
+                              field.onChange(selectedDate ? selectedDate.toDateString() : '');
+                              setDateOpen(false);
+                            }}
+                          />
+                        </PopoverContent>
+                      </Popover>
+                    )}
                   />
                   {errors.publicationDate && touchedFields.publicationDate && (
                     <small className="text-red-400">{errors.publicationDate.message}</small>
-                  )}
-                </div>
-              </div>
-
-              <div className="space-y-4">
-                {/* Veiculo */}
-                <div className="space-y-2">
-                  <Label htmlFor="mediaOutlet">Veículo</Label>
-                  <Input
-                    id="mediaOutlet"
-                    name="mediaOutlet"
-                    {...register('mediaOutlet')}
-                    placeholder="Ex: Valor Econômico, InfoMoney"
-                  />
-                  {errors.mediaOutlet && touchedFields.mediaOutlet && (
-                    <small className="text-red-400">{errors.mediaOutlet.message}</small>
-                  )}
-                </div>
-
-                {/* Link para Logotipo do Veículo */}
-                <div className="space-y-2">
-                  <Label htmlFor="mediaLogo">Link para Logotipo do Veículo</Label>
-                  <Input
-                    id="mediaLogo"
-                    name="mediaLogo"
-                    type="url"
-                    {...register('mediaLogo')}
-                    placeholder="https://exemplo.com/logo.png"
-                  />
-                  {errors.mediaLogo && touchedFields.mediaLogo && (
-                    <small className="text-red-400">{errors.mediaLogo.message}</small>
-                  )}
-                </div>
-
-                {/* Link para a Matéria */}
-                <div className="space-y-2">
-                  <Label htmlFor="link">Link para a Matéria</Label>
-                  <Input
-                    id="link"
-                    name="link"
-                    type="url"
-                    {...register('link')}
-                    placeholder="https://exemplo.com/materia"
-                  />
-                  {errors.link && touchedFields.link && (
-                    <small className="text-red-400">{errors.link.message}</small>
-                  )}
-                </div>
-
-                {/* Descrição */}
-                <div className="space-y-2">
-                  <Label htmlFor="description">Descrição</Label>
-                  <Textarea
-                    id="description"
-                    name="description"
-                    minLength={100}
-                    maxLength={300}
-                    rows={5}
-                    {...register('description')}
-                    placeholder="Breve descrição sobre a publicação"
-                  />
-                  {errors.description && touchedFields.description && (
-                    <small className="text-red-400">{errors.description.message}</small>
                   )}
                 </div>
 
@@ -518,13 +574,30 @@ const Publications = (): JSX.Element => {
                   )}
                 </div>
               </div>
+
+              {/* Descrição */}
+              <div className="flex flex-col gap-2">
+                <Label htmlFor="description">Descrição</Label>
+                <Textarea
+                  id="description"
+                  name="description"
+                  minLength={100}
+                  maxLength={300}
+                  rows={5}
+                  {...register('description')}
+                  placeholder="Breve descrição sobre a publicação"
+                />
+                {errors.description && touchedFields.description && (
+                  <small className="text-red-400">{errors.description.message}</small>
+                )}
+              </div>
             </div>
 
             <DialogFooter>
               <Button variant="outline" onClick={closeDialog}>
                 Cancelar
               </Button>
-              <Button type="submit" disabled={!isValid}>
+              <Button type="submit">
                 {isloading ? (
                   <span className="flex items-center gap-2">
                     <svg
@@ -557,6 +630,19 @@ const Publications = (): JSX.Element => {
           </form>
         </DialogContent>
       </Dialog>
+
+      {/* Cadastro da Empresa */}
+      <Sheet open={sheetMediaOutletOpen} onOpenChange={setSheetMediaOutletOpen}>
+        <SheetContent className="bg-rz-white w-[400px] sm:w-[540px]">
+          <SheetHeader>
+            <SheetTitle>Adicionar novo Veículo</SheetTitle>
+            <SheetDescription></SheetDescription>
+          </SheetHeader>
+          <div className="h-full py-9">
+            <AddMediaOutlet closeSheet={() => setSheetMediaOutletOpen(false)} editData={editData} />
+          </div>
+        </SheetContent>
+      </Sheet>
     </div>
   );
 };
