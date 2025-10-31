@@ -1,10 +1,12 @@
 export interface IPublicationRepsitory {
   get: () => Promise<IPublication[]>;
+  getMediaOutlet: () => Promise<IMediaOutlet[]>;
   set: (data: IPublication[]) => Promise<boolean>;
 }
 
 export interface IPublicationService {
   getPublications: () => Promise<IPublication[]>;
+  getMediaOutlet: () => Promise<IMediaOutlet[]>;
   setPublications: (newPublication: IPublication) => Promise<boolean>;
   deletePublication: (id: string) => Promise<boolean>;
 }
@@ -22,4 +24,9 @@ export interface IPublication {
   link: string;
   isPublic: boolean;
   createAt?: number;
+}
+export interface IMediaOutlet {
+  id: string;
+  name: string;
+  logoUrl: string;
 }
