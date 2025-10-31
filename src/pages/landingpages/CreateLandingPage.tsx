@@ -3,9 +3,10 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow, } from '
 import { FundFormValues, landingPageSchema, defaultLandingPageValues, } from '@/schemas/landing-page.schema';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { useLandingPageFunds } from '@/hooks/firestore/funds/use-landingpage';
+import { Info, Key, Pencil, Plus, Search, Trash2 } from 'lucide-react';
 import { toKebabCase, toSnakeCase } from '@/utils/format-string';
 import routesRepository from '@/repositories/routes.repository';
-import { Info, Key, Pencil, Plus, Trash2 } from 'lucide-react';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import { useQueryClient } from '@tanstack/react-query';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm, Controller } from 'react-hook-form';
@@ -29,6 +30,7 @@ const CreateLandingPage = () => {
   const [isloading, setIsloading] = useState<boolean>(false);
   const [fundData, setFundData] = useState<IFund | null>(null);
   const [routeRef, setRouteRef] = useState<IRoute | null>(null);
+  const [searchTerm, setSearchTerm] = useState('');
   const { data: landingPages, error, isLoading } = useLandingPageFunds();
   const {
     control,
@@ -43,6 +45,10 @@ const CreateLandingPage = () => {
   });
 
   const nameWatch = watch('name');
+
+  const filteredFunds = landingPages?.filter((item) =>
+    item.name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   const openDialog = (data?: IFund) => {
     setDialogOpen(true);
@@ -223,54 +229,68 @@ const CreateLandingPage = () => {
 
   return (
     <div className="flex flex-col gap-4 mt-12">
-      <div className="flex items-end gap-2 justify-end">
+      <div className="flex items-end gap-2 justify-between">
+        <div className="relative w-full max-w-sm flex items-center">
+          <Search className="absolute left-2.5 top-3 h-4 w-4 text-rz-black" />
+          <Input
+            type="search"
+            placeholder="Buscar publicações..."
+            className="pl-8"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+        </div>
         <Button type="button" onClick={() => openDialog()}>
           <Plus className="h-4 w-4" />
           Nova Landing Page
         </Button>
       </div>
-      <div className="rounded-md border overflow-hidden">
+      <div className="w-full overflow-hidden">
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>ID</TableHead>
+              <TableHead className="w-[100px]">ID</TableHead>
               <TableHead>Nome do Fundo</TableHead>
-              <TableHead>Ações</TableHead>
+              <TableHead className="w-[120px]">Ações</TableHead>
             </TableRow>
           </TableHeader>
-          <TableBody>
-            {isLoading ? (
-              <TableRow>
-                <TableCell colSpan={3} className="text-center py-10 text-muted-foreground">
-                  <Skeleton className="h-[50px] w-full" />
-                </TableCell>
-              </TableRow>
-            ) : (
-              landingPages?.map((data) => {
-                return (
-                  <TableRow key={data.name}>
-                    <TableCell>{data.id}</TableCell>
-                    <TableCell>{data.name}</TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-2">
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <Button variant="ghost" size="icon" onClick={() => openDialog(data)}>
-                              <Pencil className="h-4 w-4" />
-                            </Button>
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            <p>Editar landing page</p>
-                          </TooltipContent>
-                        </Tooltip>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                );
-              })
-            )}
-          </TableBody>
         </Table>
+        <ScrollArea className="w-full h-[600px] whitespace-nowrap" type="always">
+          <Table>
+            <TableBody>
+              {isLoading ? (
+                <TableRow>
+                  <TableCell colSpan={3}>
+                    <Skeleton className="h-[50px] w-full" />
+                  </TableCell>
+                </TableRow>
+              ) : (
+                filteredFunds?.map((data) => {
+                  return (
+                    <TableRow key={data.name}>
+                      <TableCell className="font-bold w-[100px]">{data.id}</TableCell>
+                      <TableCell>{data.name}</TableCell>
+                      <TableCell className="w-[120px]">
+                        <div className="flex items-center gap-2">
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button variant="ghost" size="icon" onClick={() => openDialog(data)}>
+                                <Pencil className="h-4 w-4" />
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>Editar landing page</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })
+              )}
+            </TableBody>
+          </Table>
+        </ScrollArea>
 
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
           <DialogContent className="max-w-4xl flex flex-col gap-4">
