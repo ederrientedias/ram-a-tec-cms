@@ -9,10 +9,12 @@ const LandingPage = () => {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Documentos da Landing Page</h1>
+        <h1 className="text-2xl font-medium font-serif text-rz-black">
+          Documentos da Landing Page
+        </h1>
       </div>
 
-      <div className="bg-white p-6 rounded-lg shadow">
+      <div className="p-6">
         <Tabs defaultValue="createLandingPage" className="w-full">
           <TabsList>
             <TabsTrigger value="createLandingPage">Criar landing page</TabsTrigger>
