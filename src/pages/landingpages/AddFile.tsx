@@ -1,47 +1,15 @@
-import {
-  createfileMetadataSchema,
-  CreateFileMetadataSchema,
-  fileMetadataDefaultValues,
-  updatefileMetadataSchema,
-  UpdateFileMetadataSchema,
-} from '@/schemas/landing-page.schema';
-import {
-  AlertDialog,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
+import { createfileMetadataSchema, CreateFileMetadataSchema, fileMetadataDefaultValues, updatefileMetadataSchema, UpdateFileMetadataSchema, } from '@/schemas/landing-page.schema';
+import { AlertDialog, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, } from '@/components/ui/alert-dialog';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, } from '@/components/ui/dialog';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow, } from '@/components/ui/table';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, } from '@/components/ui/select';
 import { ICollectionMap, IDocumentProps, IFileMetadata } from '@/models/landingpage.model';
 import { useLandingPageFunds } from '@/hooks/firestore/funds/use-landingpage';
 import { FileText, FileUp, Pencil, Plus, Trash2 } from 'lucide-react';
 import landingPageService from '@/services/landingpage.service';
 import landinpageService from '@/services/landingpage.service';
 import { useCallback, useEffect, useState } from 'react';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Controller, useForm } from 'react-hook-form';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -51,6 +19,7 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { IFund } from '@/models/funds.model';
 import { toast } from 'sonner';
+
 
 const AddFile = () => {
   const [selectedFund, setSelectedFund] = useState<string | null>(null);
@@ -252,7 +221,7 @@ const AddFile = () => {
   };
 
   const addFile = async (fileMetadata: IFileMetadata) => {
-    await handleCollectionMa();
+    await handleCollectionMap();
 
     await landingPageService.setFile(documentPropsRef, fileMetadata).finally(() => {
       setIsUploading(false);
@@ -262,7 +231,7 @@ const AddFile = () => {
     });
   };
 
-  const handleCollectionMa = async () => {
+  const handleCollectionMap = async () => {
     const collectionMap = await landinpageService.getCollectionMap(selectedFund);
     const selectedCollectionMap: ICollectionMap = collectionMap.find(
       (c: any) => c.collectionName === selectedTab
@@ -341,7 +310,7 @@ const AddFile = () => {
 
   return (
     <div className="flex flex-col gap-4 mt-12">
-      <div className="flex items-end gap-2 justify-between">
+      <div className="flex items-end gap-2 justify-between mb-10">
         <div className="w-[300px] min-w-72 space-y-2">
           <Label htmlFor="fund">Fundo</Label>
           <Select onValueChange={handleFundChange}>
@@ -394,54 +363,58 @@ const AddFile = () => {
           Novo Arquivo
         </Button>
       </div>
-      <div className="rounded-md border overflow-hidden">
+      <div className="overflow-hidden">
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>ID</TableHead>
+              <TableHead className="w-[320px]">ID</TableHead>
               <TableHead>Nome do Documento</TableHead>
-              <TableHead>Ações</TableHead>
+              <TableHead className="w-[85px]">Ações</TableHead>
             </TableRow>
           </TableHeader>
-          <TableBody>
-            {!fileMetadata || fileMetadata.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={3} className="text-center py-10 text-muted-foreground">
-                  Nenhum arquivo encontrado
-                </TableCell>
-              </TableRow>
-            ) : isFileLoading ? (
-              <TableRow>
-                <TableCell colSpan={3} className="text-center py-10 text-muted-foreground">
-                  <Skeleton className="h-[50px] w-full" />
-                </TableCell>
-              </TableRow>
-            ) : (
-              fileMetadata.map((file) => (
-                <TableRow key={file.id}>
-                  <TableCell>{file.id}</TableCell>
-                  <TableCell>{file.name}</TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-2">
-                      <Button variant="ghost" size="icon" onClick={() => openDialog(file)}>
-                        <Pencil className="h-4 w-4" />
-                      </Button>
-                      {/* onClick={() => deleteFileMetadata(file)} */}
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="text-red-500"
-                        onClick={() => openAlert(file)}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
+        </Table>
+        <ScrollArea className="w-full h-[500px] whitespace-nowrap">
+          <Table>
+            <TableBody>
+              {!fileMetadata || fileMetadata.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={3} className="text-center py-10 text-muted-foreground">
+                    Nenhum arquivo encontrado
                   </TableCell>
                 </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
+              ) : isFileLoading ? (
+                <TableRow>
+                  <TableCell colSpan={3} className="text-center py-10 text-muted-foreground">
+                    <Skeleton className="h-[50px] w-full" />
+                  </TableCell>
+                </TableRow>
+              ) : (
+                fileMetadata.map((file) => (
+                  <TableRow key={file.id}>
+                    <TableCell className="font-bold w-[320px]">{file.id}</TableCell>
+                    <TableCell>{file.name}</TableCell>
+                    <TableCell className="w-[85px]">
+                      <div className="flex items-center gap-2">
+                        <Button variant="ghost" size="icon" onClick={() => openDialog(file)}>
+                          <Pencil className="h-4 w-4" />
+                        </Button>
+                        {/* onClick={() => deleteFileMetadata(file)} */}
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="text-red-500"
+                          onClick={() => openAlert(file)}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
+            </TableBody>
+          </Table>
+        </ScrollArea>
       </div>
 
       {/* Dialog para adicionar Arquivo */}
@@ -478,14 +451,14 @@ const AddFile = () => {
               {/* Arquivo */}
               <div className="space-y-2">
                 <Label>Arquivo</Label>
-                <div className="border rounded-md p-4 bg-gray-50">
+                <div className="border border-rz-beige rounded-md p-4 bg-rz-white">
                   <div className="flex flex-col items-center justify-center gap-2">
-                    <FileUp className="h-8 w-8 text-gray-400" />
+                    <FileUp className="h-8 w-8 text-rz-beige" />
                     <div className="text-sm text-center text-gray-600">
                       <p>Arraste e solte o arquivo aqui ou</p>
                       <label
                         htmlFor="file-upload-metadata"
-                        className="text-primary cursor-pointer hover:underline"
+                        className="text-rz-black cursor-pointer hover:underline"
                       >
                         selecione do seu computador
                       </label>
@@ -506,9 +479,9 @@ const AddFile = () => {
                     />
 
                     {selectedFileName && (
-                      <div className="mt-2 text-sm text-gray-800 bg-white px-3 py-1 rounded-md border w-full">
+                      <div className="mt-2 text-sm text-rz-black bg-rz-white px-3 py-1 rounded-md border border-rz-beige w-full">
                         <span className="flex items-center gap-2">
-                          <FileText className="h-4 w-4 text-gray-500" />
+                          <FileText className="h-4 w-4 text-rz-black" />
                           {selectedFileName}
                         </span>
                       </div>
