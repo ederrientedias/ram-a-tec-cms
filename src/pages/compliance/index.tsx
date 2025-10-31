@@ -3,6 +3,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import CreateCompany from './CreateCompany';
 import AddFile from './AddFile';
 
+
 const Compliance = () => {
   // if (isLoadingTabs || isLoadingLogs) return <LoadingPageAnimation />;
   // if (errorTabs || logErro) return <Loading404Animation />;
@@ -10,10 +11,10 @@ const Compliance = () => {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Documentos de Compliance</h1>
+        <h1 className="text-2xl font-medium font-serif text-rz-black">Documentos de Compliance</h1>
       </div>
 
-      <div className="bg-white p-6 rounded-lg shadow">
+      <div className="bg-rz-white">
         <Tabs defaultValue="addFile" className="w-full">
           <TabsList>
             <TabsTrigger value="addFile">Adicionar arquivo</TabsTrigger>
