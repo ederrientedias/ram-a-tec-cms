@@ -177,7 +177,7 @@ const CreateTab = () => {
           Nova Aba
         </Button>
       </div>
-      <div className="rounded-md border overflow-hidden">
+      <div className="overflow-hidden">
         <Table>
           <TableHeader>
             <TableRow>
