@@ -1,13 +1,14 @@
-import { IPublication, IPublicationService } from '@/models/publication.model';
+import { IMediaOutlet, IPublication, IPublicationService } from '@/models/publication.model';
 import publicationRepository from '@/repositories/publication.repository';
 
+
 class PublicationsService implements IPublicationService {
-  /**
-   * @description | Obtém todas as publicações
-   * @returns | Promise<IPublication[]> - Array de publicações
-   */
   public async getPublications(): Promise<IPublication[]> {
     return await publicationRepository.get();
+  }
+
+  public async getMediaOutlet(): Promise<IMediaOutlet[]> {
+    return await publicationRepository.getMediaOutlet();
   }
 
   /**
@@ -19,6 +20,23 @@ class PublicationsService implements IPublicationService {
     const publications = await this.handlePublications(newPublication);
 
     return await publicationRepository.set(publications);
+  }
+
+  public async setMediaOutlet(data: IMediaOutlet): Promise<boolean> {
+    const response = await publicationRepository.getMediaOutlet();
+
+    const index = response.findIndex((f) => f.id === data.id);
+
+    const props = {
+      collectionRef: 'media_outlet',
+      subDocRef: 'companies',
+      data:
+        index === -1 ? [...response, data] : response.map((item, i) => (i === index ? data : item)),
+    };
+
+    console.log(props);
+
+    return await publicationRepository.setDocument(props);
   }
 
   /**
