@@ -80,8 +80,6 @@ export default {
         'rz-light-brown': '#592413',
         'rz-dark-brown': '#2B2321',
         'rz-green': '#53593A',
-        //RGB
-        'rz-smoke-beige': 'rgb(223 214 201 / 43%)',
       },
       borderRadius: {
         lg: 'var(--radius)',
