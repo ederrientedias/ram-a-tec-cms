@@ -1,26 +1,6 @@
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, } from '@/components/ui/dialog';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow, } from '@/components/ui/table';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, } from '@/components/ui/select';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { PortfolioSchema, defaultValues, portfolioSchema } from '@/schemas/portfolio.schema';
 import { Plus, Pencil, Trash2, FileUp, Download, Search, FileText } from 'lucide-react';
@@ -45,6 +25,7 @@ import { Badge } from '@/components/ui/badge';
 import { IFund } from '@/models/funds.model';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
+
 
 // Tipos
 interface Portfolio {
@@ -202,11 +183,9 @@ const Portfolios = () => {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Gerenciamento de Portfólios</h1>
-        <Button onClick={() => openDialog()}>
-          <Plus className="mr-2 h-4 w-4" />
-          Novo Portfólio
-        </Button>
+        <h1 className="text-2xl font-medium font-serif text-rz-black">
+          Gerenciamento de Portfólios
+        </h1>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -221,52 +200,12 @@ const Portfolios = () => {
             </p>
           </CardContent>
         </Card>
-        {/* <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-base font-medium">Status</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center gap-3">
-              <div className="flex items-center gap-1.5">
-                <span className="w-3 h-3 rounded-full bg-green-500"></span>
-                <span className="text-sm">
-                  {logs.filter((p) => p.status === 'processado').length} Processados
-                </span>
-              </div>
-              <div className="flex items-center gap-1.5">
-                <span className="w-3 h-3 rounded-full bg-red-500"></span>
-                <span className="text-sm">
-                  {portfolios.filter((p) => p.status === 'erro').length} Erros
-                </span>
-              </div>
-              <div className="flex items-center gap-1.5">
-                <span className="w-3 h-3 rounded-full bg-yellow-500"></span>
-                <span className="text-sm">
-                  {portfolios.filter((p) => p.status === 'pendente').length} Pendentes
-                </span>
-              </div>
-            </div>
-          </CardContent>
-        </Card> */}
-        {/* <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-base font-medium">Fundos com Portfolio</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {new Set(portfolios.map((p) => p.nomeFundo)).size}
-            </div>
-            <p className="text-xs text-muted-foreground mt-1">
-              De um total de {logs.length} fundos
-            </p>
-          </CardContent>
-        </Card> */}
       </div>
 
-      <div className="bg-white p-6 rounded-lg shadow">
+      <div className="bg-rz-white p-6">
         <div className="flex items-center justify-between mb-6">
           <div className="relative w-full max-w-sm">
-            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
+            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-rz-black" />
             <Input
               type="search"
               placeholder="Buscar portfólios..."
@@ -275,9 +214,13 @@ const Portfolios = () => {
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
+          <Button onClick={() => openDialog()}>
+            <Plus className="mr-2 h-4 w-4" />
+            Novo Portfólio
+          </Button>
         </div>
 
-        <div className="rounded-md border overflow-hidden">
+        <div className="overflow-hidden">
           <Table>
             <TableHeader>
               <TableRow>
@@ -285,8 +228,6 @@ const Portfolios = () => {
                 <TableHead>Arquivo</TableHead>
                 <TableHead>Data de Upload</TableHead>
                 <TableHead>Tamanho</TableHead>
-                {/* <TableHead>Status</TableHead> */}
-                {/* <TableHead>Ações</TableHead> */}
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -300,32 +241,6 @@ const Portfolios = () => {
                     </TableCell>
                     <TableCell>{new Date(log.createdAt).toLocaleDateString('pt-BR')}</TableCell>
                     <TableCell>{log.fileSize}</TableCell>
-                    {/* <TableCell>{renderStatusBadge(log.status)}</TableCell> */}
-                    {/* <TableCell>
-                      <div className="flex items-center gap-2">
-                        <Button variant="ghost" size="icon" onClick={() => openDialog(log)}>
-                          <Pencil className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => {
-                            toast.success('Download iniciado');
-                            window.open(log.link, '_blank');
-                          }}
-                        >
-                          <Download className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="text-red-500"
-                          onClick={() => handleDeletePortfolio(log.id)}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </TableCell> */}
                   </TableRow>
                 ))
               ) : (
