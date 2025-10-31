@@ -1,14 +1,15 @@
 import { z } from 'zod';
 
+
 export const publicationSchema = z.object({
   theme: z.string().nonempty('O tema é obrigatório'),
   product: z.string().nonempty('O produto é obrigatório'),
   type: z.string().nonempty('O tipo é obrigatório'),
-  category: z.string().nonempty('A categoria é obrigatória'),
+  category: z.string(),
   publicationDate: z
     .string()
     .nonempty('A data é obrigatória')
-    .transform((date) => formatDate(date)),
+    .transform((date) => formatDateString(date)),
   mediaOutlet: z.string().nonempty('O meio de comunicação é obrigatório'),
   mediaLogo: z.string().nonempty(' O logo do meio de comunicação é obrigatório'),
   link: z.string().nonempty('O link é obrigatório'),
@@ -22,7 +23,14 @@ export const publicationSchema = z.object({
   }),
 });
 
+export const mediaOutletSchema = z.object({
+  name: z.string().nonempty('O nome do arquivo é obrigatório'),
+  file: z.any().refine((files) => files?.length > 0, 'Arquivo é obrigatório'),
+});
+
+export type MediaOutletSchema = z.infer<typeof mediaOutletSchema>;
 export type PublicationsSchema = z.infer<typeof publicationSchema>;
+
 export const defaultValues = {
   theme: '',
   product: '',
@@ -36,8 +44,27 @@ export const defaultValues = {
   isPublic: false,
 };
 
-const formatDate = (date: string): string => {
+export const defaulValuesMediaOutlet = {
+  name: '',
+  file: null,
+};
+
+export const formatDate = (date: string): string => {
   const [year, month, day] = date.split('-');
+  return `${day}/${month}/${year}`;
+};
+
+export const formatDateString = (dateString: string): string => {
+  const date = new Date(dateString);
+
+  if (isNaN(date.getTime())) {
+    return 'Data inválida';
+  }
+
+  const day = String(date.getDate()).padStart(2, '0');
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const year = date.getFullYear();
+
   return `${day}/${month}/${year}`;
 };
 
