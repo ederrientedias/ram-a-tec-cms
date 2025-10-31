@@ -1,32 +1,7 @@
-import {
-  AlertDialog,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
-import {
-  createCompanyDefaultValues,
-  createCompanySchema,
-  CreateCompanySchema,
-} from '@/schemas/compliance.schema';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
+import { AlertDialog, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, } from '@/components/ui/alert-dialog';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, } from '@/components/ui/dialog';
+import { createCompanyDefaultValues, createCompanySchema, CreateCompanySchema, } from '@/schemas/compliance.schema';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow, } from '@/components/ui/table';
 import { toKebabCase, toSnakeCase } from '@/utils/format-string';
 import { useTabs } from '@/hooks/firestore/compliance/use-tabs';
 import complianceService from '@/services/compliance.service';
@@ -41,6 +16,7 @@ import { Field } from '@/enums/firestore.enum';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { useState } from 'react';
+
 
 const CreateCompany = () => {
   const queryClient = useQueryClient();
@@ -163,7 +139,7 @@ const CreateCompany = () => {
       </div>
       <div>
         {/* Table Component  */}
-        <div className="rounded-md border overflow-hidden">
+        <div className="overflow-hidden">
           <Table>
             <TableHeader>
               <TableRow>
@@ -187,7 +163,6 @@ const CreateCompany = () => {
                       <TableCell>{company.name}</TableCell>
                       <TableCell>
                         <div className="flex items-center gap-2">
-                          {/*  onClick={() => openDialogFile(file)} */}
                           <Button variant="ghost" size="icon" onClick={() => openDialog(company)}>
                             <Pencil className="h-4 w-4" />
                           </Button>
@@ -216,7 +191,7 @@ const CreateCompany = () => {
           <form onSubmit={handleSubmit(onSubmit)}>
             <DialogHeader>
               <DialogTitle>{isEditCompany ? 'Editar Empresa' : 'Criar Nova Empresa'}</DialogTitle>
-              <DialogDescription>Upload de documento de compliance.</DialogDescription>
+              <DialogDescription>Permite criar ou editar uma empresa.</DialogDescription>
             </DialogHeader>
 
             <div className="space-y-6 py-4">
