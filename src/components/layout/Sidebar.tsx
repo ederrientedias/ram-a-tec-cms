@@ -51,14 +51,14 @@ export const Sidebar = () => {
       {/* Sidebar */}
       <aside
         className={cn(
-          'fixed inset-y-0 left-0 z-50 bg-rz-beige transition-all duration-300 flex flex-col',
+          'fixed inset-y-0 left-0 z-50 bg-rz-white border-r border-r-rz-beige transition-all duration-300 flex flex-col',
           isCollapsed ? 'w-[78px]' : 'w-[250px]',
           isMobileOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'
         )}
       >
         <div
           className={cn(
-            'flex items-center h-16 px-4',
+            'flex items-center h-16 px-4 border-b border-b-rz-beige',
             isCollapsed ? 'justify-center' : 'justify-between'
           )}
         >
@@ -72,7 +72,7 @@ export const Sidebar = () => {
             size="icon"
             onClick={() => setIsCollapsed(!isCollapsed)}
             className={cn(
-              'hidden md:flex hover:bg-rz-smoke-beige rounded-full',
+              'hidden md:flex hover:bg-rz-beige/40 rounded-md',
               isCollapsed && 'rotate-180'
             )}
           >
@@ -98,7 +98,7 @@ export const Sidebar = () => {
         {/* Avatar do Usuario */}
         <div
           className={cn(
-            'border-t border-rz-dark-beige p-3',
+            'border-t border-rz-beige p-3',
             isCollapsed ? 'flex justify-center py-4' : 'p-4'
           )}
         >
@@ -131,8 +131,10 @@ export const Sidebar = () => {
                     </AvatarFallback>
                   </Avatar>
                   <div className="flex-1 min-w-0">
-                    <div className="text-sm font-medium">{name}</div>
-                    <div className="text-xs text-slate-500 truncate">{email}</div>
+                    <div className="text-sm font-sans font-medium text-rz-black">{name}</div>
+                    <div className="text-xs font-sans font-light text-rz-gray truncate">
+                      {email}
+                    </div>
                   </div>
                 </div>
               </DropdownMenuTrigger>
