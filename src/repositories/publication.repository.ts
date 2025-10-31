@@ -1,8 +1,14 @@
+import { IMediaOutlet, IPublication, IPublicationRepsitory } from '@/models/publication.model';
 import { DocumentData, Firestore, collection, doc, getDoc, setDoc } from 'firebase/firestore';
-import { IPublication, IPublicationRepsitory } from '@/models/publication.model';
 import { FirestoreDocument, FirestoreCollection } from '@/enums/firestore.enum';
 import { firestoreSite } from '@/config/firebase/firebase-site.config';
 
+
+type SetDocumentProps = {
+  collectionRef: string;
+  subDocRef: string;
+  data: any;
+};
 class PublicationRepository implements IPublicationRepsitory {
   protected readonly firestore: Firestore;
   protected readonly production: any;
@@ -28,6 +34,18 @@ class PublicationRepository implements IPublicationRepsitory {
 
     return data;
   }
+  // /development/publictions/media_outlet/companies
+  public async getMediaOutlet(): Promise<IMediaOutlet[] | []> {
+    const docRef = doc(this.production, FirestoreDocument.PUBLICATIONS);
+    const collectionRef = collection(docRef, 'media_outlet');
+    const subDocRef = doc(collectionRef, 'companies');
+    const field = await getDoc(subDocRef);
+
+    if (!field.exists) return [];
+
+    const { data } = field.data();
+    return data;
+  }
 
   /**
    * @description | Salva as publicações
@@ -39,6 +57,19 @@ class PublicationRepository implements IPublicationRepsitory {
       const docRef = doc(this.production, FirestoreDocument.PUBLICATIONS);
       await setDoc(docRef, { data: publications }, { merge: true });
 
+      return true;
+    } catch (error) {
+      console.error('Erro ao salvar documento:', error);
+      return false;
+    }
+  }
+
+  public async setDocument(props: SetDocumentProps): Promise<boolean> {
+    try {
+      const docRef = doc(this.development, FirestoreDocument.PUBLICATIONS);
+      const colletionRef = collection(docRef, props.collectionRef);
+      const subDocRef = doc(colletionRef, props.subDocRef);
+      await setDoc(subDocRef, { data: props.data }, { merge: true });
       return true;
     } catch (error) {
       console.error('Erro ao salvar documento:', error);
