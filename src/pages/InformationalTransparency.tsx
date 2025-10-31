@@ -1,16 +1,7 @@
 import '../styles/summary.css';
 
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import {
-  InformationalTransparencyService,
-  ISummaryProps,
-} from '@/services/informational-transparency.service';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, } from '@/components/ui/select';
+import { InformationalTransparencyService, ISummaryProps, } from '@/services/informational-transparency.service';
 import LoadingSavingFileAnimation from '@/components/animations/loadinfSavingFile';
 import LoadingFindDataAnimation from '@/components/animations/loadingFinddata';
 import { IAnbimaSummaryData, IFundResponse } from '@/models/salesforce.model';
@@ -30,6 +21,7 @@ import { IFund } from '@/models/funds.model';
 import { toast } from 'sonner';
 
 import { Style } from '../styles/summary';
+
 
 interface FeeLabels {
   administrationFee: number | null;
@@ -193,35 +185,39 @@ export const InformationalTransparency = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-start">
-        <h1 className="text-2xl font-bold text-gray-900">Gerador de Sumário ANBIMA</h1>
-      </div>
-      {/* Header    */}
-      <div className="w-full flex items-center justify-between bg-white shadow rounded-lg p-6 sticky top-0 z-10  transition-all duration-300">
-        <div className="space-y-2 w-80">
-          <Label htmlFor="fundName">Nome do Fundo</Label>
-          <Select onValueChange={handleSelectFund}>
-            <SelectTrigger>
-              {isLoadingFunds ? (
-                <SelectValue placeholder="Carregando fundos..." />
-              ) : errorFunds ? (
-                <SelectValue placeholder="Erro ao carregar fundos" />
-              ) : (
-                <SelectValue placeholder="Selecione um fundo" />
-              )}
-            </SelectTrigger>
-            <SelectContent>
-              {rizaFunds?.map((fund) => (
-                <SelectItem key={fund.id} value={fund.id}>
-                  {fund.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+      <div className="w-full bg-rz-white sticky top-0 z-10">
+        <div className="flex items-center justify-start p-3">
+          <h1 className="text-2xl font-medium font-serif text-rz-black">
+            Gerador de Sumário ANBIMA
+          </h1>
         </div>
-        <Button onClick={handleGeneratePDF} disabled={!selectedFund ? true : false}>
-          {isLoading ? 'Gerando...' : 'Gerar PDF'}
-        </Button>
+        {/* Header    */}
+        <div className="w-full flex items-center justify-between bg-rz-white  p-6   transition-all duration-300">
+          <div className="space-y-2 w-80">
+            <Label htmlFor="fundName">Nome do Fundo</Label>
+            <Select onValueChange={handleSelectFund}>
+              <SelectTrigger>
+                {isLoadingFunds ? (
+                  <SelectValue placeholder="Carregando fundos..." />
+                ) : errorFunds ? (
+                  <SelectValue placeholder="Erro ao carregar fundos" />
+                ) : (
+                  <SelectValue placeholder="Selecione um fundo" />
+                )}
+              </SelectTrigger>
+              <SelectContent>
+                {rizaFunds?.map((fund) => (
+                  <SelectItem key={fund.id} value={fund.id}>
+                    {fund.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <Button onClick={handleGeneratePDF} disabled={!selectedFund ? true : false}>
+            {isLoading ? 'Gerando...' : 'Gerar PDF'}
+          </Button>
+        </div>
       </div>
       {/* Content */}
       {(!selectedFund && !isLoadingAnbimaSummary && !isLoading && !isLoadingSavingFile && (
