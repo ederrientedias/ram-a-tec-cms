@@ -1,33 +1,7 @@
-import {
-  CreateFileMetadataSchema,
-  createfileMetadataSchema,
-  fileMetadataDefaultValues,
-  updatefileMetadataSchema,
-  UpdateFileMetadataSchema,
-} from '@/schemas/compliance.schema';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
+import { CreateFileMetadataSchema, createfileMetadataSchema, fileMetadataDefaultValues, updatefileMetadataSchema, UpdateFileMetadataSchema, } from '@/schemas/compliance.schema';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, } from '@/components/ui/dialog';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow, } from '@/components/ui/table';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, } from '@/components/ui/select';
 import { FileText, FileUp, Pencil, Plus, Trash2 } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTabs } from '@/hooks/firestore/compliance/use-tabs';
@@ -41,6 +15,7 @@ import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
+
 
 const AddFile = () => {
   const [files, setFiles] = useState<IFile[] | null>(null);
@@ -245,7 +220,7 @@ const AddFile = () => {
       </div>
       <div className="flex flex-col gap-4">
         {/* Table Component  */}
-        <div className="rounded-md border overflow-hidden">
+        <div className=" overflow-hidden">
           <Table>
             <TableHeader>
               <TableRow>
