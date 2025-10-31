@@ -21,21 +21,14 @@ export const NavItem = ({ icon: Icon, label, href, isCollapsed }: NavItemProps) 
           <Link
             to={href}
             className={cn(
-              'flex items-center justify-center w-12 h-12 rounded-full transition-colors',
-              isActive
-                ? 'bg-rz-smoke-beige text-rz-orange'
-                : 'hover:bg-rz-smoke-beige text-rz-black'
+              'flex items-center justify-center w-12 h-12 rounded-md transition-colors',
+              isActive ? 'bg-rz-beige/40 text-rz-orange' : 'hover:bg-rz-beige/40 text-rz-black'
             )}
           >
             <Icon size={16} />
           </Link>
         </TooltipTrigger>
-        <TooltipContent
-          className="border border-rz-beige bg-rz-white text-rz-black font-sans font-normal text-xs rounded-none"
-          side="right"
-        >
-          {label}
-        </TooltipContent>
+        <TooltipContent side="right">{label}</TooltipContent>
       </Tooltip>
     );
   }
@@ -44,10 +37,10 @@ export const NavItem = ({ icon: Icon, label, href, isCollapsed }: NavItemProps) 
     <Link
       to={href}
       className={cn(
-        'flex items-center h-8 px-4 rounded-md transition-colors',
+        'flex items-center h-8 px-4 rounded-full transition-colors',
         isActive
-          ? 'bg-rz-smoke-beige font-sans text-rz-orange font-medium'
-          : 'hover:bg-rz-smoke-beige font-sans text-rz-black font-medium hover:text-slate-900'
+          ? 'bg-rz-beige/40 font-sans text-rz-orange font-medium'
+          : 'hover:bg-rz-beige/40 font-sans text-rz-black font-medium hover:text-slate-900'
       )}
     >
       <Icon size={16} className="mr-3" />
