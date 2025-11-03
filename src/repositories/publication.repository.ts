@@ -1,4 +1,4 @@
-import { IMediaOutlet, IPublication, IPublicationRepsitory } from '@/models/publication.model';
+import { IMediaOutlet, IPublication, IPublicationRepsitory, IType, } from '@/models/publication.model';
 import { DocumentData, Firestore, collection, doc, getDoc, setDoc } from 'firebase/firestore';
 import { FirestoreDocument, FirestoreCollection } from '@/enums/firestore.enum';
 import { firestoreSite } from '@/config/firebase/firebase-site.config';
@@ -34,11 +34,23 @@ class PublicationRepository implements IPublicationRepsitory {
 
     return data;
   }
-  // /development/publictions/media_outlet/companies
+
   public async getMediaOutlet(): Promise<IMediaOutlet[] | []> {
     const docRef = doc(this.production, FirestoreDocument.PUBLICATIONS);
     const collectionRef = collection(docRef, 'media_outlet');
     const subDocRef = doc(collectionRef, 'companies');
+    const field = await getDoc(subDocRef);
+
+    if (!field.exists) return [];
+
+    const { data } = field.data();
+    return data;
+  }
+
+  public async getTypes(): Promise<IType[] | []> {
+    const docRef = doc(this.production, FirestoreDocument.PUBLICATIONS);
+    const collectionRef = collection(docRef, 'media_outlet');
+    const subDocRef = doc(collectionRef, 'types');
     const field = await getDoc(subDocRef);
 
     if (!field.exists) return [];
@@ -66,7 +78,7 @@ class PublicationRepository implements IPublicationRepsitory {
 
   public async setDocument(props: SetDocumentProps): Promise<boolean> {
     try {
-      const docRef = doc(this.development, FirestoreDocument.PUBLICATIONS);
+      const docRef = doc(this.production, FirestoreDocument.PUBLICATIONS);
       const colletionRef = collection(docRef, props.collectionRef);
       const subDocRef = doc(colletionRef, props.subDocRef);
       await setDoc(subDocRef, { data: props.data }, { merge: true });
