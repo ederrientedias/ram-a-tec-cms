@@ -1,4 +1,4 @@
-import { Check, ChevronDownIcon, ChevronsUpDown, EllipsisVertical, Eye, EyeOff, ListPlus, Loader2, MoreHorizontalIcon, Pencil, Plus, Search, Trash2, } from 'lucide-react';
+import { Check, ChevronDownIcon, ChevronsUpDown, EllipsisVertical, Eye, EyeOff, ListPlus, Loader2, LoaderCircle, MoreHorizontalIcon, Pencil, Plus, Search, Trash2, } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger, } from '@/components/ui/dropdown-menu';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, } from '@/components/ui/dialog';
 import { convertToInputDateFormat, defaultValues, publicationSchema, PublicationsSchema, } from '@/schemas/publication.schema';
@@ -10,9 +10,11 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { usePublications } from '@/hooks/firestore/publications/use-publication';
 import { useMediaOutlet } from '@/hooks/firestore/publications/use-media-outlet';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { IMediaOutlet, IPublication } from '@/models/publication.model';
+import { IMediaOutlet, IPublication, IType } from '@/models/publication.model';
+import type { DropdownMenuItemProps } from '@radix-ui/react-dropdown-menu';
 import LoadingPageAnimation from '@/components/animations/loadingPage';
 import Loading404Animation from '@/components/animations/loading404';
+import { useType } from '@/hooks/firestore/publications/use-type';
 import publicationService from '@/services/publications.service';
 import { FirestoreDocument } from '@/enums/firestore.enum';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -30,11 +32,13 @@ import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 
 import { AddMediaOutlet } from './publications/AddMediaOutlet';
+import { AddType } from './publications/AddType';
 
 
 const Publications = (): JSX.Element => {
   const queryClient = useQueryClient();
   const { data, isLoading, error } = usePublications();
+  const { data: types, isLoading: typeLoading } = useType();
   const { data: mediaOutlet, isLoading: mediaOutletLoading } = useMediaOutlet();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editPublication, setEditPublication] = useState<boolean>(false);
@@ -42,13 +46,12 @@ const Publications = (): JSX.Element => {
   const [searchTerm, setSearchTerm] = useState('');
   const [isloading, setLoading] = useState(false);
   const [dateOpen, setDateOpen] = useState(false);
-  const [date, setDate] = useState<Date | undefined>(undefined);
-  const [sheetMediaOutletOpen, setSheetMediaOutletOpen] = useState<boolean>(false);
-  const [editData, setEditData] = useState<IMediaOutlet | null>(null);
-  const [open, setOpen] = useState(false);
-  const [selected, setSelected] = useState<string | null>(null);
-  const [query, setQuery] = useState('');
-  const [loading, setIsLoading] = useState(false);
+  const [sheetOpen, setSheetOpen] = useState<boolean>(false);
+  const [mediaOutletRef, setMediaOutletRef] = useState<IMediaOutlet | null>(null);
+  const [typeData, setTypeData] = useState<IType | null>(null);
+  const [openSelectType, setOpenSelectType] = useState(false);
+  const [openMediaOutlet, setOpenMediaOutlet] = useState(false);
+  const [sheet, setSheet] = useState<'AddMediaOutlet' | 'AddType' | null>(null);
 
   const {
     handleSubmit,
@@ -64,30 +67,36 @@ const Publications = (): JSX.Element => {
   });
 
   const selectedMediaOutlet = watch('mediaOutlet');
+  const selectedType = watch('type');
 
   useEffect(() => {
     if (selectedMediaOutlet) {
       const data = mediaOutlet.find((m) => m.name === selectedMediaOutlet);
-      setEditData(data);
+      setMediaOutletRef(data);
     }
   }, [selectedMediaOutlet, mediaOutlet]);
 
+  useEffect(() => {
+    if (selectedType) {
+      const data = types.find((t) => t.type === selectedType);
+      setTypeData(data);
+    }
+  }, [selectedType, types]);
+
   const onSubmit = async (data: PublicationsSchema): Promise<void> => {
     console.log(data);
-    // setLoading(true);
-    // await handleSavePublication(data);
+    setLoading(true);
+    await handleSavePublication(data);
   };
 
   const handleSavePublication = async (data: PublicationsSchema): Promise<void> => {
     const newPublication: IPublication = {
       id: editPublication ? publicationRef.id : crypto.randomUUID(),
       theme: data.theme,
-      product: data.product,
       type: data.type,
-      category: data.category,
       publicationDate: data.publicationDate,
       mediaOutlet: data.mediaOutlet,
-      mediaLogo: data.mediaLogo,
+      mediaLogo: mediaOutletRef.logoUrl,
       description: data.description,
       link: data.link,
       isPublic: data.isPublic,
@@ -114,9 +123,7 @@ const Publications = (): JSX.Element => {
   const filteredPublications = data?.filter(
     (publication) =>
       publication.theme.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      publication.product.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      publication.mediaOutlet.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      publication.category.toLowerCase().includes(searchTerm.toLowerCase())
+      publication.mediaOutlet.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const openDialog = (status: 'new' | 'edit', publication?: IPublication): void => {
@@ -131,19 +138,15 @@ const Publications = (): JSX.Element => {
     setDialogOpen(true);
   };
 
-  const openSheetMediaOutletOpen = (e: Event) => {
-    e.stopPropagation();
-    setSheetMediaOutletOpen(true);
+  const openSheetMediaOutletOpen = () => {
+    setSheetOpen(true);
   };
 
   const handleEditPublication = (publication: IPublication): void => {
     setValue('theme', publication.theme);
-    setValue('product', publication.product);
     setValue('type', publication.type);
-    setValue('category', publication.category);
     setValue('publicationDate', convertToInputDateFormat(publication.publicationDate));
     setValue('mediaOutlet', publication.mediaOutlet);
-    setValue('mediaLogo', publication.mediaLogo);
     setValue('link', publication.link);
     setValue('description', publication.description);
     setValue('isPublic', publication.isPublic);
@@ -164,38 +167,11 @@ const Publications = (): JSX.Element => {
     }
   };
 
-  const getPublicacoesByCategoria = (): [string, number][] => {
-    const categories: Record<string, number> = {};
-
-    data?.forEach((publication) => {
-      if (categories[publication.category]) {
-        categories[publication.category]++;
-      } else {
-        categories[publication.category] = 1;
-      }
-    });
-
-    return Object.entries(categories).sort((a, b) => b[1] - a[1]);
-  };
-
-  const getPublicacoesByTipo = (): [string, number][] => {
-    const types: Record<string, number> = {};
-
-    data?.forEach((publication) => {
-      if (types[publication.type]) {
-        types[publication.type]++;
-      } else {
-        types[publication.type] = 1;
-      }
-    });
-
-    return Object.entries(types).sort((a, b) => b[1] - a[1]);
-  };
-
   const closeDialog = (): void => {
     reset();
     setDialogOpen(false);
     setEditPublication(false);
+    setMediaOutletRef(null);
   };
 
   const refreshData = async (): Promise<void> => {
@@ -203,9 +179,9 @@ const Publications = (): JSX.Element => {
   };
 
   const dismiss = (e: CustomEvent): void => {
-    if (e) {
-      reset();
-      setEditPublication(false);
+    if (sheetOpen) {
+      e.preventDefault();
+      return;
     }
   };
 
@@ -230,39 +206,9 @@ const Publications = (): JSX.Element => {
             </p>
           </CardContent>
         </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-base font-medium">Por Categoria</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-1">
-              {getPublicacoesByCategoria().map(([categoria, count]) => (
-                <div key={categoria} className="flex items-center justify-between text-sm">
-                  <span>{categoria}</span>
-                  <span className="font-medium">{count}</span>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-base font-medium">Por Tipo</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-1">
-              {getPublicacoesByTipo().map(([tipo, count]) => (
-                <div key={tipo} className="flex items-center justify-between text-sm">
-                  <span>{tipo}</span>
-                  <span className="font-medium">{count}</span>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
       </div>
 
-      <div className="bg-rz-white p-6">
+      <div className="bg-rz-white">
         <div className="flex items-center justify-between mb-6">
           <div className="relative w-full max-w-sm flex items-center">
             <Search className="absolute left-2.5 top-3 h-4 w-4 text-rz-black" />
@@ -286,9 +232,7 @@ const Publications = (): JSX.Element => {
             <TableHeader>
               <TableRow>
                 <TableHead>Tema</TableHead>
-                <TableHead>Produto</TableHead>
                 <TableHead>Tipo</TableHead>
-                <TableHead>Categoria</TableHead>
                 <TableHead>Data</TableHead>
                 <TableHead>Veículo</TableHead>
                 <TableHead>Visivel</TableHead>
@@ -300,19 +244,9 @@ const Publications = (): JSX.Element => {
                 filteredPublications?.map((publication: IPublication) => (
                   <TableRow key={publication.id}>
                     <TableCell className="font-medium">{publication.theme}</TableCell>
-                    <TableCell>{publication.product}</TableCell>
                     <TableCell>{publication.type}</TableCell>
-                    <TableCell>{publication.category}</TableCell>
                     <TableCell>{publication.publicationDate}</TableCell>
-                    <TableCell>
-                      {/* <img
-                        className="h-6 w-6 "
-                        src={publication.mediaLogo}
-                        alt={publication.mediaOutlet}
-                      /> */}
-                      {/* <Newspaper className="h-4 w-4 text-gray-500" /> */}
-                      {publication.mediaOutlet}
-                    </TableCell>
+                    <TableCell>{publication.mediaOutlet}</TableCell>
                     <TableCell>
                       {publication.isPublic ? (
                         <Eye className="h-4 w-4" />
@@ -329,15 +263,6 @@ const Publications = (): JSX.Element => {
                         >
                           <Pencil className="h-4 w-4" />
                         </Button>
-                        {/* <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => {
-                            window.open(publication.link, '_blank');
-                          }}
-                        >
-                          <ExternalLink className="h-4 w-4" />
-                        </Button> */}
                         <Button
                           variant="ghost"
                           size="icon"
@@ -392,14 +317,99 @@ const Publications = (): JSX.Element => {
               </div>
 
               {/* Tipo */}
-              <div className="flex flex-col gap-2">
-                <Label htmlFor="type">Tipo</Label>
-                <Input
-                  id="type"
-                  name="type"
-                  {...register('type')}
-                  placeholder="Ex: Entrevista, Artigo, Notícia"
-                />
+              <div className="flex items-end gap-2">
+                <div className="flex flex-1 flex-col gap-2">
+                  <Label htmlFor="mediaOutlet">Tipo</Label>
+                  <Controller
+                    name="type"
+                    control={control}
+                    render={({ field }) => (
+                      <Popover open={openSelectType} onOpenChange={setOpenSelectType}>
+                        <PopoverTrigger>
+                          <Button
+                            type="button"
+                            variant="outline"
+                            role="combobox"
+                            className="w-full flex items-center justify-between border border-rz-beige py-2 px-3 rounded-md font-sans text-sm font-regular"
+                          >
+                            {field.value && typeData
+                              ? types?.find((item) => item.type === field.value)?.type
+                              : 'Selecione um tipo '}
+                            <ChevronsUpDown className="w-4 h-4" />
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-full p-0">
+                          <Command className="w-full">
+                            <CommandInput placeholder="Buscar Veiculo..." className="h-9" />
+                            <CommandList>
+                              <CommandEmpty>Nenhum veiculo encontrado</CommandEmpty>
+                              <CommandGroup>
+                                {types?.map((item) => (
+                                  <CommandItem
+                                    key={item.id}
+                                    value={item.type}
+                                    onSelect={(currentValue) => {
+                                      field.onChange(currentValue);
+                                      setOpenSelectType(false);
+                                    }}
+                                  >
+                                    {item.type}
+                                    <Check
+                                      className={cn(
+                                        'ml-auto w-4 h-4',
+                                        field.value === item.type ? 'opacity-100' : 'opacity-0'
+                                      )}
+                                    />
+                                  </CommandItem>
+                                ))}
+                              </CommandGroup>
+                            </CommandList>
+                          </Command>
+                        </PopoverContent>
+                      </Popover>
+                    )}
+                  />
+                </div>
+                <DropdownMenu modal={false}>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      aria-label="Open menu"
+                      size="icon"
+                      className="rounded-md"
+                    >
+                      <MoreHorizontalIcon />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent className="w-40" align="end">
+                    <DropdownMenuLabel>Ações</DropdownMenuLabel>
+                    <DropdownMenuGroup>
+                      <DropdownMenuItem
+                        onSelect={() => {
+                          setSheet('AddType');
+                          setTypeData(null);
+                          setSheetOpen(true);
+                        }}
+                      >
+                        Adicionar Tipo
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        onSelect={() => {
+                          if (!typeData) {
+                            toast.info('Selecione um Veículo antes de editar');
+                            return;
+                          } else {
+                            setSheet('AddType');
+                            openSheetMediaOutletOpen();
+                          }
+                        }}
+                      >
+                        Editar Tipo
+                      </DropdownMenuItem>
+                    </DropdownMenuGroup>
+                  </DropdownMenuContent>
+                </DropdownMenu>
                 {errors.type && touchedFields.type && (
                   <small className="text-red-400">{errors.type.message}</small>
                 )}
@@ -413,12 +423,12 @@ const Publications = (): JSX.Element => {
                     name="mediaOutlet"
                     control={control}
                     render={({ field }) => (
-                      <Popover>
+                      <Popover open={openMediaOutlet} onOpenChange={setOpenMediaOutlet}>
                         <PopoverTrigger asChild>
                           <Button
+                            type="button"
                             variant="outline"
                             role="combobox"
-                            aria-expanded={open}
                             className="w-full flex items-center justify-between border border-rz-beige py-2 px-3 rounded-md font-sans text-sm font-regular"
                           >
                             {field.value
@@ -437,7 +447,10 @@ const Publications = (): JSX.Element => {
                                   <CommandItem
                                     key={item.id}
                                     value={item.name}
-                                    onSelect={(currentValue) => field.onChange(currentValue)}
+                                    onSelect={(currentValue) => {
+                                      field.onChange(currentValue);
+                                      setOpenMediaOutlet(false);
+                                    }}
                                   >
                                     {item.name}
                                     <Check
@@ -459,6 +472,7 @@ const Publications = (): JSX.Element => {
                 <DropdownMenu modal={false}>
                   <DropdownMenuTrigger asChild>
                     <Button
+                      type="button"
                       variant="outline"
                       aria-label="Open menu"
                       size="icon"
@@ -470,17 +484,22 @@ const Publications = (): JSX.Element => {
                   <DropdownMenuContent className="w-40" align="end">
                     <DropdownMenuLabel>Ações</DropdownMenuLabel>
                     <DropdownMenuGroup>
-                      <DropdownMenuItem onSelect={(e: Event) => openSheetMediaOutletOpen(e)}>
-                        Criar Veículo
+                      <DropdownMenuItem
+                        onSelect={() => {
+                          setSheet('AddMediaOutlet');
+                          setSheetOpen(true);
+                        }}
+                      >
+                        Adicionar Veículo
                       </DropdownMenuItem>
                       <DropdownMenuItem
-                        onSelect={(e: Event) => {
-                          e.preventDefault();
-                          if (!editData) {
+                        onSelect={() => {
+                          if (!mediaOutletRef) {
                             toast.info('Selecione um Veículo antes de editar');
                             return;
                           } else {
-                            openSheetMediaOutletOpen(e);
+                            setSheet('AddMediaOutlet');
+                            openSheetMediaOutletOpen();
                           }
                         }}
                       >
@@ -597,29 +616,10 @@ const Publications = (): JSX.Element => {
               <Button variant="outline" onClick={closeDialog}>
                 Cancelar
               </Button>
-              <Button type="submit">
+              <Button type="submit" disabled={!isValid}>
                 {isloading ? (
                   <span className="flex items-center gap-2">
-                    <svg
-                      className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                    >
-                      <circle
-                        className="opacity-25"
-                        cx="12"
-                        cy="12"
-                        r="10"
-                        stroke="currentColor"
-                        strokeWidth="4"
-                      ></circle>
-                      <path
-                        className="opacity-75"
-                        fill="currentColor"
-                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                      ></path>
-                    </svg>
+                    <LoaderCircle className="animate-spin h-4 w-4" />
                     Enviando...
                   </span>
                 ) : (
@@ -632,14 +632,23 @@ const Publications = (): JSX.Element => {
       </Dialog>
 
       {/* Cadastro da Empresa */}
-      <Sheet open={sheetMediaOutletOpen} onOpenChange={setSheetMediaOutletOpen}>
+      <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
         <SheetContent className="bg-rz-white w-[400px] sm:w-[540px]">
           <SheetHeader>
-            <SheetTitle>Adicionar novo Veículo</SheetTitle>
+            <SheetTitle>
+              {sheet === 'AddMediaOutlet' ? 'Adicionar novo Veículo' : 'Adicionar novo Tipo'}
+            </SheetTitle>
             <SheetDescription></SheetDescription>
           </SheetHeader>
           <div className="h-full py-9">
-            <AddMediaOutlet closeSheet={() => setSheetMediaOutletOpen(false)} editData={editData} />
+            {sheet === 'AddMediaOutlet' ? (
+              <AddMediaOutlet
+                closeSheet={() => setSheetOpen(false)}
+                mediaOutletData={mediaOutletRef}
+              />
+            ) : (
+              <AddType closeSheet={() => setSheetOpen(false)} typeData={typeData} />
+            )}
           </div>
         </SheetContent>
       </Sheet>
