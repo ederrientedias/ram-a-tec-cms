@@ -10,19 +10,15 @@ import apiService from '@/services/api.service';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
-import { useDropzone } from 'react-dropzone';
 import { toast } from 'sonner';
 
 
-export const AddMediaOutlet = ({ closeSheet, editData }) => {
+export const AddMediaOutlet = ({ closeSheet, mediaOutletData }) => {
   const queryClient = useQueryClient();
   const [selectedFileName, setSelectedFileName] = useState<string>('');
   const [fileRef, setFileRef] = useState<File | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [editingData, setEditingData] = useState<IMediaOutlet>(null);
-
-  // const { getRootProps, getInputProps, isDragActive } = useDropzone();
-
   const {
     handleSubmit,
     reset,
@@ -43,10 +39,10 @@ export const AddMediaOutlet = ({ closeSheet, editData }) => {
   );
 
   useEffect(() => {
-    if (editData) {
-      handleEditData(editData);
+    if (mediaOutletData) {
+      handleEditData(mediaOutletData);
     }
-  }, [editData, handleEditData]);
+  }, [mediaOutletData, handleEditData]);
 
   const onSubmit = async (data: MediaOutletSchema) => {
     setIsLoading(true);
@@ -93,8 +89,7 @@ export const AddMediaOutlet = ({ closeSheet, editData }) => {
 
   const addMediaOutletMetadata = async (metadata: IMediaOutlet) => {
     try {
-      const promises = [publicationService.setMediaOutlet(metadata), refreshData()];
-      await Promise.all(promises);
+      await publicationService.setMediaOutlet(metadata).finally(() => refreshData());
       toast.success('Veículo salvo com sucesso.');
     } catch (error) {
       toast.error('Não foi possivel salvar os dados.');
@@ -140,12 +135,15 @@ export const AddMediaOutlet = ({ closeSheet, editData }) => {
         {/* Arquivo */}
         <div className="flex flex-col gap-2">
           <Label>Logo do Veículo</Label>
-          <div className="border border-rz-beige rounded-md p-4 bg-rz-white">
+          <div className="border border-dashed border-rz-beige rounded-md p-4 bg-rz-white">
             <div className="flex flex-col items-center justify-center gap-2">
               <FileUp className="h-8 w-8 text-rz-beige" />
-              <div className="text-sm text-center text-rz-dark-beige">
+              <div className="text-sm text-center text-gray-600">
                 <p>Arraste e solte o arquivo aqui ou</p>
-                <label htmlFor="logo" className="text-rz-black cursor-pointer hover:underline">
+                <label
+                  htmlFor="file-upload-metadata"
+                  className="text-rz-black cursor-pointer hover:underline"
+                >
                   selecione do seu computador
                 </label>
               </div>
@@ -154,9 +152,9 @@ export const AddMediaOutlet = ({ closeSheet, editData }) => {
                 control={control}
                 render={({ field: { onChange, ref } }) => (
                   <Input
-                    id="logo"
+                    id="file-upload-metadata"
                     type="file"
-                    accept=".png, .jpg, .svg"
+                    accept=".png, .jpg, .jpeg, .svg"
                     className="hidden"
                     ref={ref}
                     onChange={(e) => handleFileChange(e, onChange)}
