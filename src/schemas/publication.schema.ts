@@ -3,15 +3,12 @@ import { z } from 'zod';
 
 export const publicationSchema = z.object({
   theme: z.string().nonempty('O tema é obrigatório'),
-  product: z.string().nonempty('O produto é obrigatório'),
   type: z.string().nonempty('O tipo é obrigatório'),
-  category: z.string(),
   publicationDate: z
     .string()
     .nonempty('A data é obrigatória')
     .transform((date) => formatDateString(date)),
   mediaOutlet: z.string().nonempty('O meio de comunicação é obrigatório'),
-  mediaLogo: z.string().nonempty(' O logo do meio de comunicação é obrigatório'),
   link: z.string().nonempty('O link é obrigatório'),
   description: z
     .string()
@@ -28,17 +25,19 @@ export const mediaOutletSchema = z.object({
   file: z.any().refine((files) => files?.length > 0, 'Arquivo é obrigatório'),
 });
 
+export const typeSchema = z.object({
+  typename: z.string().nonempty('O nome do tipo é obrigatorio'),
+});
+
 export type MediaOutletSchema = z.infer<typeof mediaOutletSchema>;
+export type TypeSchema = z.infer<typeof typeSchema>;
 export type PublicationsSchema = z.infer<typeof publicationSchema>;
 
 export const defaultValues = {
   theme: '',
-  product: '',
   type: '',
-  category: '',
   publicationDate: '',
   mediaOutlet: '',
-  mediaLogo: '',
   link: '',
   description: '',
   isPublic: false,
@@ -47,6 +46,10 @@ export const defaultValues = {
 export const defaulValuesMediaOutlet = {
   name: '',
   file: null,
+};
+
+export const defaulValuesType = {
+  typename: '',
 };
 
 export const formatDate = (date: string): string => {
