@@ -1,4 +1,4 @@
-import { IMediaOutlet, IPublication, IPublicationService } from '@/models/publication.model';
+import { IMediaOutlet, IPublication, IPublicationService, IType } from '@/models/publication.model';
 import publicationRepository from '@/repositories/publication.repository';
 
 
@@ -9,6 +9,10 @@ class PublicationsService implements IPublicationService {
 
   public async getMediaOutlet(): Promise<IMediaOutlet[]> {
     return await publicationRepository.getMediaOutlet();
+  }
+
+  public async getTypes(): Promise<IType[]> {
+    return await publicationRepository.getTypes();
   }
 
   /**
@@ -34,7 +38,19 @@ class PublicationsService implements IPublicationService {
         index === -1 ? [...response, data] : response.map((item, i) => (i === index ? data : item)),
     };
 
-    console.log(props);
+    return await publicationRepository.setDocument(props);
+  }
+  public async setType(data: IType): Promise<boolean> {
+    const response = await publicationRepository.getTypes();
+
+    const index = response.findIndex((f: IType) => f.id === data.id);
+
+    const props = {
+      collectionRef: 'media_outlet',
+      subDocRef: 'types',
+      data:
+        index === -1 ? [...response, data] : response.map((item, i) => (i === index ? data : item)),
+    };
 
     return await publicationRepository.setDocument(props);
   }
