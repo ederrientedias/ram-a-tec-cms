@@ -202,7 +202,7 @@ const Portfolios = () => {
         </Card>
       </div>
 
-      <div className="bg-rz-white p-6">
+      <div className="bg-rz-white">
         <div className="flex items-center justify-between mb-6">
           <div className="relative w-full max-w-sm">
             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-rz-black" />
