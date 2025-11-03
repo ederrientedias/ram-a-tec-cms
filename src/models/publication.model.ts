@@ -14,9 +14,7 @@ export interface IPublicationService {
 export interface IPublication {
   id: string;
   theme: string;
-  product: string;
   type: string;
-  category: string;
   publicationDate: string;
   mediaOutlet: string;
   mediaLogo: string;
@@ -24,9 +22,15 @@ export interface IPublication {
   link: string;
   isPublic: boolean;
   createAt?: number;
+  updatedAt?: number;
 }
+
 export interface IMediaOutlet {
   id: string;
   name: string;
   logoUrl: string;
+}
+export interface IType {
+  id: string;
+  type: string;
 }
