@@ -155,49 +155,49 @@
 
 @font-face {
   font-family: 'Sanomat Light';
-  src: url('src/assets/fonts/sanomat-light.woff2') format('woff2');
+  src: url('/assets/fonts/sanomat-light.woff2') format('woff2');
   font-weight: 300;
   font-display: swap;
 }
 
 @font-face {
   font-family: 'Sanomat Regular';
-  src: url('src/assets/fonts/sanomat-regular.woff2') format('woff2');
+  src: url('/assets/fonts/sanomat-regular.woff2') format('woff2');
   font-weight: 400;
   font-display: swap;
 }
 
 @font-face {
   font-family: 'Sanomat Medium';
-  src: url('src/assets/fonts/sanomat-medium.woff2') format('woff2');
+  src: url('/assets/fonts/sanomat-medium.woff2') format('woff2');
   font-weight: 500;
   font-display: swap;
 }
 
 @font-face {
   font-family: 'Inter Light';
-  src: url('src/assets/fonts/inter-light.woff2') format('woff2');
+  src: url('/assets/fonts/inter-light.woff2') format('woff2');
   font-weight: 300;
   font-display: swap;
 }
 
 @font-face {
   font-family: 'Inter Regular';
-  src: url('src/assets/fonts/inter-regular.woff2') format('woff2');
+  src: url('/assets/fonts/inter-regular.woff2') format('woff2');
   font-weight: 400;
   font-display: swap;
 }
 
 @font-face {
   font-family: 'Inter Medium';
-  src: url('src/assets/fonts/inter-medium.woff2') format('woff2');
+  src: url('/assets/fonts/inter-medium.woff2') format('woff2');
   font-weight: 500;
   font-display: swap;
 }
 
 @font-face {
   font-family: 'Inter Semibold';
-  src: url('src/assets/fonts/inter-semibold.woff2') format('woff2');
+  src: url('/assets/fonts/inter-semibold.woff2') format('woff2');
   font-weight: bold;
   font-display: swap;
 }
