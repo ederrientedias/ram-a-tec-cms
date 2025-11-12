@@ -4,7 +4,7 @@ export const navItems = [
   {
     icon: Home,
     label: 'Dashboard',
-    href: '/dashboard',
+    href: 'dashboard',
   },
   // {
   //   icon: Database,
@@ -14,26 +14,26 @@ export const navItems = [
   {
     icon: FileText,
     label: 'Portfólios',
-    href: '/portfolios',
+    href: 'portfolios',
   },
   {
     icon: Upload,
     label: 'Compliance',
-    href: '/compliance',
+    href: 'compliance',
   },
   {
     icon: FileText,
     label: 'Landing Page',
-    href: '/landing-page',
+    href: 'landing-page',
   },
   {
     icon: Newspaper,
     label: 'Publicações',
-    href: '/publicacoes',
+    href: 'publicacoes',
   },
   {
     icon: FileText,
     label: 'Sumário',
-    href: '/sumario',
+    href: 'sumario',
   },
 ];
