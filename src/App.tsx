@@ -1,6 +1,6 @@
+import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ProtectedRoute } from '@/components/route/ProtectedRoute';
-import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import { Toaster as Sonner } from '@/components/ui/sonner';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { Toaster } from '@/components/ui/toaster';
@@ -16,7 +16,6 @@ import NotFound from './pages/NotFound';
 import Fundos from './pages/Funds';
 import Login from './pages/Login';
 
-
 const queryClient = new QueryClient();
 
 const App = () => {
@@ -25,27 +24,22 @@ const App = () => {
       <TooltipProvider>
         <Toaster />
         <Sonner />
-        <BrowserRouter>
-          <Routes>
-            <Route path="/" element={<Login />} />
-            <Route
-              element={
-                <ProtectedRoute>
-                  <DashboardLayout />
-                </ProtectedRoute>
-              }
-            >
-              <Route path="/dashboard" element={<Dashboard />} />
-              <Route path="/fundos" element={<Fundos />} />
-              <Route path="/portfolios" element={<Portfolios />} />
-              <Route path="/compliance" element={<Compliance />} />
-              <Route path="/landing-page" element={<LandingPage />} />
-              <Route path="/publicacoes" element={<Publicacoes />} />
-              <Route path="/sumario" element={<InformationalTransparency />} />
-            </Route>
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </BrowserRouter>
+        {/* <BrowserRouter> */}
+        <Routes>
+          {/* <Route path="/" element={<Login />} /> */}
+          <Route element={<DashboardLayout />}>
+            <Route path="/" element={<Navigate to="dashboard" replace />} />
+            <Route path="dashboard" element={<Dashboard />} />
+            <Route path="fundos" element={<Fundos />} />
+            <Route path="portfolios" element={<Portfolios />} />
+            <Route path="compliance" element={<Compliance />} />
+            <Route path="landing-page" element={<LandingPage />} />
+            <Route path="publicacoes" element={<Publicacoes />} />
+            <Route path="sumario" element={<InformationalTransparency />} />
+          </Route>
+          {/* <Route path="*" element={<Navigate to="dashboard" replace />} /> */}
+        </Routes>
+        {/* </BrowserRouter> */}
       </TooltipProvider>
     </QueryClientProvider>
   );
