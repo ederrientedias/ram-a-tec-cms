@@ -32,6 +32,11 @@ export const navItems = [
     href: '/publicacoes',
   },
   {
+    icon: Newspaper,
+    label: 'One Pager',
+    href: '/create-one-pager',
+  },
+  {
     icon: FileText,
     label: 'Sumário',
     href: '/sumario',

@@ -15,6 +15,7 @@ import Dashboard from './pages/Dashboard';
 import NotFound from './pages/NotFound';
 import Fundos from './pages/Funds';
 import Login from './pages/Login';
+import CreateOnePager from './pages/onePager/createOnePager';
 
 
 const queryClient = new QueryClient();
@@ -41,6 +42,7 @@ const App = () => {
               <Route path="/compliance" element={<Compliance />} />
               <Route path="/landing-page" element={<LandingPage />} />
               <Route path="/publicacoes" element={<Publicacoes />} />
+              <Route path="/create-one-pager" element={<CreateOnePager />} />
               <Route path="/sumario" element={<InformationalTransparency />} />
             </Route>
             <Route path="*" element={<NotFound />} />
