@@ -27,7 +27,7 @@ class PublicationsService implements IPublicationService {
   }
 
   public async setMediaOutlet(data: IMediaOutlet): Promise<boolean> {
-    const response = await publicationRepository.getMediaOutlet();
+    const response: IMediaOutlet[] = await publicationRepository.getMediaOutlet();
 
     const index = response.findIndex((f) => f.id === data.id);
 
