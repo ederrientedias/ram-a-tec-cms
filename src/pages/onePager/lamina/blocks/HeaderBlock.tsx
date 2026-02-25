@@ -9,7 +9,7 @@ export const HeaderBlock = React.memo(function HeaderBlock() {
   const setSubtitle = useLaminaStore((s) => s.setHeaderSubtitle);
 
   return (
-    <div className="head">
+    <div className="a4-head">
       <InlineText
         className="a4-title"
         value={title}

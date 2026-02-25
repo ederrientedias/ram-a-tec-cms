@@ -13,9 +13,9 @@ const createOnePager = () => {
       <div className="grid grid-cols-12 gap-2 h-full">
         <div className="col-span-12 w-full h-full max-h-[calc(100vh-120px)]">
           <ScrollArea className="h-full w-full">
-            {/* <LaminaEditor /> */}
+            <LaminaEditor />
             {/* <A4Canvas /> */}
-            <Lamina />
+            {/* <Lamina /> */}
           </ScrollArea>
         </div>
       </div>

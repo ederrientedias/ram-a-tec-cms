@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import type { Doc, Block, TableGrid } from '@/types/lamina';
+import type { Doc, Block, TableGrid, HighlightItem, Highlight } from '@/types/lamina';
 
 const uid = () => crypto.randomUUID();
 
@@ -26,6 +26,19 @@ const tableGrid: TableGrid[] = [
   },
 ];
 
+const highlightsItems: HighlightItem[] = [
+  { id: uid(), label: 'Carrego', value: '-' },
+  { id: uid(), label: 'Duration', value: '-' },
+  { id: uid(), label: 'Emissor', value: '-' },
+];
+
+const highlights: Highlight = {
+  id: uid(),
+  type: 'highlights',
+  title: 'Título',
+  highlights: highlightsItems,
+};
+
 const initialDoc: Doc = {
   meta: { page: 'A4', marginMm: { top: 12, right: 12, bottom: 12, left: 12 } },
   header: {
@@ -35,8 +48,6 @@ const initialDoc: Doc = {
   blocks: [
     { id: uid(), type: 'tableGrid', tableGrid },
     { id: uid(), type: 'titleText', title: 'Título', tiptapHtml: '<p>Comece a editar…</p>' },
-    { id: uid(), type: 'imageGrid', images: [] },
-    { id: uid(), type: 'text', title: 'Performance', tiptapHtml: '<p>Escreva aqui…</p>' },
   ],
 };
 
@@ -46,8 +57,23 @@ type Actions = {
 
   addBlock: (type: Block['type']) => void;
   removeBlock: (id: string) => void;
+  addChartBlock: (block: Extract<Block, { type: 'chart' }>) => void;
+  updateChartBlock: (id: string, patch: Partial<Extract<Block, { type: 'chart' }>>) => void;
+  setChartData: (id: string, chartData: Array<Record<string, any>>) => void;
+  setChartConfig: (
+    id: string,
+    chartConfig: Extract<Block, { type: 'chart' }>['chartConfig']
+  ) => void;
 
+  setChartSvg: (id: string, svgMarkup: string) => void;
   updateTitleTextBlockTitle: (id: string, title: string) => void;
+  updateHighlightTitle: (id: string, title: string) => void;
+  updateHightlightItem: (
+    blockId: string,
+    highlightId: string,
+    patch: Partial<HighlightItem>
+  ) => void;
+
   updateBlockHtml: (id: string, html: string) => void;
 
   updateTableCell: (
@@ -74,17 +100,82 @@ export const useLaminaStore = create<{ doc: Doc } & Actions>((set, get) => ({
     set((s) => ({ doc: { ...s.doc, header: { ...s.doc.header, subtitle } } })),
 
   addBlock: (type) => {
-    const newBlock: Block =
-      type === 'titleText'
-        ? { id: uid(), type, title: 'Título', tiptapHtml: '<p>Texto…</p>' }
-        : type === 'text'
-          ? { id: uid(), type, title: 'Título', tiptapHtml: '<p>Texto…</p>' }
-          : type === 'tableGrid'
-            ? { id: uid(), type, tableGrid }
-            : { id: uid(), type, images: [] };
-
-    set((s) => ({ doc: { ...s.doc, blocks: [...s.doc.blocks, newBlock] } }));
+    let newBlock: Block | null = null;
+    if (type === 'titleText') {
+      newBlock = { id: uid(), type, title: 'Título', tiptapHtml: '<p>Texto…</p>' };
+    } else if (type === 'text') {
+      newBlock = { id: uid(), type, title: 'Título', tiptapHtml: '<p>Texto…</p>' };
+    } else if (type === 'tableGrid') {
+      newBlock = { id: uid(), type, tableGrid };
+    } else if (type === 'highlights') {
+      newBlock = highlights;
+    } else if (type === 'imageGrid') {
+      newBlock = { id: uid(), type, images: [] };
+    } else if (type === 'chart') {
+      newBlock = {
+        id: uid(),
+        type: 'chart',
+        chartType: 'line',
+        chartData: [],
+        chartConfig: {},
+        linesCount: 1,
+        xKey: 'date',
+        showXAxis: true,
+        showYAxis: true,
+        svgMarkup: undefined,
+      };
+    } else {
+      newBlock = null;
+    }
+    if (newBlock) {
+      set((s) => ({ doc: { ...s.doc, blocks: [...s.doc.blocks, newBlock as Block] } }));
+    }
   },
+
+  addChartBlock: (block) => set((s) => ({ doc: { ...s.doc, blocks: [...s.doc.blocks, block] } })),
+
+  updateChartBlock: (id, patch) =>
+    set((s) => ({
+      doc: {
+        ...s.doc,
+        blocks: s.doc.blocks.map((b) =>
+          b.id === id && b.type === 'chart' ? { ...b, ...patch } : b
+        ),
+      },
+    })),
+
+  setChartData: (id, chartData) =>
+    set((s) => ({
+      doc: {
+        ...s.doc,
+        blocks: s.doc.blocks.map((b) =>
+          b.id === id && b.type === 'chart' ? { ...b, chartData } : b
+        ),
+      },
+    })),
+
+  setChartConfig: (id, chartConfig) =>
+    set((s) => ({
+      doc: {
+        ...s.doc,
+        blocks: s.doc.blocks.map((b) =>
+          b.id === id && b.type === 'chart' ? { ...b, chartConfig } : b
+        ),
+      },
+    })),
+
+  setChartSvg: (id, svgMarkup) =>
+    set((s) => {
+      let changed = false;
+      const blocks = s.doc.blocks.map((b) => {
+        if (b.id !== id || b.type !== 'chart') return b;
+        if (b.svgMarkup === svgMarkup) return b;
+        changed = true;
+        return { ...b, svgMarkup };
+      });
+      if (!changed) return s;
+      return { doc: { ...s.doc, blocks } };
+    }),
 
   removeBlock: (id) =>
     set((s) => ({ doc: { ...s.doc, blocks: s.doc.blocks.filter((b) => b.id !== id) } })),
@@ -125,6 +216,33 @@ export const useLaminaStore = create<{ doc: Doc } & Actions>((set, get) => ({
           });
 
           return { ...b, tableGrid };
+        }),
+      },
+    }));
+  },
+
+  updateHighlightTitle: (id, title) =>
+    set((s) => ({
+      doc: {
+        ...s.doc,
+        blocks: s.doc.blocks.map((b) =>
+          b.id === id && b.type === 'highlights' ? { ...b, title } : b
+        ),
+      },
+    })),
+
+  updateHightlightItem: (blockId, highlightId, patch) => {
+    set((s) => ({
+      doc: {
+        ...s.doc,
+        blocks: s.doc.blocks.map((b) => {
+          if (b.id !== blockId || b.type !== 'highlights') return b;
+
+          const highlights = b.highlights.map((r) =>
+            r.id === highlightId ? { ...r, ...patch } : r
+          );
+
+          return { ...b, highlights };
         }),
       },
     }));

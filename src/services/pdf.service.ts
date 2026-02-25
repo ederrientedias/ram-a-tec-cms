@@ -28,14 +28,7 @@ class PdfService {
           <head>
               <meta charset="UTF-8" />
               <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-              <link href="/style.css" rel="stylesheet" />
-              <link rel="preconnect" href="https://fonts.googleapis.com" />
-              <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-              <link
-              href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap"
-              rel="stylesheet"
-              />
-              <title>Transparencia Informacional</title>
+              <title>PDF</title>
               <style>${props.style}</style>
           </head>
           <body>${props.htmlContent}</body>
@@ -43,14 +36,15 @@ class PdfService {
     `;
 
     const data = {
-      html: HTML,
+      html: !props.htmlContent ? HTML : props.htmlContent,
       htmlContent: null,
       cssContent: null,
       uriGsUtil: import.meta.env.VITE_GOOGLE_STORAGE_URI,
-      filePath: `sumarios/${
-        props.year
-      }/${props.month.toLowerCase()}/${props.selectedFund.name.replace(/\s+/g, '')}`,
-      pdfName: `sumario-${props.selectedFund.idName}`,
+      filePath: `test/${props.year}/${props.month.toLowerCase()}/${props.selectedFund.name}`,
+      // filePath: `sumarios/${
+      //   props.year
+      // }/${props.month.toLowerCase()}/${props.selectedFund.name.replace(/\s+/g, '')}`,
+      pdfName: `sumario-${props.selectedFund.idName}-${Date.now()}`,
       useHtmlContent: false,
       useCssContent: false,
       urlFontFamily: null,
